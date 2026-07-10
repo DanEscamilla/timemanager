@@ -1,0 +1,29 @@
+{
+  "name": "timemanager-db",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": ["scope:timemanager", "type:infra"],
+  "targets": {
+    "up": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose up -d",
+        "cwd": "infra/timemanager-db"
+      }
+    },
+    "down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose down",
+        "cwd": "infra/timemanager-db"
+      }
+    },
+    "logs": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose logs -f",
+        "cwd": "infra/timemanager-db"
+      }
+    }
+  }
+}

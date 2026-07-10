@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  pgsql:
+    image: postgres:15
+    container_name: timemanager-pgsql
+    hostname: pgsql
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=test1234
+      - POSTGRES_DB=timemanager
+    ports:
+      - '5432:5432'
+    volumes:
+      - './data/postgres:/var/lib/postgresql/data'
+    networks:
+      - timemanager-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: timemanager-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@timemanager.com
+      - PGADMIN_DEFAULT_PASSWORD=test1234
+    volumes:
+      - './data/pgadmin:/var/lib/pgadmin'
+    ports:
+      - '8080:80'
+    networks:
+      - timemanager-network
+    depends_on:
+      - pgsql
+
+networks:
+  timemanager-network:
+    name: timemanager-network

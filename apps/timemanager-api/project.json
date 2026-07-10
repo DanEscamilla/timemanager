@@ -1,0 +1,31 @@
+{
+  "name": "timemanager-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/timemanager-api/src",
+  "tags": ["scope:timemanager", "type:api", "runtime:deno"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["timemanager-db:up"],
+      "options": {
+        "command": "deno task dev",
+        "cwd": "apps/timemanager-api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "deno task build",
+        "cwd": "apps/timemanager-api"
+      }
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "deno task seed",
+        "cwd": "apps/timemanager-api"
+      }
+    }
+  }
+}

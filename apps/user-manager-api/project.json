@@ -1,0 +1,30 @@
+{
+  "name": "user-manager-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/user-manager-api",
+  "tags": ["scope:user-manager", "type:api", "runtime:node"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec vite-node ./index.ts",
+        "cwd": "apps/user-manager-api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec tsc",
+        "cwd": "apps/user-manager-api"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec eslint .",
+        "cwd": "apps/user-manager-api"
+      }
+    }
+  }
+}

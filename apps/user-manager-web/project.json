@@ -1,0 +1,30 @@
+{
+  "name": "user-manager-web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/user-manager-web/src",
+  "tags": ["scope:user-manager", "type:app", "runtime:node"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec vite",
+        "cwd": "apps/user-manager-web"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec tsc -b && pnpm exec vite build",
+        "cwd": "apps/user-manager-web"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec eslint .",
+        "cwd": "apps/user-manager-web"
+      }
+    }
+  }
+}

@@ -1,0 +1,3 @@
+packages:
+  - 'apps/user-manager-web'
+  - 'apps/user-manager-api'

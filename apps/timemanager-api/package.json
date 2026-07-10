@@ -1,0 +1,25 @@
+{
+  "name": "timemanager-api",
+  "version": "1.0.0",
+  "description": "Time Manager Backend API",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "pylon dev",
+    "build": "pylon build",
+    "start": "pylon start"
+  },
+  "dependencies": {
+    "@getcronit/pylon": "latest",
+    "graphql-tag": "^2.12.6",
+    "kysely": "^0.26.3",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@getcronit/pylon-dev": "^1.0.5",
+    "@types/pg": "^8.10.9",
+    "typescript": "^5.3.3"
+  },
+  "author": "",
+  "license": "ISC",
+  "private": true
+}

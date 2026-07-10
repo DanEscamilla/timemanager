@@ -1,0 +1,37 @@
+{
+  "name": "timemanager",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/timemanager/lib",
+  "tags": ["scope:timemanager", "type:app", "runtime:flutter"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "flutter run",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "flutter test",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "analyze": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "flutter analyze",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "pub-get": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "flutter pub get",
+        "cwd": "apps/timemanager"
+      }
+    }
+  }
+}

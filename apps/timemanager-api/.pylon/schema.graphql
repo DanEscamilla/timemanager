@@ -1,0 +1,88 @@
+input ContextInput {
+	userId: Number!
+}
+input ArgsInput {
+	id: Number!
+}
+input ArgsInput_1 {
+	input: CreateActivityInputInput!
+}
+input CreateActivityInputInput {
+	title: String!
+	description: String
+	startTime: String!
+	endTime: String!
+	isRecurring: Boolean!
+	recurrencePattern: RecurrencePatternInput
+}
+input RecurrencePatternInput {
+	recurrenceType: DAILY_WEEKLY_MONTHLY_CUSTOMInput!
+	config: RecurrenceConfigInput!
+}
+input RecurrenceConfigInput {
+	days_interval: Number
+	days_of_week: [Number!]
+	days_of_month: [Number!]
+	is_last_day_of_month: Boolean
+	months: [Number!]
+	custom_interval: Number
+	start_date: String!
+	end_date: String
+}
+input ArgsInput_2 {
+	id: Number!
+	input: UpdateActivityInputInput!
+}
+input UpdateActivityInputInput {
+	title: String
+	description: String
+	startTime: String
+	endTime: String
+	isRecurring: Boolean
+	recurrencePattern: RecurrencePatternInput_1
+}
+input RecurrencePatternInput_1 {
+	recurrenceType: DAILY_WEEKLY_MONTHLY_CUSTOMInput!
+	config: RecurrenceConfigInput!
+}
+input ArgsInput_3 {
+	id: Number!
+}
+type Query {
+activities(args: Object!, context: ContextInput!): [Activities!]!
+activity(args: ArgsInput!, context: ContextInput!): Activities
+}
+type Activities {
+user_id: Number!
+id: Number!
+title: String!
+description: String
+start_time: String!
+end_time: String!
+is_recurring: Boolean!
+created_at: Date!
+updated_at: Date!
+}
+type Mutation {
+createActivity(args: ArgsInput_1!, context: ContextInput!): Object!
+updateActivity(args: ArgsInput_2!, context: ContextInput!): Object!
+deleteActivity(args: ArgsInput_3!, context: ContextInput!): Boolean!
+}
+scalar ID
+scalar Int
+scalar Float
+scalar Number
+scalar Any
+scalar Void
+scalar Object
+scalar File
+scalar Date
+scalar JSON
+scalar String
+scalar Boolean
+enum DAILY_WEEKLY_MONTHLY_CUSTOMInput {
+	daily
+	weekly
+	monthly
+	custom
+}
