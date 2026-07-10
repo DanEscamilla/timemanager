@@ -1,0 +1,23 @@
+---
+description: High-level map of the Time Management Nx monorepo (apps, runtimes, ports). Read first.
+alwaysApply: true
+---
+
+This is an **Nx + pnpm monorepo** with a mixed stack. Full entrypoint: [AGENTS.md](mdc:AGENTS.md). Architecture + data flow: [.ai/architecture.md](mdc:.ai/architecture.md).
+
+Apps and infra:
+
+- `apps/timemanager` — Flutter (Dart) client. Runtime: flutter (`pubspec.yaml`).
+- `apps/timemanager-api` — Pylon GraphQL + Kysely + Postgres, on `:3000`. Runtime: **Deno** (`deno.json`).
+- `apps/user-manager-web` — React + Vite + SuperTokens. Runtime: node (pnpm).
+- `apps/user-manager-api` — Express + SuperTokens, on `:3001`. Runtime: node (pnpm).
+- `infra/timemanager-db` — Postgres `:5432` + pgAdmin `:8080` (docker-compose).
+- `infra/authentik` — Authentik auth (docker-compose).
+- `libs/` — reserved for future shared code (currently empty).
+
+Golden rules:
+
+- Run tasks via Nx from the repo root; each app owns its runtime/package manager — never mix them.
+- Node apps use **pnpm**; `timemanager-api` uses **Deno**; `timemanager` uses **Flutter**.
+- Do not hand-edit generated output (`dist/`, `.nx/cache/`, Flutter `build/`, `.dart_tool/`, `node_modules/`, docker `data/`).
+- Check settled choices/scope in [.ai/decisions.md](mdc:.ai/decisions.md) before structural changes.

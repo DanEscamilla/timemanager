@@ -1,0 +1,18 @@
+---
+description: React + Vite + SuperTokens conventions for apps/user-manager-web.
+globs: apps/user-manager-web/**
+---
+
+`apps/user-manager-web` is a React + Vite app using SuperTokens for auth. Package manager: **pnpm** (Node workspace). Dev server on port `3000` per Vite config, calling the API at `:3001`.
+
+Source layout (`src/`):
+
+- `main.tsx` — entrypoint (`createRoot`, `StrictMode`).
+- `App.tsx` — root component; initializes SuperTokens, sets up `react-router-dom` routes, wraps app in `SuperTokensWrapper` / `ComponentWrapper`.
+- `config.tsx` — SuperTokens frontend config (varies by auth recipe).
+- `Home/index.tsx` — public landing page (`/`).
+- `Dashboard/index.tsx` — protected route (`/dashboard`, guarded by `SessionAuth`).
+
+Routes: `/` (public), `/auth` (SuperTokens pre-built UI), `/dashboard` (protected).
+
+Commands: `nx serve user-manager-web`, `nx build user-manager-web`, `nx lint user-manager-web`. Vite config in `vite.config.ts`.

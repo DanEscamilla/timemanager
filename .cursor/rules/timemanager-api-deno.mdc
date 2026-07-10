@@ -1,0 +1,22 @@
+---
+description: Deno + Pylon GraphQL API conventions for apps/timemanager-api (Kysely + Postgres).
+globs: apps/timemanager-api/**
+---
+
+`apps/timemanager-api` is a **Deno** app (Pylon GraphQL) — use `deno.json` tasks, NOT Node, Bun, npm, or pnpm here. Dependencies are declared in `deno.json` `imports`.
+
+Stack: [Pylon](https://pylon.cronit.io/) (`@getcronit/pylon`) for GraphQL, [Kysely](https://kysely.dev/) query builder over Postgres (`pg`). Serves on `:3000`.
+
+Source layout (`src/`):
+
+- `index.ts` — entrypoint.
+- `graphql/` — `schema.ts`, `types.ts`, `resolvers/resolvers.ts`.
+- `db/` — `database.ts` (Kysely + pg pool), `types/schema.ts` (DB types), `migrations/` (timestamped `*.ts` + `migration.ts` runner), `seed.ts`.
+
+Commands (via `deno task`, or the Nx wrappers `nx serve|build|run timemanager-api`):
+
+- `deno task dev` — dev server (Nx `serve`, which also runs `timemanager-db:up`).
+- `deno task build` — build.
+- `deno task seed` — seed the DB (`nx run timemanager-api:seed`).
+
+The database comes from `infra/timemanager-db` (Postgres `:5432`). Bring it up with `pnpm db:up` before running against real data.

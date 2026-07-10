@@ -1,0 +1,17 @@
+---
+description: Flutter (Dart) client conventions for apps/timemanager.
+globs: apps/timemanager/**
+---
+
+`apps/timemanager` is the Flutter (Dart) client. Package manager is **Flutter/Dart** via `pubspec.yaml` — never pnpm/npm/Deno here.
+
+Source layout (`lib/`):
+
+- `config/api_config.dart` — GraphQL endpoint config; points at the API on `:3000`.
+- `models/` — data models (e.g. `activity.dart`).
+- `screens/` — UI screens (e.g. `activities_screen.dart`, `activity_form_screen.dart`).
+- `services/` — `graphql_client.dart` (HTTP GraphQL client via `http`) and repositories (e.g. `activity_repository.dart`).
+
+Commands (prefer Nx targets): `nx serve timemanager` (`flutter run`), `nx test timemanager`, `nx run timemanager:analyze`, `nx run timemanager:pub-get`.
+
+Do not edit generated/platform output: `build/`, `.dart_tool/`, `android/`, `ios/`, `linux/`, `macos/`, `windows/` (unless a change genuinely requires touching a platform folder).

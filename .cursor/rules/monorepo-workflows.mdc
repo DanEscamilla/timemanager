@@ -1,0 +1,27 @@
+---
+description: Canonical Nx/pnpm commands and tag taxonomy for running and building projects.
+alwaysApply: true
+---
+
+Run everything through Nx from the repo root. Convenience scripts in root `package.json`:
+
+```bash
+pnpm timemanager      # nx run-many -t serve -p timemanager,timemanager-api
+pnpm user-manager     # nx run-many -t serve -p user-manager-web,user-manager-api
+pnpm db:up            # nx run timemanager-db:up  (Postgres + pgAdmin)
+pnpm db:down          # nx run timemanager-db:down
+```
+
+Direct Nx usage: `nx serve <project>`, `nx build <project>`, `nx run-many -t <target> -p <a,b>`, `nx run <project>:<target>`.
+
+Project tags (in each `project.json`) — use for filtering and to understand scope:
+
+- `scope:*` — `scope:timemanager`, `scope:user-manager`
+- `type:*` — `type:app`, `type:api`, `type:infra`
+- `runtime:*` — `runtime:flutter`, `runtime:deno`, `runtime:node`
+
+Notes:
+
+- `timemanager-api:serve` `dependsOn` `timemanager-db:up`, so the DB starts automatically.
+- Deno and Flutter targets are `nx:run-commands` wrappers (no `@nx/deno` plugin).
+- Full workflows (seed, migrations, smoke checks): [.ai/workflows.md](mdc:.ai/workflows.md).
