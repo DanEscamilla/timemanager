@@ -29,6 +29,10 @@ export interface ActivitiesTable {
   start_time: string // Time of day in HH:mm format
   end_time: string // Time of day in HH:mm format
   is_recurring: boolean
+  // Calendar date the activity occurs on. Required when is_recurring is
+  // false; null when is_recurring is true (dates live in the recurrence
+  // pattern's config instead).
+  date: string | null
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string, string>
 }
@@ -37,20 +41,20 @@ export interface ActivitiesTable {
 export interface RecurrencePatternsTable {
   id: Generated<number>
   activity_id: number
-  // Type of recurrence: daily, weekly, monthly, custom
-  recurrence_type: 'daily' | 'weekly' | 'monthly' | 'custom'
+  // Type of recurrence: weekly, monthly, or every X days
+  recurrence_type: 'weekly' | 'monthly' | 'every_x_days'
   // JSON configuration for the recurrence
   config: ColumnType<{
-    // For daily: every X days
-    days_interval?: number
     // For weekly: array of days (0-6, where 0 is Sunday)
     days_of_week?: number[]
-    // For monthly: day of month or 'last' for last day
-    days_of_month?: (number | 'last')[]
-    // For monthly: which months (1-12)
-    months?: number[]
-    // For custom: interval in days
-    custom_interval?: number
+    // For monthly: days of the month (1-31)
+    days_of_month?: number[]
+    // For monthly: also repeat on the last day of the month. Kept as its
+    // own boolean (rather than a 'last' sentinel in days_of_month) because
+    // Pylon/GraphQL input types can't represent a number|string union.
+    is_last_day_of_month?: boolean
+    // For every_x_days: repeat every N days (>= 1)
+    interval_days?: number
     // Start date of the recurrence
     start_date: string
     // End date of the recurrence (optional)

@@ -1,6 +1,8 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@std/assert@1": "1.0.19",
+    "jsr:@std/internal@^1.0.12": "1.0.14",
     "npm:@getcronit/pylon-dev@1.0.5": "1.0.5_@types+node@22.15.15_typescript@5.8.3",
     "npm:@getcronit/pylon-dev@^1.0.5": "1.0.5_@types+node@22.15.15_typescript@5.8.3",
     "npm:@getcronit/pylon@latest": "2.9.5_hono@4.7.11_graphql@16.11.0",
@@ -15,6 +17,17 @@
     "npm:pg@^8.11.3": "8.16.0",
     "npm:pg@^8.16.0": "8.16.0",
     "npm:typescript@^5.3.3": "5.8.3"
+  },
+  "jsr": {
+    "@std/assert@1.0.19": {
+      "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
+    "@std/internal@1.0.14": {
+      "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
+    }
   },
   "npm": {
     "@ardatan/relay-compiler@12.0.3_graphql@16.11.0": {

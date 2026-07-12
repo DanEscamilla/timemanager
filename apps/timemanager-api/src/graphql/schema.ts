@@ -15,6 +15,8 @@ export const typeDefs = gql`
     startTime: String!
     endTime: String!
     isRecurring: Boolean!
+    # Set when isRecurring is false; null when isRecurring is true.
+    date: String
     recurrencePattern: RecurrencePattern
     createdAt: String!
     updatedAt: String!
@@ -30,28 +32,25 @@ export const typeDefs = gql`
   }
 
   enum RecurrenceType {
-    daily
     weekly
     monthly
-    custom
+    every_x_days
   }
 
   input RecurrenceConfigInput {
-    daysInterval: Int
     daysOfWeek: [Int]
-    daysOfMonth: [String]
-    months: [Int]
-    customInterval: Int
+    daysOfMonth: [Int]
+    isLastDayOfMonth: Boolean
+    intervalDays: Int
     startDate: String!
     endDate: String
   }
 
   type RecurrenceConfig {
-    daysInterval: Int
     daysOfWeek: [Int]
-    daysOfMonth: [String]
-    months: [Int]
-    customInterval: Int
+    daysOfMonth: [Int]
+    isLastDayOfMonth: Boolean
+    intervalDays: Int
     startDate: String!
     endDate: String
   }
@@ -62,6 +61,9 @@ export const typeDefs = gql`
     startTime: String!
     endTime: String!
     isRecurring: Boolean!
+    # Required when isRecurring is false; ignored when isRecurring is true.
+    date: String
+    # Required when isRecurring is true; ignored when isRecurring is false.
     recurrencePattern: CreateRecurrencePatternInput
   }
 
@@ -76,6 +78,7 @@ export const typeDefs = gql`
     startTime: String
     endTime: String
     isRecurring: Boolean
+    date: String
     recurrencePattern: UpdateRecurrencePatternInput
   }
 

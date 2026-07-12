@@ -10,19 +10,18 @@ input CreateActivityInputInput {
 	startTime: String!
 	endTime: String!
 	isRecurring: Boolean!
-	recurrencePattern: RecurrencePatternInput
+	date: String
+	recurrencePattern: RecurrencePatternInputInput
 }
-input RecurrencePatternInput {
-	recurrenceType: DAILY_WEEKLY_MONTHLY_CUSTOMInput!
+input RecurrencePatternInputInput {
+	recurrenceType: RecurrenceTypeInput!
 	config: RecurrenceConfigInput!
 }
 input RecurrenceConfigInput {
-	days_interval: Number
 	days_of_week: [Number!]
 	days_of_month: [Number!]
 	is_last_day_of_month: Boolean
-	months: [Number!]
-	custom_interval: Number
+	interval_days: Number
 	start_date: String!
 	end_date: String
 }
@@ -36,11 +35,8 @@ input UpdateActivityInputInput {
 	startTime: String
 	endTime: String
 	isRecurring: Boolean
-	recurrencePattern: RecurrencePatternInput_1
-}
-input RecurrencePatternInput_1 {
-	recurrenceType: DAILY_WEEKLY_MONTHLY_CUSTOMInput!
-	config: RecurrenceConfigInput!
+	date: String
+	recurrencePattern: RecurrencePatternInputInput
 }
 input ArgsInput_3 {
 	id: Number!
@@ -50,6 +46,7 @@ activities(args: Object): [Activities!]!
 activity(args: ArgsInput!): Activities
 }
 type Activities {
+recurrencePattern: ParsedRecurrencePattern
 user_id: Number!
 id: Number!
 title: String!
@@ -57,12 +54,29 @@ description: String
 start_time: String!
 end_time: String!
 is_recurring: Boolean!
+date: String
 created_at: Date!
 updated_at: Date!
 }
+type ParsedRecurrencePattern {
+config: RecurrenceConfig!
+id: Number!
+created_at: Date!
+updated_at: Date!
+activity_id: Number!
+recurrence_type: WEEKLY_MONTHLY_EVERY_X_DAYS!
+}
+type RecurrenceConfig {
+days_of_week: [Number!]
+days_of_month: [Number!]
+is_last_day_of_month: Boolean
+interval_days: Number
+start_date: String!
+end_date: String
+}
 type Mutation {
-createActivity(args: ArgsInput_1!): Object!
-updateActivity(args: ArgsInput_2!): Object!
+createActivity(args: ArgsInput_1!): Activities!
+updateActivity(args: ArgsInput_2!): Activities!
 deleteActivity(args: ArgsInput_3!): Boolean!
 }
 scalar ID
@@ -77,9 +91,13 @@ scalar Date
 scalar JSON
 scalar String
 scalar Boolean
-enum DAILY_WEEKLY_MONTHLY_CUSTOMInput {
-	daily
+enum WEEKLY_MONTHLY_EVERY_X_DAYS {
 	weekly
 	monthly
-	custom
+	every_x_days
+}
+enum RecurrenceTypeInput {
+	weekly
+	monthly
+	every_x_days
 }
