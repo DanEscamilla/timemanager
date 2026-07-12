@@ -3,7 +3,7 @@ import cors from "cors";
 import supertokens from "supertokens-node";
 import { verifySession } from "supertokens-node/recipe/session/framework/express";
 import { middleware, errorHandler, SessionRequest } from "supertokens-node/framework/express";
-import { getWebsiteDomain, SuperTokensConfig } from "./config.js";
+import { isAllowedOrigin, SuperTokensConfig } from "./config.js";
 import Multitenancy from "supertokens-node/recipe/multitenancy";
 
 supertokens.init(SuperTokensConfig);
@@ -12,7 +12,14 @@ const app = express();
 
 app.use(
     cors({
-        origin: getWebsiteDomain(),
+        origin: (origin, callback) => {
+            // Non-browser clients (curl, mobile) send no Origin.
+            if (!origin || isAllowedOrigin(origin)) {
+                callback(null, origin ?? true);
+                return;
+            }
+            callback(new Error(`Origin ${origin} not allowed by CORS`));
+        },
         allowedHeaders: ["content-type", ...supertokens.getAllCORSHeaders()],
         methods: ["GET", "PUT", "POST", "DELETE"],
         credentials: true,

@@ -5,11 +5,13 @@ globs: apps/user-manager-api/**
 
 `apps/user-manager-api` is an Express backend integrating SuperTokens. Package manager: **pnpm** (Node workspace). Serves on `:3001`.
 
+This is the **shared SSO hub** for the monorepo (Flutter timemanager, React user-manager-web, and future apps).
+
 Key files:
 
-- `index.ts` — entrypoint: initializes SuperTokens, adds CORS for sessions, mounts SuperTokens middleware. Endpoints: `/hello` (public), `/sessioninfo` (session-protected), `/tenants` (multitenant list).
-- `config.ts` — SuperTokens backend config (`connectionURI`, `appInfo.apiDomain`/`websiteDomain`, `recipeList`). Differs by auth recipe.
+- `index.ts` — entrypoint: initializes SuperTokens, CORS (React `:3000` + Flutter localhost origins), mounts SuperTokens middleware. Endpoints: `/hello` (public), `/sessioninfo` (session-protected), `/tenants` (multitenant list), `/auth/*` (SuperTokens).
+- `config.ts` — SuperTokens backend config (`connectionURI`, `appInfo`, `recipeList`). Session recipe accepts cookie (React) and header (Flutter) via `st-auth-mode`; access-token payload includes `email` for GraphQL user mapping. JWKS at `/auth/jwt/jwks.json`.
 
-Auth flow: the frontend never calls the SuperTokens Core directly — it calls this backend, which calls the Core. SuperTokens auto-handles requests under `${apiDomain}/auth`.
+Auth flow: clients never call the SuperTokens Core directly — they call this backend, which calls the Core. SuperTokens auto-handles requests under `${apiDomain}/auth`.
 
-Commands: `nx serve user-manager-api`, `nx build user-manager-api` (`tsc`), `nx lint user-manager-api`.
+Commands: `nx serve user-manager-api` (continuous; also started by `nx serve timemanager`), `nx build user-manager-api` (`tsc`), `nx lint user-manager-api`.

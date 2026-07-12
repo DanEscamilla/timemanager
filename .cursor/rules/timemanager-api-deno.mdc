@@ -9,14 +9,18 @@ Stack: [Pylon](https://pylon.cronit.io/) (`@getcronit/pylon`) for GraphQL, [Kyse
 
 Source layout (`src/`):
 
-- `index.ts` — entrypoint.
-- `graphql/` — `schema.ts`, `types.ts`, `resolvers/resolvers.ts`.
-- `db/` — `database.ts` (Kysely + pg pool), `types/schema.ts` (DB types), `migrations/` (timestamped `*.ts` + `migration.ts` runner), `seed.ts`.
+- `index.ts` — entrypoint + auth middleware (Bearer JWT → local `userId`).
+- `auth/verify.ts` — SuperTokens JWKS JWT verification (`jose`).
+- `graphql/` — `types.ts`, `resolvers/resolvers.ts` (user id from `getContext()`, not client input).
+- `db/` — `database.ts`, `users.ts` (upsert by `auth_user_id`), `types/schema.ts`, `migrations/`, `seed.ts`.
+
+Auth: every `/graphql` request requires `Authorization: Bearer <SuperTokens access token>`. JWKS is loaded from `AUTH_API_DOMAIN` (default `http://localhost:3001`) at `/auth/jwt/jwks.json`. Local users are linked via `users.auth_user_id`.
 
 Commands (via `deno task`, or the Nx wrappers `nx serve|build|run timemanager-api`):
 
-- `deno task dev` — dev server (Nx `serve`, which also runs `timemanager-db:up`).
+- `deno task dev` — dev server (Nx `serve`, which also runs `migrate` → `timemanager-db:up`).
 - `deno task build` — build.
+- `deno task migrate` — apply pending Kysely migrations (`nx run timemanager-api:migrate`).
 - `deno task seed` — seed the DB (`nx run timemanager-api:seed`).
 
-The database comes from `infra/timemanager-db` (Postgres `:5432`). Bring it up with `pnpm db:up` before running against real data.
+The database comes from `infra/timemanager-db` (Postgres `:5432`). `pnpm db:up` starts it and runs migrations.

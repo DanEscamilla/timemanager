@@ -12,7 +12,9 @@ export interface Database {
 export interface UsersTable {
   id: Generated<number>
   email: string
-  password_hash: string
+  password_hash: string | null
+  /** SuperTokens user id — links SSO identity to local rows. */
+  auth_user_id: string | null
   name: string
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string, string>

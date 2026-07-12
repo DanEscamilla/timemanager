@@ -5,10 +5,8 @@ importers:
   .:
     specifiers:
       '@nx/js': ^23.0.1
-      nx: ^23.0.1
     devDependencies:
-      '@nx/js': 23.0.1_nx@23.0.1
-      nx: 23.0.1
+      '@nx/js': 23.0.1
 
   apps/user-manager-api:
     specifiers:
@@ -1824,6 +1822,20 @@ packages:
       '@tybys/wasm-util': 0.9.0
     dev: true
 
+  /@nx/devkit/23.0.1:
+    resolution: {integrity: sha512-A/chuNS1RZwdbRe/Nf+w0qtPEFHLcZNPzo8Abw5mBxyXmy9yvHZpuZuqDbt/lASFU+TEb74xExL1AnKWwqpOIg==}
+    peerDependencies:
+      nx: '>= 22 <= 24 || ^23.0.0-0'
+    dependencies:
+      '@zkochan/js-yaml': 0.0.7
+      ejs: 5.0.1
+      enquirer: 2.3.6
+      minimatch: 10.2.5
+      semver: 7.8.5
+      tslib: 2.8.1
+      yargs-parser: 21.1.1
+    dev: true
+
   /@nx/devkit/23.0.1_nx@23.0.1:
     resolution: {integrity: sha512-A/chuNS1RZwdbRe/Nf+w0qtPEFHLcZNPzo8Abw5mBxyXmy9yvHZpuZuqDbt/lASFU+TEb74xExL1AnKWwqpOIg==}
     peerDependencies:
@@ -1839,7 +1851,7 @@ packages:
       yargs-parser: 21.1.1
     dev: true
 
-  /@nx/js/23.0.1_nx@23.0.1:
+  /@nx/js/23.0.1:
     resolution: {integrity: sha512-H8jw1gk7hA8PCXBFC9ocTBpzuXOTvVQ1gA+OlEBMyKqmUaOLNm7yuoOYozwvLsLlCVY27onohSIS8xIdAR/Zow==}
     peerDependencies:
       '@swc/cli': '>=0.6.0 <0.9.0'
@@ -1857,7 +1869,7 @@ packages:
       '@babel/preset-env': 7.29.7_@babel+core@7.29.7
       '@babel/preset-typescript': 7.29.7_@babel+core@7.29.7
       '@babel/runtime': 7.29.7
-      '@nx/devkit': 23.0.1_nx@23.0.1
+      '@nx/devkit': 23.0.1
       '@nx/workspace': 23.0.1
       '@zkochan/js-yaml': 0.0.7
       babel-plugin-const-enum: 1.2.0_@babel+core@7.29.7

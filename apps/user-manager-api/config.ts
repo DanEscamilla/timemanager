@@ -15,6 +15,7 @@ import WebAuthN from "supertokens-node/recipe/webauthn";
 import type { AccountInfoWithRecipeId } from "supertokens-node/recipe/accountlinking/types";
 import type { User } from "supertokens-node/types";
 import type { TypeInput } from "supertokens-node/types";
+import SuperTokens from "supertokens-node";
 
 const envPath = resolve(process.cwd(), ".env");
 if (existsSync(envPath)) {
@@ -33,12 +34,24 @@ export function getWebsiteDomain() {
     return websiteUrl;
 }
 
+/** Allow React (:3000) and Flutter web (dynamic localhost ports) in local dev. */
+export function isAllowedOrigin(origin: string | undefined): boolean {
+    if (!origin) return false;
+    if (origin === getWebsiteDomain()) return true;
+    try {
+        const url = new URL(origin);
+        return url.hostname === "localhost" || url.hostname === "127.0.0.1";
+    } catch {
+        return false;
+    }
+}
+
 export const SuperTokensConfig: TypeInput = {
     supertokens: {
         connectionURI: "https://try.supertokens.com",
     },
     appInfo: {
-        appName: "SuperTokens Demo App",
+        appName: "Time Management",
         apiDomain: getApiDomain(),
         websiteDomain: getWebsiteDomain(),
         apiBasePath: "/auth",
@@ -134,9 +147,26 @@ export const SuperTokensConfig: TypeInput = {
             }
         }),
         EmailVerification.init({
-        mode: "REQUIRED"
+        mode: "OPTIONAL"
     }),
         WebAuthN.init(),
-        Session.init()
+        // Do not force cookie or header — clients send st-auth-mode
+        // (React cookies, Flutter headers). Put email in the JWT for GraphQL.
+        Session.init({
+            override: {
+                functions: (originalImplementation) => ({
+                    ...originalImplementation,
+                    createNewSession: async (input) => {
+                        const user = await SuperTokens.getUser(input.userId);
+                        const email = user?.emails[0];
+                        input.accessTokenPayload = {
+                            ...input.accessTokenPayload,
+                            email,
+                        };
+                        return originalImplementation.createNewSession(input);
+                    },
+                }),
+            },
+        }),
     ],
 };

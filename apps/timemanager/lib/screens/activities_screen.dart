@@ -2,21 +2,37 @@ import 'package:flutter/material.dart';
 
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
+import '../services/auth_service.dart';
 import '../services/graphql_client.dart';
 import 'activity_form_screen.dart';
 
 class ActivitiesScreen extends StatefulWidget {
-  const ActivitiesScreen({super.key, this.repository});
+  const ActivitiesScreen({
+    super.key,
+    this.repository,
+    this.authService,
+    this.onSignedOut,
+  });
 
   final ActivityRepository? repository;
+  final AuthService? authService;
+  final Future<void> Function()? onSignedOut;
 
   @override
   State<ActivitiesScreen> createState() => _ActivitiesScreenState();
 }
 
 class _ActivitiesScreenState extends State<ActivitiesScreen> {
-  late final ActivityRepository _repository =
-      widget.repository ?? ActivityRepository();
+  late final AuthService _auth = widget.authService ?? AuthService();
+  late final ActivityRepository _repository = widget.repository ??
+      ActivityRepository(
+        client: GraphQLClient(
+          authService: _auth,
+          onUnauthorized: () async {
+            await widget.onSignedOut?.call();
+          },
+        ),
+      );
 
   late Future<List<Activity>> _activitiesFuture;
 
@@ -80,6 +96,10 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     }
   }
 
+  Future<void> _signOut() async {
+    await widget.onSignedOut?.call();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,6 +110,11 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             tooltip: 'Refresh',
             onPressed: _reload,
             icon: const Icon(Icons.refresh),
+          ),
+          IconButton(
+            tooltip: 'Sign out',
+            onPressed: _signOut,
+            icon: const Icon(Icons.logout),
           ),
         ],
       ),

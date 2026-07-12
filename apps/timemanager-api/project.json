@@ -7,7 +7,7 @@
   "targets": {
     "serve": {
       "executor": "nx:run-commands",
-      "dependsOn": ["timemanager-db:up"],
+      "dependsOn": ["migrate"],
       "options": {
         "command": "deno task dev",
         "cwd": "apps/timemanager-api"
@@ -20,8 +20,17 @@
         "cwd": "apps/timemanager-api"
       }
     },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["timemanager-db:up"],
+      "options": {
+        "command": "deno task migrate",
+        "cwd": "apps/timemanager-api"
+      }
+    },
     "seed": {
       "executor": "nx:run-commands",
+      "dependsOn": ["migrate"],
       "options": {
         "command": "deno task seed",
         "cwd": "apps/timemanager-api"

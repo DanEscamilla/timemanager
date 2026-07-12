@@ -21,12 +21,14 @@ Git was initialized fresh at the workspace root; nested repos and local-only his
 - **`nx:run-commands` wrappers** for Deno (`deno task`) and Flutter (`flutter` CLI) — the deprecated `@nx/deno` plugin and third-party Flutter Nx plugins are intentionally avoided.
 - **Fresh local DB:** existing Docker volume data was not migrated; re-seed via `nx run timemanager-api:seed`.
 - **Docker volumes** live under each infra project's `./data/` and are gitignored.
+- **SuperTokens is the shared SSO layer:** `user-manager-api` authenticates Flutter, React, and future apps. Session JWTs are verified by `timemanager-api` via JWKS; local `users.auth_user_id` maps SuperTokens identity to Postgres rows.
 
 ## Out of scope (do not build unless asked)
 
 These were explicitly deferred in the migration. Treat as future direction, not current work:
 
 - Extracting shared libs / GraphQL codegen into `libs/`.
-- Wiring Authentik into SuperTokens or Flutter auth (the Authentik stack currently stands alone).
+- Wiring Authentik into SuperTokens or Flutter auth (the Authentik stack currently stands alone; SuperTokens covers multi-app SSO without it).
 - CI pipelines / Nx Cloud.
 - Renaming the workspace folder away from `flutter`.
+- Self-hosting SuperTokens Core (currently `try.supertokens.com` for local/dev).

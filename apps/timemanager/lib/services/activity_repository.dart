@@ -1,14 +1,11 @@
-import '../config/api_config.dart';
 import '../models/activity.dart';
 import 'graphql_client.dart';
 
 class ActivityRepository {
-  ActivityRepository({GraphQLClient? client, int? userId})
-    : _client = client ?? GraphQLClient(),
-      _userId = userId ?? ApiConfig.defaultUserId;
+  ActivityRepository({GraphQLClient? client})
+      : _client = client ?? GraphQLClient();
 
   final GraphQLClient _client;
-  final int _userId;
 
   static const _activityFields = '''
     id
@@ -24,12 +21,12 @@ class ActivityRepository {
 
   Future<List<Activity>> fetchActivities() async {
     final data = await _client.query('''
-      query FetchActivities(\$userId: Number!) {
-        activities(args: {}, context: { userId: \$userId }) {
+      query FetchActivities {
+        activities(args: {}) {
           $_activityFields
         }
       }
-    ''', variables: {'userId': _userId});
+    ''');
 
     final list = data['activities'] as List<dynamic>? ?? [];
     return list
@@ -45,11 +42,10 @@ class ActivityRepository {
   }) async {
     // Pylon returns createActivity as Object! — no subfield selection allowed.
     final data = await _client.mutate('''
-      mutation CreateActivity(\$userId: Number!, \$input: CreateActivityInputInput!) {
-        createActivity(args: { input: \$input }, context: { userId: \$userId })
+      mutation CreateActivity(\$input: CreateActivityInputInput!) {
+        createActivity(args: { input: \$input })
       }
     ''', variables: {
-      'userId': _userId,
       'input': {
         'title': title,
         'description': description,
@@ -72,11 +68,10 @@ class ActivityRepository {
     required String endTime,
   }) async {
     final data = await _client.mutate('''
-      mutation UpdateActivity(\$userId: Number!, \$id: Number!, \$input: UpdateActivityInputInput!) {
-        updateActivity(args: { id: \$id, input: \$input }, context: { userId: \$userId })
+      mutation UpdateActivity(\$id: Number!, \$input: UpdateActivityInputInput!) {
+        updateActivity(args: { id: \$id, input: \$input })
       }
     ''', variables: {
-      'userId': _userId,
       'id': id,
       'input': {
         'title': title,
@@ -94,9 +89,9 @@ class ActivityRepository {
 
   Future<void> deleteActivity(int id) async {
     await _client.mutate('''
-      mutation DeleteActivity(\$userId: Number!, \$id: Number!) {
-        deleteActivity(args: { id: \$id }, context: { userId: \$userId })
+      mutation DeleteActivity(\$id: Number!) {
+        deleteActivity(args: { id: \$id })
       }
-    ''', variables: {'userId': _userId, 'id': id});
+    ''', variables: {'id': id});
   }
 }

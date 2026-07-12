@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/activities_screen.dart';
+import 'widgets/auth_gate.dart';
 
 void main() {
   runApp(const TimeManagerApp());
@@ -17,7 +17,7 @@ class TimeManagerApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const ActivitiesScreen(),
+      home: const AuthGate(),
     );
   }
 }

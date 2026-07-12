@@ -16,7 +16,7 @@ Entrypoint for AI agents and humans. This is an **Nx + pnpm monorepo** with a mi
 | `infra/authentik` | Authentik auth (docker-compose) | docker | — | `type:infra` |
 | `libs/` | reserved for future shared code | — | — | — |
 
-Data flow: Flutter -> GraphQL (`timemanager-api` `:3000`) -> Postgres (`timemanager-db` `:5432`); `user-manager-web` -> `user-manager-api` (`:3001`). See [`.ai/architecture.md`](.ai/architecture.md).
+Data flow: Flutter authenticates via SuperTokens (`user-manager-api` `:3001`), then calls GraphQL (`timemanager-api` `:3000`) with a Bearer JWT; the API verifies JWKS and scopes data per user. `user-manager-web` also uses the same SuperTokens API. See [`.ai/architecture.md`](.ai/architecture.md).
 
 ## Golden rules
 
@@ -32,13 +32,13 @@ Data flow: Flutter -> GraphQL (`timemanager-api` `:3000`) -> Postgres (`timemana
 ## Common commands
 
 ```bash
-pnpm timemanager      # nx run-many -t serve -p timemanager,timemanager-api
+pnpm timemanager      # Flutter + GraphQL API (also starts user-manager-api + DB)
 pnpm user-manager     # nx run-many -t serve -p user-manager-web,user-manager-api
-pnpm db:up            # start Postgres + pgAdmin (nx run timemanager-db:up)
+pnpm db:up            # start Postgres + pgAdmin, then run migrations
 pnpm db:down          # stop the DB stack
 ```
 
-More detail in [`.ai/workflows.md`](.ai/workflows.md).
+`timemanager:serve` depends on `user-manager-api:serve` (continuous); `timemanager-api:serve` depends on `migrate` (which starts the DB). More detail in [`.ai/workflows.md`](.ai/workflows.md).
 
 ## Reference docs
 

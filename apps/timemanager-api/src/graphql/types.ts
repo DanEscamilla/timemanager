@@ -1,7 +1,3 @@
-export interface Context {
-  userId: number
-}
-
 export interface RecurrenceConfig {
   days_interval?: number
   days_of_week?: number[]

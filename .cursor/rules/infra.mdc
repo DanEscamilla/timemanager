@@ -5,7 +5,7 @@ globs: infra/**
 
 `infra/` holds docker-compose stacks, driven via Nx `up`/`down`/`logs` targets (`nx:run-commands` wrapping `docker compose`).
 
-- `infra/timemanager-db` — Postgres 15 (`:5432`, db `timemanager`, user `postgres`) + pgAdmin (`:8080`). Volumes live under `./data/` (gitignored). Start with `pnpm db:up` / `nx run timemanager-db:up`.
+- `infra/timemanager-db` — Postgres 15 (`:5432`, db `timemanager`, user `postgres`) + pgAdmin (`:8080`). Volumes live under `./data/` (gitignored). Start with `pnpm db:up` (also runs migrations) or `nx run timemanager-db:up` (containers only).
 - `infra/authentik` — Authentik auth stack; independent from the DB stack. Keep `.env` gitignored and `.env.example` in sync (`PG_PASS`, `AUTHENTIK_SECRET_KEY`). Compose expects `media/`, `certs/`, `custom-templates/` dirs.
 
 Rules:

@@ -7,8 +7,10 @@
   "targets": {
     "serve": {
       "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": ["user-manager-api:serve"],
       "options": {
-        "command": "flutter run",
+        "command": "flutter run -d chrome",
         "cwd": "apps/timemanager"
       }
     },

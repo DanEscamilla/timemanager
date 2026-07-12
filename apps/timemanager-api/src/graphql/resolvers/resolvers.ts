@@ -1,22 +1,34 @@
 import { OnConflictBuilder, Transaction } from "kysely";
+import { getContext } from "@getcronit/pylon";
 import { db } from "../../db/database.ts";
 import type { Activity as ActivityType, NewActivity, NewRecurrencePattern, RecurrencePattern as RecurrencePatternType } from "../../db/types/schema.ts";
-import { Context, CreateActivityInput, UpdateActivityInput } from "../types.ts";
+import { CreateActivityInput, UpdateActivityInput } from "../types.ts";
+
+function requireUserId(): number {
+  const userId = getContext().get("userId");
+  if (typeof userId !== "number") {
+    throw new Error("Unauthenticated");
+  }
+  return userId;
+}
 
 export const Query = {
-  activities: async (args: Record<string, never>, context: Context) => {
+  activities: async (args?: Record<string, never>) => {
+    void args;
+    const userId = requireUserId();
     return await db
       .selectFrom('activities')
-      .where('user_id', '=', context.userId)
+      .where('user_id', '=', userId)
       .selectAll()
       .execute()
   },
-  activity: async (args: { id: number }, context: Context) => {
+  activity: async (args: { id: number }) => {
+    const userId = requireUserId();
     const { id } = args;
     return await db
       .selectFrom('activities')
       .where('id', '=', id)
-      .where('user_id', '=', context.userId)
+      .where('user_id', '=', userId)
       .selectAll()
       .executeTakeFirst()
   },
@@ -25,10 +37,9 @@ export const Query = {
 export const Mutation = {
   createActivity: async (
     args: { input: CreateActivityInput },
-    context: Context
   ) => {
     const { input } = args;
-    const { userId } = context;
+    const userId = requireUserId();
 
     const activity = await db.transaction().execute(async (trx: Transaction<any>) => {
       const activity = await trx
@@ -66,10 +77,9 @@ export const Mutation = {
 
   updateActivity: async (
     args: { id: number; input: UpdateActivityInput },
-    context: Context
   ) => {
     const { id, input } = args;
-    const { userId } = context;
+    const userId = requireUserId();
 
     return await db.transaction().execute(async (trx: Transaction<any>) => {
       const activity = await trx
@@ -114,10 +124,9 @@ export const Mutation = {
 
   deleteActivity: async (
     args: { id: number },
-    context: Context
   ) => {
     const { id } = args;
-    const { userId } = context;
+    const userId = requireUserId();
 
     const result = await db
       .deleteFrom('activities')
@@ -153,4 +162,4 @@ export const RecurrencePatternResolver = {
 export const resolvers = {
   Query,
   Mutation,
-} 
+}
