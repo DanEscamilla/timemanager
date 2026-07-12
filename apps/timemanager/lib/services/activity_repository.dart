@@ -15,8 +15,24 @@ class ActivityRepository {
     start_time
     end_time
     is_recurring
+    date
     created_at
     updated_at
+    recurrencePattern {
+      id
+      activity_id
+      recurrence_type
+      config {
+        days_of_week
+        days_of_month
+        is_last_day_of_month
+        interval_days
+        start_date
+        end_date
+      }
+      created_at
+      updated_at
+    }
   ''';
 
   Future<List<Activity>> fetchActivities() async {
@@ -39,11 +55,15 @@ class ActivityRepository {
     String? description,
     required String startTime,
     required String endTime,
+    required bool isRecurring,
+    String? date,
+    RecurrencePattern? recurrencePattern,
   }) async {
-    // Pylon returns createActivity as Object! — no subfield selection allowed.
     final data = await _client.mutate('''
       mutation CreateActivity(\$input: CreateActivityInputInput!) {
-        createActivity(args: { input: \$input })
+        createActivity(args: { input: \$input }) {
+          $_activityFields
+        }
       }
     ''', variables: {
       'input': {
@@ -51,7 +71,10 @@ class ActivityRepository {
         'description': description,
         'startTime': startTime,
         'endTime': endTime,
-        'isRecurring': false,
+        'isRecurring': isRecurring,
+        if (date != null) 'date': date,
+        if (recurrencePattern != null)
+          'recurrencePattern': recurrencePattern.toInputMap(),
       },
     });
 
@@ -66,10 +89,15 @@ class ActivityRepository {
     String? description,
     required String startTime,
     required String endTime,
+    required bool isRecurring,
+    String? date,
+    RecurrencePattern? recurrencePattern,
   }) async {
     final data = await _client.mutate('''
       mutation UpdateActivity(\$id: Number!, \$input: UpdateActivityInputInput!) {
-        updateActivity(args: { id: \$id, input: \$input })
+        updateActivity(args: { id: \$id, input: \$input }) {
+          $_activityFields
+        }
       }
     ''', variables: {
       'id': id,
@@ -78,7 +106,10 @@ class ActivityRepository {
         'description': description,
         'startTime': startTime,
         'endTime': endTime,
-        'isRecurring': false,
+        'isRecurring': isRecurring,
+        if (date != null) 'date': date,
+        if (recurrencePattern != null)
+          'recurrencePattern': recurrencePattern.toInputMap(),
       },
     });
 

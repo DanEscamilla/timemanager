@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../services/auth_service.dart';
+import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
-import '../screens/activities_screen.dart';
 
 /// Routes to login or the app based on SuperTokens session presence.
 class AuthGate extends StatefulWidget {
@@ -68,7 +68,7 @@ class _AuthGateState extends State<AuthGate> {
           );
         }
 
-        return ActivitiesScreen(
+        return HomeScreen(
           authService: _auth,
           onSignedOut: _onSignedOut,
         );

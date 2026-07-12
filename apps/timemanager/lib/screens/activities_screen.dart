@@ -2,62 +2,62 @@ import 'package:flutter/material.dart';
 
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
-import '../services/auth_service.dart';
 import '../services/graphql_client.dart';
+import '../utils/recurrence_summary.dart';
 import 'activity_form_screen.dart';
 
 class ActivitiesScreen extends StatefulWidget {
   const ActivitiesScreen({
     super.key,
-    this.repository,
-    this.authService,
+    required this.repository,
     this.onSignedOut,
+    this.embedded = false,
+    this.onChanged,
   });
 
-  final ActivityRepository? repository;
-  final AuthService? authService;
+  final ActivityRepository repository;
   final Future<void> Function()? onSignedOut;
 
+  /// When embedded in [HomeScreen], render body only (shell owns chrome).
+  final bool embedded;
+
+  /// Called after a successful create/update/delete so siblings can refresh.
+  final VoidCallback? onChanged;
+
   @override
-  State<ActivitiesScreen> createState() => _ActivitiesScreenState();
+  State<ActivitiesScreen> createState() => ActivitiesScreenState();
 }
 
-class _ActivitiesScreenState extends State<ActivitiesScreen> {
-  late final AuthService _auth = widget.authService ?? AuthService();
-  late final ActivityRepository _repository = widget.repository ??
-      ActivityRepository(
-        client: GraphQLClient(
-          authService: _auth,
-          onUnauthorized: () async {
-            await widget.onSignedOut?.call();
-          },
-        ),
-      );
-
+class ActivitiesScreenState extends State<ActivitiesScreen> {
   late Future<List<Activity>> _activitiesFuture;
 
   @override
   void initState() {
     super.initState();
-    _reload();
+    reload();
   }
 
-  void _reload() {
+  void reload() {
     setState(() {
-      _activitiesFuture = _repository.fetchActivities();
+      _activitiesFuture = widget.repository.fetchActivities();
     });
   }
+
+  Future<void> openCreateForm() => _openForm();
 
   Future<void> _openForm({Activity? activity}) async {
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => ActivityFormScreen(
-          repository: _repository,
+          repository: widget.repository,
           activity: activity,
         ),
       ),
     );
-    if (saved == true) _reload();
+    if (saved == true) {
+      reload();
+      widget.onChanged?.call();
+    }
   }
 
   Future<void> _confirmDelete(Activity activity) async {
@@ -82,12 +82,13 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     if (confirmed != true || !mounted) return;
 
     try {
-      await _repository.deleteActivity(activity.id);
+      await widget.repository.deleteActivity(activity.id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Activity deleted')),
       );
-      _reload();
+      reload();
+      widget.onChanged?.call();
     } on GraphQLException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -96,107 +97,115 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     }
   }
 
-  Future<void> _signOut() async {
-    await widget.onSignedOut?.call();
+  Widget _buildBody() {
+    return FutureBuilder<List<Activity>>(
+      future: _activitiesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return _ErrorState(
+            message: _errorMessage(snapshot.error),
+            onRetry: reload,
+          );
+        }
+
+        final activities = snapshot.data ?? [];
+        if (activities.isEmpty) {
+          return const Center(
+            child: Text('No activities yet.\nTap + to add one.'),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            setState(() {
+              _activitiesFuture = widget.repository.fetchActivities();
+            });
+            await _activitiesFuture;
+          },
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: activities.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final activity = activities[index];
+              return ListTile(
+                title: Text(activity.title),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(formatActivitySchedule(activity)),
+                    if (activity.description?.isNotEmpty == true)
+                      Text(activity.description!),
+                  ],
+                ),
+                isThreeLine: activity.description?.isNotEmpty == true,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (activity.isRecurring)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Chip(
+                          label: Text(
+                            activity.recurrencePattern?.recurrenceType.label ??
+                                'Recurring',
+                          ),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ),
+                    PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          _openForm(activity: activity);
+                        } else if (value == 'delete') {
+                          _confirmDelete(activity);
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(value: 'edit', child: Text('Edit')),
+                        PopupMenuItem(value: 'delete', child: Text('Delete')),
+                      ],
+                    ),
+                  ],
+                ),
+                onTap: () => _openForm(activity: activity),
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final body = _buildBody();
+    if (widget.embedded) return body;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Activities'),
         actions: [
           IconButton(
             tooltip: 'Refresh',
-            onPressed: _reload,
+            onPressed: reload,
             icon: const Icon(Icons.refresh),
           ),
-          IconButton(
-            tooltip: 'Sign out',
-            onPressed: _signOut,
-            icon: const Icon(Icons.logout),
-          ),
+          if (widget.onSignedOut != null)
+            IconButton(
+              tooltip: 'Sign out',
+              onPressed: widget.onSignedOut,
+              icon: const Icon(Icons.logout),
+            ),
         ],
       ),
-      body: FutureBuilder<List<Activity>>(
-        future: _activitiesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return _ErrorState(
-              message: _errorMessage(snapshot.error),
-              onRetry: _reload,
-            );
-          }
-
-          final activities = snapshot.data ?? [];
-          if (activities.isEmpty) {
-            return const Center(
-              child: Text('No activities yet.\nTap + to add one.'),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              setState(() {
-                _activitiesFuture = _repository.fetchActivities();
-              });
-              await _activitiesFuture;
-            },
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: activities.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final activity = activities[index];
-                return ListTile(
-                  title: Text(activity.title),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${activity.startTime} – ${activity.endTime}'),
-                      if (activity.description?.isNotEmpty == true)
-                        Text(activity.description!),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (activity.isRecurring)
-                        const Padding(
-                          padding: EdgeInsets.only(right: 4),
-                          child: Chip(
-                            label: Text('Recurring'),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ),
-                      PopupMenuButton<String>(
-                        onSelected: (value) {
-                          if (value == 'edit') {
-                            _openForm(activity: activity);
-                          } else if (value == 'delete') {
-                            _confirmDelete(activity);
-                          }
-                        },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          PopupMenuItem(value: 'delete', child: Text('Delete')),
-                        ],
-                      ),
-                    ],
-                  ),
-                  onTap: () => _openForm(activity: activity),
-                );
-              },
-            ),
-          );
-        },
-      ),
+      body: body,
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openForm(),
+        onPressed: openCreateForm,
         tooltip: 'Add activity',
         child: const Icon(Icons.add),
       ),
