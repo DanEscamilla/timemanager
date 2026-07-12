@@ -1,0 +1,41 @@
+---
+description: Consider and add meaningful tests when implementing features or fixing bugs.
+alwaysApply: true
+---
+
+When changing behavior, **consider test coverage as part of the task** — not an afterthought.
+
+## When to add or update tests
+
+Add or update tests when the change involves:
+
+- Business logic, data transformations, or non-trivial algorithms
+- Auth, authorization, or user-scoped data access
+- GraphQL resolvers, API handlers, or repository/query logic
+- Bug fixes (add a regression test that fails without the fix)
+- Widget or screen behavior with meaningful user-visible states
+
+Skip tests when:
+
+- The change is docs-only, config, or purely cosmetic
+- A test would only restate the obvious (e.g. asserting a getter returns what was passed in)
+- The user explicitly asked not to include tests
+
+Prefer **few, high-value tests** over broad shallow coverage.
+
+## Where tests live
+
+| App | Location | Command |
+|-----|----------|---------|
+| `apps/timemanager` | `test/` (mirror `lib/` structure) | `nx test timemanager` |
+| `apps/timemanager-api` | colocate `*.test.ts` next to source, or under `src/` | `deno test` (from app dir) |
+| Node apps | colocate `*.test.ts` / `*.spec.ts` | add/run via app `package.json` when present |
+
+Run tests through **Nx from the repo root** when a target exists.
+
+## Agent workflow
+
+1. After implementing a behavioral change, ask: *what would break if this regressed?*
+2. Add or update the smallest test that catches that regression.
+3. Run the relevant test command before finishing; fix failures you introduced.
+4. Mention in your summary whether tests were added, updated, or intentionally skipped (and why).
