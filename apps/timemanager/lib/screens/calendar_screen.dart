@@ -172,6 +172,28 @@ class CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  /// Content-sized width for the hour timeline.
+  ///
+  /// [DayView]/[WeekView] default to 13% of the view width, which is too wide
+  /// on large screens. Measure against the default label style instead.
+  double _timeLineWidth(BuildContext context) {
+    // Matches calendar_view's DefaultTimeLineMark (fontSize 15, ± 7+7).
+    const style = TextStyle(fontSize: 15);
+    const horizontalPadding = 14.0;
+    const samples = ['10 am -', '10 pm -'];
+    final scaler = MediaQuery.textScalerOf(context);
+    var maxWidth = 0.0;
+    for (final sample in samples) {
+      final painter = TextPainter(
+        text: TextSpan(text: sample, style: style),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+      )..layout();
+      if (painter.width > maxWidth) maxWidth = painter.width;
+    }
+    return maxWidth + horizontalPadding;
+  }
+
   Widget _eventTileBuilder(
     DateTime date,
     List<CalendarEventData<Activity>> events,
@@ -184,7 +206,8 @@ class CalendarScreenState extends State<CalendarScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final isRecurring = activity?.isRecurring ?? false;
-    final onEvent = isRecurring ? colorScheme.onTertiary : colorScheme.onPrimary;
+    final onEvent =
+        isRecurring ? colorScheme.onTertiary : colorScheme.onPrimary;
     final timeLabel =
         '${activity?.startTime ?? ''} – ${activity?.endTime ?? ''}';
     return RoundedEventTile(
@@ -255,6 +278,7 @@ class CalendarScreenState extends State<CalendarScreen> {
   Widget _buildCalendar(ColorScheme colorScheme, TextTheme textTheme) {
     final headerStyle = _headerStyle(colorScheme, textTheme);
     final hourLineColor = colorScheme.outlineVariant;
+    final timeLineWidth = _timeLineWidth(context);
 
     switch (_viewMode) {
       case CalendarViewMode.day:
@@ -264,6 +288,7 @@ class CalendarScreenState extends State<CalendarScreen> {
           initialDay: _selectedDate,
           heightPerMinute: 1.2,
           startDuration: const Duration(hours: 7),
+          timeLineWidth: timeLineWidth,
           headerStyle: headerStyle,
           backgroundColor: colorScheme.surface,
           hourIndicatorSettings: HourIndicatorSettings(color: hourLineColor),
@@ -285,6 +310,7 @@ class CalendarScreenState extends State<CalendarScreen> {
           heightPerMinute: 1.0,
           scrollOffset: 7 * 60 * 1.0, // start near 7am
           startDay: WeekDays.monday,
+          timeLineWidth: timeLineWidth,
           headerStyle: headerStyle,
           backgroundColor: colorScheme.surface,
           hourIndicatorSettings: HourIndicatorSettings(color: hourLineColor),
