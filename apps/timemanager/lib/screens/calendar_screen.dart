@@ -35,7 +35,8 @@ class CalendarScreenState extends State<CalendarScreen> {
   late DateTime _selectedDate;
   CalendarViewMode _viewMode = CalendarViewMode.day;
 
-  final EventController<Activity> _eventController = EventController<Activity>();
+  final EventController<Activity> _eventController =
+      EventController<Activity>();
   final GlobalKey<DayViewState<Activity>> _dayKey =
       GlobalKey<DayViewState<Activity>>();
   final GlobalKey<WeekViewState<Activity>> _weekKey =
@@ -65,7 +66,9 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   void reload() {
     setState(() {
-      _activitiesFuture = widget.repository.fetchActivities().then((activities) {
+      _activitiesFuture = widget.repository.fetchActivities().then((
+        activities,
+      ) {
         _activities = activities;
         _syncEvents();
         return activities;
@@ -125,11 +128,12 @@ class CalendarScreenState extends State<CalendarScreen> {
   Future<void> _openForm({Activity? activity, DateTime? initialDate}) async {
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => ActivityFormScreen(
-          repository: widget.repository,
-          activity: activity,
-          initialDate: initialDate,
-        ),
+        builder:
+            (_) => ActivityFormScreen(
+              repository: widget.repository,
+              activity: activity,
+              initialDate: initialDate,
+            ),
       ),
     );
     if (saved == true) {
@@ -298,12 +302,16 @@ class CalendarScreenState extends State<CalendarScreen> {
             cellsInMonthHighlightedTitleColor: colorScheme.onPrimary,
             cellsInMonthTileColor: colorScheme.primary,
           ),
-          monthViewBuilders: MonthViewBuilders<Activity>(
+          // MonthView's monthViewBuilders field is declared as MonthViewBuilders
+          // (i.e. MonthViewBuilders<Object?>), not MonthViewBuilders<T>. Passing
+          // Activity-typed callbacks crashes on web (function types are
+          // contravariant). Keep builders untyped and cast event payloads.
+          monthViewBuilders: MonthViewBuilders(
             onPageChange: (date, _) => _onFocusedDateChanged(date),
             onCellTap: (events, date) => _goToDayView(date),
             onEventTap: (event, date) {
               final activity = event.event;
-              if (activity == null) return;
+              if (activity is! Activity) return;
               _openForm(activity: activity);
             },
           ),
@@ -352,9 +360,7 @@ class CalendarScreenState extends State<CalendarScreen> {
     if (widget.embedded) return body;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Calendar'),
-      ),
+      appBar: AppBar(title: const Text('Calendar')),
       body: body,
       floatingActionButton: FloatingActionButton(
         onPressed: openCreateForSelectedDay,
