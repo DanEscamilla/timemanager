@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -50,8 +51,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       widget.onAuthenticated();
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      if (!mounted) return;
+      setState(() => _error = e.localize(AppLocalizations.of(context)));
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -67,8 +70,10 @@ class _LoginScreenState extends State<LoginScreen> {
       await widget.authService.startOAuth(provider);
       // Session completes after redirect via AuthGate bootstrap.
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      if (!mounted) return;
+      setState(() => _error = e.localize(AppLocalizations.of(context)));
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -78,6 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: Center(
@@ -94,13 +100,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Time Manager',
+                      l10n.appTitle,
                       style: theme.textTheme.headlineSmall,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _isSignUp ? 'Create an account' : 'Sign in to continue',
+                      _isSignUp
+                          ? l10n.loginCreateAccount
+                          : l10n.loginSignInContinue,
                       style: theme.textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
@@ -110,16 +118,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       enabled: !_busy,
                       keyboardType: TextInputType.emailAddress,
                       autofillHints: const [AutofillHints.email],
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l10n.loginEmail,
+                        border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Email is required';
+                          return l10n.loginEmailRequired;
                         }
                         if (!value.contains('@')) {
-                          return 'Enter a valid email';
+                          return l10n.loginEmailInvalid;
                         }
                         return null;
                       },
@@ -130,16 +138,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       enabled: !_busy,
                       obscureText: true,
                       autofillHints: const [AutofillHints.password],
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l10n.loginPassword,
+                        border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Password is required';
+                          return l10n.loginPasswordRequired;
                         }
                         if (_isSignUp && value.length < 8) {
-                          return 'Use at least 8 characters';
+                          return l10n.loginPasswordTooShort;
                         }
                         return null;
                       },
@@ -160,7 +168,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : Text(_isSignUp ? 'Sign up' : 'Sign in'),
+                          : Text(
+                              _isSignUp ? l10n.loginSignUp : l10n.loginSignIn,
+                            ),
                     ),
                     TextButton(
                       onPressed: _busy
@@ -171,15 +181,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               }),
                       child: Text(
                         _isSignUp
-                            ? 'Already have an account? Sign in'
-                            : 'Need an account? Sign up',
+                            ? l10n.loginAlreadyHaveAccount
+                            : l10n.loginNeedAccount,
                       ),
                     ),
                     const SizedBox(height: 8),
                     const Divider(),
                     const SizedBox(height: 8),
                     Text(
-                      'Or continue with',
+                      l10n.loginOrContinueWith,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall,
                     ),
@@ -192,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         for (final provider in AuthService.oauthProviders)
                           OutlinedButton(
                             onPressed: _busy ? null : () => _oauth(provider),
-                            child: Text(_label(provider)),
+                            child: Text(_label(provider, l10n)),
                           ),
                       ],
                     ),
@@ -206,16 +216,16 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  String _label(String provider) {
+  String _label(String provider, AppLocalizations l10n) {
     switch (provider) {
       case 'google':
-        return 'Google';
+        return l10n.providerGoogle;
       case 'github':
-        return 'GitHub';
+        return l10n.providerGitHub;
       case 'apple':
-        return 'Apple';
+        return l10n.providerApple;
       case 'twitter':
-        return 'Twitter';
+        return l10n.providerTwitter;
       default:
         return provider;
     }

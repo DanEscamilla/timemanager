@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
+import '../utils/recurrence_summary.dart';
 
 class ActivityFormScreen extends StatefulWidget {
   const ActivityFormScreen({
@@ -42,16 +45,6 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   late Set<int> _daysOfMonth;
   late bool _isLastDayOfMonth;
   bool _saving = false;
-
-  static const _weekdayLabels = [
-    'Sun',
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-  ];
 
   @override
   void initState() {
@@ -130,21 +123,8 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
       '${date.day.toString().padLeft(2, '0')}';
 
   String _displayDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMMMd(locale).format(date);
   }
 
   Future<void> _pickTime({required bool isStart}) async {
@@ -181,34 +161,33 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
     onPicked(_dateOnly(picked));
   }
 
-  String? _validateSchedule() {
+  String? _validateSchedule(AppLocalizations l10n) {
     if (!_isRecurring) {
-      if (_oneOffDate == null)
-        return 'Date is required for one-time activities';
+      if (_oneOffDate == null) return l10n.formDateRequired;
       return null;
     }
 
     if (_recurrenceStartDate == null) {
-      return 'Recurrence start date is required';
+      return l10n.formRecurrenceStartRequired;
     }
     if (_recurrenceEndDate != null &&
         _recurrenceEndDate!.isBefore(_recurrenceStartDate!)) {
-      return 'End date must be on or after start date';
+      return l10n.formEndDateAfterStart;
     }
 
     switch (_recurrenceType) {
       case RecurrenceType.weekly:
         if (_daysOfWeek.isEmpty) {
-          return 'Select at least one day of the week';
+          return l10n.formSelectWeekday;
         }
       case RecurrenceType.monthly:
         if (_daysOfMonth.isEmpty && !_isLastDayOfMonth) {
-          return 'Select at least one day of the month, or last day';
+          return l10n.formSelectMonthDay;
         }
       case RecurrenceType.everyXDays:
         final interval = int.tryParse(_intervalController.text.trim());
         if (interval == null || interval < 1) {
-          return 'Interval must be an integer of at least 1';
+          return l10n.formIntervalInvalid;
         }
     }
     return null;
@@ -248,16 +227,17 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final l10n = AppLocalizations.of(context);
     final start = _formatTime(_startTime);
     final end = _formatTime(_endTime);
     if (_timeToMinutes(start) >= _timeToMinutes(end)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('End time must be after start time')),
+        SnackBar(content: Text(l10n.formEndTimeAfterStart)),
       );
       return;
     }
 
-    final scheduleError = _validateSchedule();
+    final scheduleError = _validateSchedule(l10n);
     if (scheduleError != null) {
       ScaffoldMessenger.of(
         context,
@@ -303,9 +283,10 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
       Navigator.pop(context, true);
     } on GraphQLException catch (e) {
       if (!mounted) return;
+      final errorL10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      ).showSnackBar(SnackBar(content: Text(e.localize(errorL10n))));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -318,9 +299,14 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final weekdays = weekdayLabels(l10n);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit activity' : 'New activity'),
+        title: Text(
+          widget.isEditing ? l10n.formEditActivity : l10n.formNewActivity,
+        ),
       ),
       body: Form(
         key: _formKey,
@@ -329,14 +315,14 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
           children: [
             TextFormField(
               controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.formTitle,
+                border: const OutlineInputBorder(),
               ),
               textCapitalization: TextCapitalization.sentences,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Title is required';
+                  return l10n.formTitleRequired;
                 }
                 return null;
               },
@@ -344,33 +330,35 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.formDescriptionOptional,
+                border: const OutlineInputBorder(),
               ),
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 16),
             _TimeField(
-              label: 'Start',
+              label: l10n.formStart,
               time: _startTime,
               onTap: () => _pickTime(isStart: true),
             ),
             const SizedBox(height: 12),
             _TimeField(
-              label: 'End',
+              label: l10n.formEnd,
               time: _endTime,
               onTap: () => _pickTime(isStart: false),
             ),
             const SizedBox(height: 16),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(_isRecurring ? 'Recurring' : 'One-time'),
+              title: Text(
+                _isRecurring ? l10n.formRecurring : l10n.formOneTime,
+              ),
               subtitle: Text(
                 _isRecurring
-                    ? 'Repeats on a schedule'
-                    : 'Happens on a single date',
+                    ? l10n.formRepeatsOnSchedule
+                    : l10n.formHappensOnSingleDate,
               ),
               value: _isRecurring,
               onChanged: (value) => setState(() => _isRecurring = value),
@@ -378,10 +366,10 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
             const SizedBox(height: 8),
             if (!_isRecurring) ...[
               _DateField(
-                label: 'Date',
+                label: l10n.formDate,
                 value:
                     _oneOffDate == null
-                        ? 'Select date'
+                        ? l10n.formSelectDate
                         : _displayDate(_oneOffDate!),
                 onTap:
                     () => _pickDate(
@@ -393,16 +381,16 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
             ] else ...[
               DropdownButtonFormField<RecurrenceType>(
                 value: _recurrenceType,
-                decoration: const InputDecoration(
-                  labelText: 'Repeats',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.formRepeats,
+                  border: const OutlineInputBorder(),
                 ),
                 items:
                     RecurrenceType.values
                         .map(
                           (type) => DropdownMenuItem(
                             value: type,
-                            child: Text(type.label),
+                            child: Text(recurrenceTypeLabel(type, l10n)),
                           ),
                         )
                         .toList(),
@@ -413,10 +401,10 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
               ),
               const SizedBox(height: 12),
               _DateField(
-                label: 'Starts',
+                label: l10n.formStarts,
                 value:
                     _recurrenceStartDate == null
-                        ? 'Select start date'
+                        ? l10n.formSelectStartDate
                         : _displayDate(_recurrenceStartDate!),
                 onTap:
                     () => _pickDate(
@@ -428,10 +416,10 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
               ),
               const SizedBox(height: 12),
               _DateField(
-                label: 'Ends (optional)',
+                label: l10n.formEndsOptional,
                 value:
                     _recurrenceEndDate == null
-                        ? 'No end date'
+                        ? l10n.formNoEndDate
                         : _displayDate(_recurrenceEndDate!),
                 onTap:
                     () => _pickDate(
@@ -444,7 +432,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                     _recurrenceEndDate == null
                         ? null
                         : IconButton(
-                          tooltip: 'Clear end date',
+                          tooltip: l10n.formClearEndDate,
                           onPressed:
                               () => setState(() => _recurrenceEndDate = null),
                           icon: const Icon(Icons.clear),
@@ -453,7 +441,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
               const SizedBox(height: 16),
               if (_recurrenceType == RecurrenceType.weekly) ...[
                 Text(
-                  'Days of week',
+                  l10n.formDaysOfWeek,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 8),
@@ -463,7 +451,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                   children: List.generate(7, (index) {
                     final selected = _daysOfWeek.contains(index);
                     return FilterChip(
-                      label: Text(_weekdayLabels[index]),
+                      label: Text(weekdays[index]),
                       selected: selected,
                       onSelected: (value) {
                         setState(() {
@@ -480,7 +468,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
               ],
               if (_recurrenceType == RecurrenceType.monthly) ...[
                 Text(
-                  'Days of month',
+                  l10n.formDaysOfMonth,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 8),
@@ -508,7 +496,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                 ),
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Last day of month'),
+                  title: Text(l10n.formLastDayOfMonth),
                   value: _isLastDayOfMonth,
                   onChanged: (value) {
                     setState(() => _isLastDayOfMonth = value ?? false);
@@ -518,9 +506,9 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
               if (_recurrenceType == RecurrenceType.everyXDays) ...[
                 TextFormField(
                   controller: _intervalController,
-                  decoration: const InputDecoration(
-                    labelText: 'Repeat every N days',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.formRepeatEveryNDays,
+                    border: const OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -531,7 +519,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                     }
                     final parsed = int.tryParse(value?.trim() ?? '');
                     if (parsed == null || parsed < 1) {
-                      return 'Enter an integer of at least 1';
+                      return l10n.formIntervalAtLeastOne;
                     }
                     return null;
                   },
@@ -548,7 +536,11 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                      : Text(widget.isEditing ? 'Save changes' : 'Create'),
+                      : Text(
+                        widget.isEditing
+                            ? l10n.formSaveChanges
+                            : l10n.formCreate,
+                      ),
             ),
           ],
         ),

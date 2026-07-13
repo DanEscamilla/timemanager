@@ -15,12 +15,6 @@ enum RecurrenceType {
         'every_x_days' => RecurrenceType.everyXDays,
         _ => throw FormatException('Unknown recurrence type: $value'),
       };
-
-  String get label => switch (this) {
-        RecurrenceType.weekly => 'Weekly',
-        RecurrenceType.monthly => 'Monthly',
-        RecurrenceType.everyXDays => 'Every X days',
-      };
 }
 
 class RecurrenceConfig {

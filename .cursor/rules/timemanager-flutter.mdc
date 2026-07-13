@@ -8,6 +8,7 @@ globs: apps/timemanager/**
 Source layout (`lib/`):
 
 - `config/api_config.dart` — GraphQL (`:3000`) and SuperTokens auth API (`:3001`) endpoints.
+- `l10n/` — ARB templates (`app_en.arb`) and generated `AppLocalizations` (via `flutter gen-l10n` / `l10n.yaml`). Put all user-facing copy in ARB; do not hardcode UI strings in widgets.
 - `models/` — data models (e.g. `activity.dart`).
 - `screens/` — UI screens (`login_screen.dart`, `activities_screen.dart`, `activity_form_screen.dart`).
 - `services/` — `auth_service.dart` (SuperTokens FDI + header tokens), `graphql_client.dart` (Bearer GraphQL), repositories.
@@ -17,4 +18,4 @@ Auth: email/password + OAuth against `user-manager-api`. Tokens are stored via `
 
 Commands (prefer Nx targets): `nx serve timemanager` (`flutter run -d chrome --web-port=4444`; also starts `user-manager-api` via continuous `dependsOn`; override with `nx serve timemanager -- -d <device>`), `nx test timemanager`, `nx run timemanager:analyze`, `nx run timemanager:pub-get`.
 
-Do not edit generated/platform output: `build/`, `.dart_tool/`, `android/`, `ios/`, `linux/`, `macos/`, `windows/` (unless a change genuinely requires touching a platform folder).
+Do not edit generated/platform output: `build/`, `.dart_tool/`, `android/`, `ios/`, `linux/`, `macos/`, `windows/` (unless a change genuinely requires touching a platform folder). Generated l10n Dart under `lib/l10n/app_localizations*.dart` is produced by `flutter gen-l10n` — edit `app_en.arb` / `l10n.yaml`, not the generated files by hand.

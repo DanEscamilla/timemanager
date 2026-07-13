@@ -1,6 +1,7 @@
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
@@ -197,24 +198,25 @@ class CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildViewSwitcher() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       child: SegmentedButton<CalendarViewMode>(
-        segments: const [
+        segments: [
           ButtonSegment(
             value: CalendarViewMode.day,
-            label: Text('Day'),
-            icon: Icon(Icons.view_day_outlined, size: 18),
+            label: Text(l10n.calendarDay),
+            icon: const Icon(Icons.view_day_outlined, size: 18),
           ),
           ButtonSegment(
             value: CalendarViewMode.week,
-            label: Text('Week'),
-            icon: Icon(Icons.view_week_outlined, size: 18),
+            label: Text(l10n.calendarWeek),
+            icon: const Icon(Icons.view_week_outlined, size: 18),
           ),
           ButtonSegment(
             value: CalendarViewMode.month,
-            label: Text('Month'),
-            icon: Icon(Icons.calendar_view_month_outlined, size: 18),
+            label: Text(l10n.calendarMonth),
+            icon: const Icon(Icons.calendar_view_month_outlined, size: 18),
           ),
         ],
         selected: {_viewMode},
@@ -337,8 +339,9 @@ class CalendarScreenState extends State<CalendarScreen> {
               }
 
               if (snapshot.hasError && _activities.isEmpty) {
+                final l10n = AppLocalizations.of(context);
                 return _ErrorState(
-                  message: _errorMessage(snapshot.error),
+                  message: _errorMessage(snapshot.error, l10n),
                   onRetry: reload,
                 );
               }
@@ -359,20 +362,21 @@ class CalendarScreenState extends State<CalendarScreen> {
     final body = _buildBody();
     if (widget.embedded) return body;
 
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Calendar')),
+      appBar: AppBar(title: Text(l10n.navCalendar)),
       body: body,
       floatingActionButton: FloatingActionButton(
         onPressed: openCreateForSelectedDay,
-        tooltip: 'Add activity for this day',
+        tooltip: l10n.tooltipAddActivityForDay,
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  String _errorMessage(Object? error) {
-    if (error is GraphQLException) return error.message;
-    return error?.toString() ?? 'Unknown error';
+  String _errorMessage(Object? error, AppLocalizations l10n) {
+    if (error is GraphQLException) return error.localize(l10n);
+    return error?.toString() ?? l10n.errorUnknown;
   }
 }
 
@@ -384,6 +388,7 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -397,7 +402,7 @@ class _ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Could not load activities',
+              l10n.errorCouldNotLoadActivities,
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -407,7 +412,7 @@ class _ErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(l10n.errorRetry),
             ),
           ],
         ),

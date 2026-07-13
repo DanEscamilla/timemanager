@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../services/activity_repository.dart';
 import '../services/auth_service.dart';
 import '../services/graphql_client.dart';
@@ -59,18 +60,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_index == 0 ? 'Activities' : 'Calendar'),
+        title: Text(_index == 0 ? l10n.navActivities : l10n.navCalendar),
         actions: [
           IconButton(
-            tooltip: 'Refresh',
+            tooltip: l10n.tooltipRefresh,
             onPressed: _reloadCurrent,
             icon: const Icon(Icons.refresh),
           ),
           if (widget.onSignedOut != null)
             IconButton(
-              tooltip: 'Sign out',
+              tooltip: l10n.tooltipSignOut,
               onPressed: widget.onSignedOut,
               icon: const Icon(Icons.logout),
             ),
@@ -95,22 +98,24 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _onFabPressed,
-        tooltip: _index == 0 ? 'Add activity' : 'Add activity for this day',
+        tooltip: _index == 0
+            ? l10n.tooltipAddActivity
+            : l10n.tooltipAddActivityForDay,
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (index) => setState(() => _index = index),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.list_alt_outlined),
-            selectedIcon: Icon(Icons.list_alt),
-            label: 'Activities',
+            icon: const Icon(Icons.list_alt_outlined),
+            selectedIcon: const Icon(Icons.list_alt),
+            label: l10n.navActivities,
           ),
           NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_today),
-            label: 'Calendar',
+            icon: const Icon(Icons.calendar_today_outlined),
+            selectedIcon: const Icon(Icons.calendar_today),
+            label: l10n.navCalendar,
           ),
         ],
       ),

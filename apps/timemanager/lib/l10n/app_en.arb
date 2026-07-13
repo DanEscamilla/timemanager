@@ -1,0 +1,183 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Time Manager",
+
+  "navActivities": "Activities",
+  "navCalendar": "Calendar",
+  "tooltipRefresh": "Refresh",
+  "tooltipSignOut": "Sign out",
+  "tooltipAddActivity": "Add activity",
+  "tooltipAddActivityForDay": "Add activity for this day",
+
+  "loginCreateAccount": "Create an account",
+  "loginSignInContinue": "Sign in to continue",
+  "loginEmail": "Email",
+  "loginEmailRequired": "Email is required",
+  "loginEmailInvalid": "Enter a valid email",
+  "loginPassword": "Password",
+  "loginPasswordRequired": "Password is required",
+  "loginPasswordTooShort": "Use at least 8 characters",
+  "loginSignUp": "Sign up",
+  "loginSignIn": "Sign in",
+  "loginAlreadyHaveAccount": "Already have an account? Sign in",
+  "loginNeedAccount": "Need an account? Sign up",
+  "loginOrContinueWith": "Or continue with",
+  "providerGoogle": "Google",
+  "providerGitHub": "GitHub",
+  "providerApple": "Apple",
+  "providerTwitter": "Twitter",
+
+  "authActionSignUp": "Sign up",
+  "authActionSignIn": "Sign in",
+  "authActionOAuth": "OAuth sign in",
+  "authFailedStatus": "{action} failed ({status})",
+  "@authFailedStatus": {
+    "placeholders": {
+      "action": { "type": "String" },
+      "status": { "type": "String" }
+    }
+  },
+  "authNoSessionToken": "{action} succeeded but no session token was returned",
+  "@authNoSessionToken": {
+    "placeholders": {
+      "action": { "type": "String" }
+    }
+  },
+  "authStartOAuthFailed": "Failed to start {provider} login ({statusCode})",
+  "@authStartOAuthFailed": {
+    "placeholders": {
+      "provider": { "type": "String" },
+      "statusCode": { "type": "int" }
+    }
+  },
+  "authAuthorisationUrlMissing": "Authorisation URL missing from response",
+  "authCouldNotGetAuthorisationUrl": "Could not get authorisation URL",
+  "authCouldNotOpenLogin": "Could not open {provider} login",
+  "@authCouldNotOpenLogin": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+
+  "errorNotSignedIn": "Not signed in",
+  "errorSessionExpired": "Session expired. Please sign in again.",
+  "errorRequestFailed": "Request failed ({statusCode}): {body}",
+  "@errorRequestFailed": {
+    "placeholders": {
+      "statusCode": { "type": "int" },
+      "body": { "type": "String" }
+    }
+  },
+  "errorNoGraphQlData": "No data in GraphQL response",
+  "errorUnknown": "Unknown error",
+  "errorCouldNotLoadActivities": "Could not load activities",
+  "errorRetry": "Retry",
+
+  "activitiesEmpty": "No activities yet.\nTap + to add one.",
+  "activitiesDeleteTitle": "Delete activity?",
+  "activitiesDeleteConfirm": "Remove \"{title}\"?",
+  "@activitiesDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "activitiesCancel": "Cancel",
+  "activitiesDelete": "Delete",
+  "activitiesDeleted": "Activity deleted",
+  "activitiesEdit": "Edit",
+  "activitiesRecurring": "Recurring",
+
+  "calendarDay": "Day",
+  "calendarWeek": "Week",
+  "calendarMonth": "Month",
+
+  "formEditActivity": "Edit activity",
+  "formNewActivity": "New activity",
+  "formTitle": "Title",
+  "formTitleRequired": "Title is required",
+  "formDescriptionOptional": "Description (optional)",
+  "formStart": "Start",
+  "formEnd": "End",
+  "formRecurring": "Recurring",
+  "formOneTime": "One-time",
+  "formRepeatsOnSchedule": "Repeats on a schedule",
+  "formHappensOnSingleDate": "Happens on a single date",
+  "formDate": "Date",
+  "formSelectDate": "Select date",
+  "formRepeats": "Repeats",
+  "formStarts": "Starts",
+  "formSelectStartDate": "Select start date",
+  "formEndsOptional": "Ends (optional)",
+  "formNoEndDate": "No end date",
+  "formClearEndDate": "Clear end date",
+  "formDaysOfWeek": "Days of week",
+  "formDaysOfMonth": "Days of month",
+  "formLastDayOfMonth": "Last day of month",
+  "formRepeatEveryNDays": "Repeat every N days",
+  "formIntervalAtLeastOne": "Enter an integer of at least 1",
+  "formSaveChanges": "Save changes",
+  "formCreate": "Create",
+  "formEndTimeAfterStart": "End time must be after start time",
+  "formDateRequired": "Date is required for one-time activities",
+  "formRecurrenceStartRequired": "Recurrence start date is required",
+  "formEndDateAfterStart": "End date must be on or after start date",
+  "formSelectWeekday": "Select at least one day of the week",
+  "formSelectMonthDay": "Select at least one day of the month, or last day",
+  "formIntervalInvalid": "Interval must be an integer of at least 1",
+
+  "weekdaySun": "Sun",
+  "weekdayMon": "Mon",
+  "weekdayTue": "Tue",
+  "weekdayWed": "Wed",
+  "weekdayThu": "Thu",
+  "weekdayFri": "Fri",
+  "weekdaySat": "Sat",
+
+  "recurrenceWeekly": "Weekly",
+  "recurrenceMonthly": "Monthly",
+  "recurrenceEveryXDays": "Every X days",
+  "recurrenceWeeklyWithDays": "Weekly · {days}",
+  "@recurrenceWeeklyWithDays": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "recurrenceMonthlyWithParts": "Monthly · {parts}",
+  "@recurrenceMonthlyWithParts": {
+    "placeholders": {
+      "parts": { "type": "String" }
+    }
+  },
+  "recurrenceLastDay": "last day",
+  "recurrenceEveryDay": "Every day",
+  "recurrenceEveryNDays": "Every {count} days",
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "scheduleTimeRange": "{start} – {end}",
+  "@scheduleTimeRange": {
+    "placeholders": {
+      "start": { "type": "String" },
+      "end": { "type": "String" }
+    }
+  },
+  "scheduleDateTimeRange": "{date} · {start} – {end}",
+  "@scheduleDateTimeRange": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "start": { "type": "String" },
+      "end": { "type": "String" }
+    }
+  },
+  "scheduleSummaryTimeRange": "{summary} · {start} – {end}",
+  "@scheduleSummaryTimeRange": {
+    "placeholders": {
+      "summary": { "type": "String" },
+      "start": { "type": "String" },
+      "end": { "type": "String" }
+    }
+  }
+}

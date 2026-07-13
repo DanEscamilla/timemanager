@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
@@ -61,22 +62,26 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 
   Future<void> _confirmDelete(Activity activity) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete activity?'),
-        content: Text('Remove "${activity.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final dialogL10n = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(dialogL10n.activitiesDeleteTitle),
+          content: Text(dialogL10n.activitiesDeleteConfirm(activity.title)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(dialogL10n.activitiesCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(dialogL10n.activitiesDelete),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true || !mounted) return;
@@ -85,19 +90,22 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
       await widget.repository.deleteActivity(activity.id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Activity deleted')),
+        SnackBar(content: Text(l10n.activitiesDeleted)),
       );
       reload();
       widget.onChanged?.call();
     } on GraphQLException catch (e) {
       if (!mounted) return;
+      final errorL10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
+        SnackBar(content: Text(e.localize(errorL10n))),
       );
     }
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context);
+
     return FutureBuilder<List<Activity>>(
       future: _activitiesFuture,
       builder: (context, snapshot) {
@@ -107,16 +115,14 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
 
         if (snapshot.hasError) {
           return _ErrorState(
-            message: _errorMessage(snapshot.error),
+            message: _errorMessage(snapshot.error, l10n),
             onRetry: reload,
           );
         }
 
         final activities = snapshot.data ?? [];
         if (activities.isEmpty) {
-          return const Center(
-            child: Text('No activities yet.\nTap + to add one.'),
-          );
+          return Center(child: Text(l10n.activitiesEmpty));
         }
 
         return RefreshIndicator(
@@ -132,12 +138,13 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
             separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final activity = activities[index];
+              final type = activity.recurrencePattern?.recurrenceType;
               return ListTile(
                 title: Text(activity.title),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(formatActivitySchedule(activity)),
+                    Text(formatActivitySchedule(activity, l10n)),
                     if (activity.description?.isNotEmpty == true)
                       Text(activity.description!),
                   ],
@@ -151,8 +158,9 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
                         padding: const EdgeInsets.only(right: 4),
                         child: Chip(
                           label: Text(
-                            activity.recurrencePattern?.recurrenceType.label ??
-                                'Recurring',
+                            type != null
+                                ? recurrenceTypeLabel(type, l10n)
+                                : l10n.activitiesRecurring,
                           ),
                           visualDensity: VisualDensity.compact,
                         ),
@@ -165,10 +173,19 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
                           _confirmDelete(activity);
                         }
                       },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(value: 'edit', child: Text('Edit')),
-                        PopupMenuItem(value: 'delete', child: Text('Delete')),
-                      ],
+                      itemBuilder: (context) {
+                        final menuL10n = AppLocalizations.of(context);
+                        return [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Text(menuL10n.activitiesEdit),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(menuL10n.activitiesDelete),
+                          ),
+                        ];
+                      },
                     ),
                   ],
                 ),
@@ -186,18 +203,19 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
     final body = _buildBody();
     if (widget.embedded) return body;
 
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Activities'),
+        title: Text(l10n.navActivities),
         actions: [
           IconButton(
-            tooltip: 'Refresh',
+            tooltip: l10n.tooltipRefresh,
             onPressed: reload,
             icon: const Icon(Icons.refresh),
           ),
           if (widget.onSignedOut != null)
             IconButton(
-              tooltip: 'Sign out',
+              tooltip: l10n.tooltipSignOut,
               onPressed: widget.onSignedOut,
               icon: const Icon(Icons.logout),
             ),
@@ -206,15 +224,15 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
       body: body,
       floatingActionButton: FloatingActionButton(
         onPressed: openCreateForm,
-        tooltip: 'Add activity',
+        tooltip: l10n.tooltipAddActivity,
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  String _errorMessage(Object? error) {
-    if (error is GraphQLException) return error.message;
-    return error?.toString() ?? 'Unknown error';
+  String _errorMessage(Object? error, AppLocalizations l10n) {
+    if (error is GraphQLException) return error.localize(l10n);
+    return error?.toString() ?? l10n.errorUnknown;
   }
 }
 
@@ -226,6 +244,7 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -239,7 +258,7 @@ class _ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Could not load activities',
+              l10n.errorCouldNotLoadActivities,
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -249,7 +268,7 @@ class _ErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(l10n.errorRetry),
             ),
           ],
         ),

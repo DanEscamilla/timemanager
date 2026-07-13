@@ -5,10 +5,127 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/api_config.dart';
+import '../l10n/app_localizations.dart';
+
+enum AuthAction { signUp, signIn, oauth }
+
+enum AuthErrorCode {
+  failedStatus,
+  noSessionToken,
+  startOAuthFailed,
+  authorisationUrlMissing,
+  couldNotGetAuthorisationUrl,
+  couldNotOpenLogin,
+  raw,
+}
 
 class AuthException implements Exception {
-  AuthException(this.message);
+  AuthException(this.message)
+      : code = AuthErrorCode.raw,
+        action = null,
+        provider = null,
+        status = null,
+        statusCode = null;
+
+  AuthException._({
+    required this.code,
+    required this.message,
+    this.action,
+    this.provider,
+    this.status,
+    this.statusCode,
+  });
+
+  factory AuthException.failedStatus({
+    required AuthAction action,
+    required String status,
+  }) {
+    return AuthException._(
+      code: AuthErrorCode.failedStatus,
+      action: action,
+      status: status,
+      message: '${_fallbackAction(action)} failed ($status)',
+    );
+  }
+
+  factory AuthException.noSessionToken({required AuthAction action}) {
+    return AuthException._(
+      code: AuthErrorCode.noSessionToken,
+      action: action,
+      message:
+          '${_fallbackAction(action)} succeeded but no session token was returned',
+    );
+  }
+
+  factory AuthException.startOAuthFailed({
+    required String provider,
+    required int statusCode,
+  }) {
+    return AuthException._(
+      code: AuthErrorCode.startOAuthFailed,
+      provider: provider,
+      statusCode: statusCode,
+      message: 'Failed to start $provider login ($statusCode)',
+    );
+  }
+
+  factory AuthException.authorisationUrlMissing() {
+    return AuthException._(
+      code: AuthErrorCode.authorisationUrlMissing,
+      message: 'Authorisation URL missing from response',
+    );
+  }
+
+  factory AuthException.couldNotGetAuthorisationUrl() {
+    return AuthException._(
+      code: AuthErrorCode.couldNotGetAuthorisationUrl,
+      message: 'Could not get authorisation URL',
+    );
+  }
+
+  factory AuthException.couldNotOpenLogin({required String provider}) {
+    return AuthException._(
+      code: AuthErrorCode.couldNotOpenLogin,
+      provider: provider,
+      message: 'Could not open $provider login',
+    );
+  }
+
+  final AuthErrorCode code;
   final String message;
+  final AuthAction? action;
+  final String? provider;
+  final String? status;
+  final int? statusCode;
+
+  String localize(AppLocalizations l10n) {
+    final actionLabel = switch (action) {
+      AuthAction.signUp => l10n.authActionSignUp,
+      AuthAction.signIn => l10n.authActionSignIn,
+      AuthAction.oauth => l10n.authActionOAuth,
+      null => '',
+    };
+
+    return switch (code) {
+      AuthErrorCode.failedStatus =>
+        l10n.authFailedStatus(actionLabel, status ?? ''),
+      AuthErrorCode.noSessionToken => l10n.authNoSessionToken(actionLabel),
+      AuthErrorCode.startOAuthFailed =>
+        l10n.authStartOAuthFailed(provider ?? '', statusCode ?? 0),
+      AuthErrorCode.authorisationUrlMissing => l10n.authAuthorisationUrlMissing,
+      AuthErrorCode.couldNotGetAuthorisationUrl =>
+        l10n.authCouldNotGetAuthorisationUrl,
+      AuthErrorCode.couldNotOpenLogin =>
+        l10n.authCouldNotOpenLogin(provider ?? ''),
+      AuthErrorCode.raw => message,
+    };
+  }
+
+  static String _fallbackAction(AuthAction action) => switch (action) {
+        AuthAction.signUp => 'Sign up',
+        AuthAction.signIn => 'Sign in',
+        AuthAction.oauth => 'OAuth sign in',
+      };
 
   @override
   String toString() => message;
@@ -56,7 +173,7 @@ class AuthService {
         ],
       },
     );
-    await _handleAuthResponse(response, action: 'Sign up');
+    await _handleAuthResponse(response, action: AuthAction.signUp);
   }
 
   Future<void> signIn({
@@ -73,7 +190,7 @@ class AuthService {
         ],
       },
     );
-    await _handleAuthResponse(response, action: 'Sign in');
+    await _handleAuthResponse(response, action: AuthAction.signIn);
   }
 
   /// Start OAuth by opening the provider authorisation URL.
@@ -99,21 +216,24 @@ class AuthService {
     );
 
     if (response.statusCode != 200) {
-      throw AuthException(
-        'Failed to start $thirdPartyId login (${response.statusCode})',
+      throw AuthException.startOAuthFailed(
+        provider: thirdPartyId,
+        statusCode: response.statusCode,
       );
     }
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     if (body['status'] != 'OK') {
-      throw AuthException(
-        body['message']?.toString() ?? 'Could not get authorisation URL',
-      );
+      final serverMessage = body['message']?.toString();
+      if (serverMessage != null && serverMessage.isNotEmpty) {
+        throw AuthException(serverMessage);
+      }
+      throw AuthException.couldNotGetAuthorisationUrl();
     }
 
     final url = body['urlWithQueryParams'] as String?;
     if (url == null || url.isEmpty) {
-      throw AuthException('Authorisation URL missing from response');
+      throw AuthException.authorisationUrlMissing();
     }
 
     // Google (and others) require PKCE — SuperTokens returns the verifier
@@ -134,7 +254,7 @@ class AuthService {
       mode: LaunchMode.platformDefault,
     );
     if (!launched) {
-      throw AuthException('Could not open $thirdPartyId login');
+      throw AuthException.couldNotOpenLogin(provider: thirdPartyId);
     }
   }
 
@@ -170,7 +290,7 @@ class AuthService {
         'redirectURIInfo': redirectURIInfo,
       },
     );
-    await _handleAuthResponse(response, action: 'OAuth sign in');
+    await _handleAuthResponse(response, action: AuthAction.oauth);
     await _clearOAuthState();
     return true;
   }
@@ -251,7 +371,7 @@ class AuthService {
 
   Future<void> _handleAuthResponse(
     http.Response response, {
-    required String action,
+    required AuthAction action,
   }) async {
     Map<String, dynamic>? body;
     try {
@@ -261,9 +381,13 @@ class AuthService {
     }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw AuthException(
-        body?['message']?.toString() ??
-            '$action failed (${response.statusCode})',
+      final serverMessage = body?['message']?.toString();
+      if (serverMessage != null && serverMessage.isNotEmpty) {
+        throw AuthException(serverMessage);
+      }
+      throw AuthException.failedStatus(
+        action: action,
+        status: '${response.statusCode}',
       );
     }
 
@@ -280,16 +404,16 @@ class AuthService {
           throw AuthException(messages);
         }
       }
-      throw AuthException(
-        body?['reason']?.toString() ??
-            body?['message']?.toString() ??
-            '$action failed ($status)',
-      );
+      final reason = body?['reason']?.toString() ?? body?['message']?.toString();
+      if (reason != null && reason.isNotEmpty) {
+        throw AuthException(reason);
+      }
+      throw AuthException.failedStatus(action: action, status: status);
     }
 
     await _persistTokensFromHeaders(response.headers);
     if ((await getAccessToken()) == null) {
-      throw AuthException('$action succeeded but no session token was returned');
+      throw AuthException.noSessionToken(action: action);
     }
   }
 
