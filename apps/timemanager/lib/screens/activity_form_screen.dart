@@ -43,7 +43,15 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   late bool _isLastDayOfMonth;
   bool _saving = false;
 
-  static const _weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  static const _weekdayLabels = [
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+  ];
 
   @override
   void initState() {
@@ -69,9 +77,10 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
     if (activity != null && !activity.isRecurring && activity.date != null) {
       _oneOffDate = _parseDateOnly(activity.date!);
     } else if (!_isRecurring) {
-      _oneOffDate = widget.initialDate != null
-          ? _dateOnly(widget.initialDate!)
-          : _dateOnly(DateTime.now());
+      _oneOffDate =
+          widget.initialDate != null
+              ? _dateOnly(widget.initialDate!)
+              : _dateOnly(DateTime.now());
     }
 
     if (pattern != null) {
@@ -94,10 +103,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
 
   TimeOfDay _parseTime(String value) {
     final parts = value.split(':');
-    return TimeOfDay(
-      hour: int.parse(parts[0]),
-      minute: int.parse(parts[1]),
-    );
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
   }
 
   String _formatTime(TimeOfDay time) {
@@ -143,10 +149,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
 
   Future<void> _pickTime({required bool isStart}) async {
     final initial = isStart ? _startTime : _endTime;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: initial,
-    );
+    final picked = await showTimePicker(context: context, initialTime: initial);
     if (picked == null) return;
     setState(() {
       if (isStart) {
@@ -180,7 +183,8 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
 
   String? _validateSchedule() {
     if (!_isRecurring) {
-      if (_oneOffDate == null) return 'Date is required for one-time activities';
+      if (_oneOffDate == null)
+        return 'Date is required for one-time activities';
       return null;
     }
 
@@ -217,22 +221,26 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
       recurrenceType: _recurrenceType,
       config: RecurrenceConfig(
         startDate: _formatDate(_recurrenceStartDate!),
-        endDate: _recurrenceEndDate != null
-            ? _formatDate(_recurrenceEndDate!)
-            : null,
-        daysOfWeek: _recurrenceType == RecurrenceType.weekly
-            ? (_daysOfWeek.toList()..sort())
-            : null,
-        daysOfMonth: _recurrenceType == RecurrenceType.monthly &&
-                _daysOfMonth.isNotEmpty
-            ? (_daysOfMonth.toList()..sort())
-            : null,
-        isLastDayOfMonth: _recurrenceType == RecurrenceType.monthly
-            ? _isLastDayOfMonth
-            : null,
-        intervalDays: _recurrenceType == RecurrenceType.everyXDays
-            ? int.parse(_intervalController.text.trim())
-            : null,
+        endDate:
+            _recurrenceEndDate != null
+                ? _formatDate(_recurrenceEndDate!)
+                : null,
+        daysOfWeek:
+            _recurrenceType == RecurrenceType.weekly
+                ? (_daysOfWeek.toList()..sort())
+                : null,
+        daysOfMonth:
+            _recurrenceType == RecurrenceType.monthly && _daysOfMonth.isNotEmpty
+                ? (_daysOfMonth.toList()..sort())
+                : null,
+        isLastDayOfMonth:
+            _recurrenceType == RecurrenceType.monthly
+                ? _isLastDayOfMonth
+                : null,
+        intervalDays:
+            _recurrenceType == RecurrenceType.everyXDays
+                ? int.parse(_intervalController.text.trim())
+                : null,
       ),
     );
   }
@@ -251,9 +259,9 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
 
     final scheduleError = _validateSchedule();
     if (scheduleError != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(scheduleError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(scheduleError)));
       return;
     }
 
@@ -263,7 +271,9 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
       final title = _titleController.text.trim();
       final description = _descriptionController.text.trim();
       final date =
-          !_isRecurring && _oneOffDate != null ? _formatDate(_oneOffDate!) : null;
+          !_isRecurring && _oneOffDate != null
+              ? _formatDate(_oneOffDate!)
+              : null;
       final pattern = _buildRecurrencePattern();
 
       if (widget.isEditing) {
@@ -293,9 +303,9 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
       Navigator.pop(context, true);
     } on GraphQLException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -356,7 +366,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
             const SizedBox(height: 16),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Recurring'),
+              title: Text(_isRecurring ? 'Recurring' : 'One-time'),
               subtitle: Text(
                 _isRecurring
                     ? 'Repeats on a schedule'
@@ -369,13 +379,16 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
             if (!_isRecurring) ...[
               _DateField(
                 label: 'Date',
-                value: _oneOffDate == null
-                    ? 'Select date'
-                    : _displayDate(_oneOffDate!),
-                onTap: () => _pickDate(
-                  current: _oneOffDate,
-                  onPicked: (picked) => setState(() => _oneOffDate = picked),
-                ),
+                value:
+                    _oneOffDate == null
+                        ? 'Select date'
+                        : _displayDate(_oneOffDate!),
+                onTap:
+                    () => _pickDate(
+                      current: _oneOffDate,
+                      onPicked:
+                          (picked) => setState(() => _oneOffDate = picked),
+                    ),
               ),
             ] else ...[
               DropdownButtonFormField<RecurrenceType>(
@@ -384,14 +397,15 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                   labelText: 'Repeats',
                   border: OutlineInputBorder(),
                 ),
-                items: RecurrenceType.values
-                    .map(
-                      (type) => DropdownMenuItem(
-                        value: type,
-                        child: Text(type.label),
-                      ),
-                    )
-                    .toList(),
+                items:
+                    RecurrenceType.values
+                        .map(
+                          (type) => DropdownMenuItem(
+                            value: type,
+                            child: Text(type.label),
+                          ),
+                        )
+                        .toList(),
                 onChanged: (value) {
                   if (value == null) return;
                   setState(() => _recurrenceType = value);
@@ -400,38 +414,48 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
               const SizedBox(height: 12),
               _DateField(
                 label: 'Starts',
-                value: _recurrenceStartDate == null
-                    ? 'Select start date'
-                    : _displayDate(_recurrenceStartDate!),
-                onTap: () => _pickDate(
-                  current: _recurrenceStartDate,
-                  onPicked: (picked) =>
-                      setState(() => _recurrenceStartDate = picked),
-                ),
+                value:
+                    _recurrenceStartDate == null
+                        ? 'Select start date'
+                        : _displayDate(_recurrenceStartDate!),
+                onTap:
+                    () => _pickDate(
+                      current: _recurrenceStartDate,
+                      onPicked:
+                          (picked) =>
+                              setState(() => _recurrenceStartDate = picked),
+                    ),
               ),
               const SizedBox(height: 12),
               _DateField(
                 label: 'Ends (optional)',
-                value: _recurrenceEndDate == null
-                    ? 'No end date'
-                    : _displayDate(_recurrenceEndDate!),
-                onTap: () => _pickDate(
-                  current: _recurrenceEndDate ?? _recurrenceStartDate,
-                  onPicked: (picked) =>
-                      setState(() => _recurrenceEndDate = picked),
-                ),
-                trailing: _recurrenceEndDate == null
-                    ? null
-                    : IconButton(
-                        tooltip: 'Clear end date',
-                        onPressed: () =>
-                            setState(() => _recurrenceEndDate = null),
-                        icon: const Icon(Icons.clear),
-                      ),
+                value:
+                    _recurrenceEndDate == null
+                        ? 'No end date'
+                        : _displayDate(_recurrenceEndDate!),
+                onTap:
+                    () => _pickDate(
+                      current: _recurrenceEndDate ?? _recurrenceStartDate,
+                      onPicked:
+                          (picked) =>
+                              setState(() => _recurrenceEndDate = picked),
+                    ),
+                trailing:
+                    _recurrenceEndDate == null
+                        ? null
+                        : IconButton(
+                          tooltip: 'Clear end date',
+                          onPressed:
+                              () => setState(() => _recurrenceEndDate = null),
+                          icon: const Icon(Icons.clear),
+                        ),
               ),
               const SizedBox(height: 16),
               if (_recurrenceType == RecurrenceType.weekly) ...[
-                Text('Days of week', style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  'Days of week',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -517,13 +541,14 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _saving ? null : _save,
-              child: _saving
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(widget.isEditing ? 'Save changes' : 'Create'),
+              child:
+                  _saving
+                      ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : Text(widget.isEditing ? 'Save changes' : 'Create'),
             ),
           ],
         ),
