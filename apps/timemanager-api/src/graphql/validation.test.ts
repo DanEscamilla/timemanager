@@ -1,10 +1,13 @@
 import { assertEquals, assertThrows } from 'jsr:@std/assert@^1.0.0'
 import {
   InvalidActivityScheduleError,
+  InvalidGoalError,
   InvalidGroupError,
   validateActivitySchedule,
+  validateCreateGoalInput,
   validateGroupColor,
   validateGroupName,
+  wouldCreateDependencyCycle,
 } from './validation.ts'
 
 Deno.test('non-recurring activity requires a date', () => {
@@ -187,4 +190,51 @@ Deno.test('group name rejects blank strings', () => {
 
 Deno.test('group name trims whitespace', () => {
   assertEquals(validateGroupName('  Work  '), 'Work')
+})
+
+Deno.test('validateCreateGoalInput requires links for non-composite', () => {
+  assertThrows(
+    () =>
+      validateCreateGoalInput({
+        title: 'Read',
+        color: '#0F766E',
+        ruleType: 'activity_count',
+        metric: 'count',
+        targetValue: 10,
+        links: [],
+      }),
+    InvalidGoalError,
+    'at least one link',
+  )
+})
+
+Deno.test('validateCreateGoalInput accepts a valid count goal', () => {
+  const result = validateCreateGoalInput({
+    title: 'Workout 50x',
+    color: '#0F766E',
+    ruleType: 'activity_count',
+    metric: 'count',
+    targetValue: 50,
+    links: [{ linkType: 'activity', activityId: 1 }],
+  })
+  assertEquals(result.ruleType, 'activity_count')
+  assertEquals(result.links.length, 1)
+})
+
+Deno.test('wouldCreateDependencyCycle detects a loop', () => {
+  const edges = new Map<number, number[]>([
+    [1, [2]],
+    [2, [3]],
+    [3, [1]],
+  ])
+  assertEquals(wouldCreateDependencyCycle(edges, 1), true)
+})
+
+Deno.test('wouldCreateDependencyCycle allows a DAG', () => {
+  const edges = new Map<number, number[]>([
+    [1, [2]],
+    [2, [3]],
+    [3, []],
+  ])
+  assertEquals(wouldCreateDependencyCycle(edges, 1), false)
 })

@@ -55,3 +55,93 @@ export interface UpdateActivityInput {
   // Pass null to clear the group assignment.
   groupId?: number | null
 }
+
+export interface CompleteActivityInput {
+  activityId: number
+  /** YYYY-MM-DD of the occurrence being completed. */
+  occurrenceDate: string
+  /** Optional actual duration in minutes. */
+  durationMinutes?: number | null
+  notes?: string | null
+}
+
+export interface LogTimeInput {
+  activityId: number
+  durationMinutes: number
+  /** Optional YYYY-MM-DD; defaults to today (UTC). */
+  occurrenceDate?: string | null
+  notes?: string | null
+}
+
+export interface GoalLinkInput {
+  linkType: 'activity' | 'group'
+  activityId?: number | null
+  groupId?: number | null
+  weight?: number
+}
+
+export interface GoalDependencyInput {
+  dependsOnGoalId: number
+  requirement?: 'complete' | 'progress'
+  threshold?: number | null
+  weight?: number
+}
+
+export interface GoalRecurrenceInput {
+  period: 'weekly' | 'monthly' | 'quarterly' | 'every_x_days'
+  interval?: number
+  anchor?: string
+  carryOver?: 'none' | 'overflow'
+  reset?: 'hard'
+}
+
+export interface GoalDeadlineInput {
+  kind: 'absolute' | 'relative'
+  date?: string
+  daysAfterCycleStart?: number
+  graceDays?: number
+  warnDays?: number
+}
+
+export interface GoalConfigInput {
+  compositeMode?: 'all' | 'any' | 'weighted'
+  countRequired?: number
+  beforeTime?: string
+  afterTime?: string
+  blockUntilUnlocked?: boolean
+}
+
+export interface CreateGoalInput {
+  title: string
+  description?: string | null
+  color: string
+  icon?: string | null
+  ruleType: string
+  metric: 'count' | 'duration'
+  targetValue: number
+  config?: GoalConfigInput | null
+  links?: GoalLinkInput[]
+  dependencies?: GoalDependencyInput[]
+  recurrence?: GoalRecurrenceInput | null
+  deadline?: GoalDeadlineInput | null
+  priority?: number
+  sortOrder?: number
+}
+
+export interface UpdateGoalInput {
+  title?: string
+  description?: string | null
+  color?: string
+  icon?: string | null
+  ruleType?: string
+  metric?: 'count' | 'duration'
+  targetValue?: number
+  config?: GoalConfigInput | null
+  links?: GoalLinkInput[]
+  dependencies?: GoalDependencyInput[]
+  recurrence?: GoalRecurrenceInput | null
+  deadline?: GoalDeadlineInput | null
+  status?: 'active' | 'paused' | 'completed' | 'archived' | 'failed'
+  priority?: number
+  sortOrder?: number
+}

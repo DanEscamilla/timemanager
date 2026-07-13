@@ -6,14 +6,129 @@
   "navActivities": "Activities",
   "navCalendar": "Calendar",
   "navOverview": "Overview",
+  "navGoals": "Goals",
   "tooltipRefresh": "Refresh",
   "tooltipSignOut": "Sign out",
   "tooltipAddActivity": "Add activity",
   "tooltipAddActivityForDay": "Add activity for this day",
+  "tooltipAddGoal": "Add goal",
   "tooltipSettings": "Settings",
   "tooltipGroups": "Groups",
   "tooltipAddGroup": "Add group",
 
+  "goalsEmptyTitle": "No goals yet",
+  "goalsEmptyHint": "Create a goal to track completions and time toward a target.",
+  "goalsEmptyAction": "Add goal",
+  "goalsFilterActive": "Active",
+  "goalsFilterPaused": "Paused",
+  "goalsFilterCompleted": "Done",
+  "goalsFilterArchived": "Archived",
+  "goalsFilterAll": "All",
+  "goalsDetailTitle": "Goal",
+  "goalsNotFound": "Goal not found",
+  "goalsDeleteTitle": "Delete goal?",
+  "goalsDeleteConfirm": "Remove \"{title}\" and its progress history?",
+  "@goalsDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "goalsPause": "Pause",
+  "goalsResume": "Resume",
+  "goalsArchive": "Archive",
+  "goalsProgressPercent": "{percent}%",
+  "@goalsProgressPercent": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "goalsRemainingCount": "{count} left",
+  "@goalsRemainingCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "goalsRemainingMinutes": "{minutes} min left",
+  "@goalsRemainingMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "goalsDeadlineApproaching": "Deadline soon",
+  "goalsDeadlineOverdue": "Overdue",
+  "goalsDeadlineFailed": "Failed",
+  "goalsRuleActivityCount": "Complete an activity N times",
+  "goalsRuleActivityDuration": "Time on an activity",
+  "goalsRuleGroupDuration": "Time on a group",
+  "goalsRuleGroupCount": "Complete group activities N times",
+  "goalsRuleGroupAnyCount": "Complete any from a group N times",
+  "goalsRuleGroupAllComplete": "Complete all activities in a group",
+  "goalsRuleMultiDuration": "Time across selected activities",
+  "goalsRuleStreak": "Consecutive-day streak",
+  "goalsRuleTimeOfDay": "Complete before/after a time",
+  "goalsRuleComposite": "Composite (child goals)",
+  "goalsFormNew": "New goal",
+  "goalsFormEdit": "Edit goal",
+  "goalsFormTitle": "Title",
+  "goalsFormRuleType": "Goal type",
+  "goalsFormTargetCount": "Target count",
+  "goalsFormTargetMinutes": "Target minutes",
+  "goalsFormTargetInvalid": "Enter a positive number",
+  "goalsFormLinkedActivities": "Linked activities",
+  "goalsFormLinkedGroups": "Linked groups",
+  "goalsFormDependencies": "Dependencies",
+  "goalsFormSelectActivity": "Select at least one activity",
+  "goalsFormSelectGroup": "Select at least one group",
+  "goalsFormSelectDependency": "Select at least one dependency",
+  "goalsFormCompositeMode": "Composite mode",
+  "goalsCompositeAll": "All children",
+  "goalsCompositeAny": "Any N children",
+  "goalsCompositeWeighted": "Weighted average",
+  "goalsFormBlockUntilUnlocked": "Block progress until dependencies met",
+  "goalsFormRecurrence": "Recurrence",
+  "goalsFormRecurrencePeriod": "Repeats",
+  "goalsFormOneTime": "One-time",
+  "goalsFormInterval": "Interval",
+  "goalsRecurrenceQuarterly": "Quarterly",
+  "goalsFormDeadline": "Deadline",
+  "goalsFormDeadlineKind": "Deadline type",
+  "goalsFormNoDeadline": "No deadline",
+  "goalsFormDeadlineAbsolute": "Fixed date",
+  "goalsFormDeadlineRelative": "Days after cycle starts",
+  "goalsFormDeadlineDays": "Days after cycle start",
+  "goalsFormSaving": "Saving…",
+  "goalsLinkedSources": "Linked sources",
+  "goalsDanglingLink": "Removed source",
+  "goalsDependencies": "Dependencies",
+  "goalsDependencyId": "Goal #{id}",
+  "@goalsDependencyId": {
+    "placeholders": {
+      "id": { "type": "int" }
+    }
+  },
+  "goalsHistory": "Progress history",
+  "goalsCycleSummary": "{current} / {target}",
+  "@goalsCycleSummary": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "target": { "type": "int" }
+    }
+  },
+  "goalsActiveStrip": "Active goals",
+  "goalsViewAll": "View all goals",
+  "goalsNudges": "Insights",
+  "overviewStatCompleted": "Completed",
+  "overviewStatMinutes": "Minutes today",
+  "overviewStatStreak": "Streak",
+  "overviewDailyProgress": "Today's progress",
+  "overviewMarkDone": "Mark done",
+  "overviewLogTime": "Log time",
+  "overviewUndoDone": "Undo",
+  "overviewCompletedBadge": "Done",
+  "logTimeTitle": "Log time",
+  "logTimeMinutes": "Minutes",
+  "logTimeInvalid": "Enter a positive number of minutes",
+  "logTimeSave": "Save",
   "groupsTitle": "Groups",
   "groupsEmptyTitle": "No groups yet",
   "groupsEmptyHint": "Create a group to organize your activities by color.",

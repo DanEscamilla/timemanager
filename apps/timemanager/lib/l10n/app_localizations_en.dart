@@ -21,6 +21,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navOverview => 'Overview';
 
   @override
+  String get navGoals => 'Goals';
+
+  @override
   String get tooltipRefresh => 'Refresh';
 
   @override
@@ -33,6 +36,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooltipAddActivityForDay => 'Add activity for this day';
 
   @override
+  String get tooltipAddGoal => 'Add goal';
+
+  @override
   String get tooltipSettings => 'Settings';
 
   @override
@@ -40,6 +46,264 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tooltipAddGroup => 'Add group';
+
+  @override
+  String get goalsEmptyTitle => 'No goals yet';
+
+  @override
+  String get goalsEmptyHint => 'Create a goal to track completions and time toward a target.';
+
+  @override
+  String get goalsEmptyAction => 'Add goal';
+
+  @override
+  String get goalsFilterActive => 'Active';
+
+  @override
+  String get goalsFilterPaused => 'Paused';
+
+  @override
+  String get goalsFilterCompleted => 'Done';
+
+  @override
+  String get goalsFilterArchived => 'Archived';
+
+  @override
+  String get goalsFilterAll => 'All';
+
+  @override
+  String get goalsDetailTitle => 'Goal';
+
+  @override
+  String get goalsNotFound => 'Goal not found';
+
+  @override
+  String get goalsDeleteTitle => 'Delete goal?';
+
+  @override
+  String goalsDeleteConfirm(String title) {
+    return 'Remove \"$title\" and its progress history?';
+  }
+
+  @override
+  String get goalsPause => 'Pause';
+
+  @override
+  String get goalsResume => 'Resume';
+
+  @override
+  String get goalsArchive => 'Archive';
+
+  @override
+  String goalsProgressPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String goalsRemainingCount(int count) {
+    return '$count left';
+  }
+
+  @override
+  String goalsRemainingMinutes(int minutes) {
+    return '$minutes min left';
+  }
+
+  @override
+  String get goalsDeadlineApproaching => 'Deadline soon';
+
+  @override
+  String get goalsDeadlineOverdue => 'Overdue';
+
+  @override
+  String get goalsDeadlineFailed => 'Failed';
+
+  @override
+  String get goalsRuleActivityCount => 'Complete an activity N times';
+
+  @override
+  String get goalsRuleActivityDuration => 'Time on an activity';
+
+  @override
+  String get goalsRuleGroupDuration => 'Time on a group';
+
+  @override
+  String get goalsRuleGroupCount => 'Complete group activities N times';
+
+  @override
+  String get goalsRuleGroupAnyCount => 'Complete any from a group N times';
+
+  @override
+  String get goalsRuleGroupAllComplete => 'Complete all activities in a group';
+
+  @override
+  String get goalsRuleMultiDuration => 'Time across selected activities';
+
+  @override
+  String get goalsRuleStreak => 'Consecutive-day streak';
+
+  @override
+  String get goalsRuleTimeOfDay => 'Complete before/after a time';
+
+  @override
+  String get goalsRuleComposite => 'Composite (child goals)';
+
+  @override
+  String get goalsFormNew => 'New goal';
+
+  @override
+  String get goalsFormEdit => 'Edit goal';
+
+  @override
+  String get goalsFormTitle => 'Title';
+
+  @override
+  String get goalsFormRuleType => 'Goal type';
+
+  @override
+  String get goalsFormTargetCount => 'Target count';
+
+  @override
+  String get goalsFormTargetMinutes => 'Target minutes';
+
+  @override
+  String get goalsFormTargetInvalid => 'Enter a positive number';
+
+  @override
+  String get goalsFormLinkedActivities => 'Linked activities';
+
+  @override
+  String get goalsFormLinkedGroups => 'Linked groups';
+
+  @override
+  String get goalsFormDependencies => 'Dependencies';
+
+  @override
+  String get goalsFormSelectActivity => 'Select at least one activity';
+
+  @override
+  String get goalsFormSelectGroup => 'Select at least one group';
+
+  @override
+  String get goalsFormSelectDependency => 'Select at least one dependency';
+
+  @override
+  String get goalsFormCompositeMode => 'Composite mode';
+
+  @override
+  String get goalsCompositeAll => 'All children';
+
+  @override
+  String get goalsCompositeAny => 'Any N children';
+
+  @override
+  String get goalsCompositeWeighted => 'Weighted average';
+
+  @override
+  String get goalsFormBlockUntilUnlocked => 'Block progress until dependencies met';
+
+  @override
+  String get goalsFormRecurrence => 'Recurrence';
+
+  @override
+  String get goalsFormRecurrencePeriod => 'Repeats';
+
+  @override
+  String get goalsFormOneTime => 'One-time';
+
+  @override
+  String get goalsFormInterval => 'Interval';
+
+  @override
+  String get goalsRecurrenceQuarterly => 'Quarterly';
+
+  @override
+  String get goalsFormDeadline => 'Deadline';
+
+  @override
+  String get goalsFormDeadlineKind => 'Deadline type';
+
+  @override
+  String get goalsFormNoDeadline => 'No deadline';
+
+  @override
+  String get goalsFormDeadlineAbsolute => 'Fixed date';
+
+  @override
+  String get goalsFormDeadlineRelative => 'Days after cycle starts';
+
+  @override
+  String get goalsFormDeadlineDays => 'Days after cycle start';
+
+  @override
+  String get goalsFormSaving => 'Saving…';
+
+  @override
+  String get goalsLinkedSources => 'Linked sources';
+
+  @override
+  String get goalsDanglingLink => 'Removed source';
+
+  @override
+  String get goalsDependencies => 'Dependencies';
+
+  @override
+  String goalsDependencyId(int id) {
+    return 'Goal #$id';
+  }
+
+  @override
+  String get goalsHistory => 'Progress history';
+
+  @override
+  String goalsCycleSummary(int current, int target) {
+    return '$current / $target';
+  }
+
+  @override
+  String get goalsActiveStrip => 'Active goals';
+
+  @override
+  String get goalsViewAll => 'View all goals';
+
+  @override
+  String get goalsNudges => 'Insights';
+
+  @override
+  String get overviewStatCompleted => 'Completed';
+
+  @override
+  String get overviewStatMinutes => 'Minutes today';
+
+  @override
+  String get overviewStatStreak => 'Streak';
+
+  @override
+  String get overviewDailyProgress => 'Today\'s progress';
+
+  @override
+  String get overviewMarkDone => 'Mark done';
+
+  @override
+  String get overviewLogTime => 'Log time';
+
+  @override
+  String get overviewUndoDone => 'Undo';
+
+  @override
+  String get overviewCompletedBadge => 'Done';
+
+  @override
+  String get logTimeTitle => 'Log time';
+
+  @override
+  String get logTimeMinutes => 'Minutes';
+
+  @override
+  String get logTimeInvalid => 'Enter a positive number of minutes';
+
+  @override
+  String get logTimeSave => 'Save';
 
   @override
   String get groupsTitle => 'Groups';

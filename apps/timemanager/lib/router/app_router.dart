@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../screens/activities_screen.dart';
 import '../screens/calendar_screen.dart';
+import '../screens/goals_screen.dart';
 import '../screens/groups_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
@@ -73,8 +74,11 @@ GoRouter createAppRouter({
                   key: auth.overviewKey,
                   repository: auth.activityRepository,
                   groupRepository: auth.groupRepository,
+                  goalRepository: auth.goalRepository,
+                  completionRepository: auth.completionRepository,
                   onOpenCalendar: () => context.go(AppRoutes.calendar),
                   onOpenActivities: () => context.go(AppRoutes.activities),
+                  onOpenGoals: () => context.go(AppRoutes.goals),
                   onChanged: auth.reloadAll,
                 ),
               ),
@@ -91,6 +95,7 @@ GoRouter createAppRouter({
                   onChanged: () {
                     auth.calendarKey.currentState?.reload();
                     auth.overviewKey.currentState?.reload();
+                    auth.goalsKey.currentState?.reload();
                   },
                 ),
               ),
@@ -107,7 +112,22 @@ GoRouter createAppRouter({
                   onChanged: () {
                     auth.activitiesKey.currentState?.reload();
                     auth.overviewKey.currentState?.reload();
+                    auth.goalsKey.currentState?.reload();
                   },
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.goals,
+                builder: (context, state) => GoalsScreen(
+                  key: auth.goalsKey,
+                  goalRepository: auth.goalRepository,
+                  activityRepository: auth.activityRepository,
+                  groupRepository: auth.groupRepository,
+                  onChanged: auth.reloadAll,
                 ),
               ),
             ],

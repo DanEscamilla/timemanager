@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:timemanager/l10n/app_localizations.dart';
 import 'package:timemanager/models/activity.dart';
+import 'package:timemanager/models/goal.dart';
 import 'package:timemanager/models/group.dart';
 import 'package:timemanager/router/app_router.dart';
 import 'package:timemanager/router/app_routes.dart';
@@ -12,6 +13,7 @@ import 'package:timemanager/router/auth_controller.dart';
 import 'package:timemanager/screens/login_screen.dart';
 import 'package:timemanager/services/activity_repository.dart';
 import 'package:timemanager/services/auth_service.dart';
+import 'package:timemanager/services/goal_repository.dart';
 import 'package:timemanager/services/group_repository.dart';
 import 'package:timemanager/widgets/loading_view.dart';
 
@@ -38,6 +40,33 @@ class _FakeActivityRepository extends ActivityRepository {
 class _FakeGroupRepository extends GroupRepository {
   @override
   Future<List<ActivityGroup>> fetchGroups() async => const [];
+}
+
+class _FakeGoalRepository extends GoalRepository {
+  @override
+  Future<List<Goal>> fetchGoals({String? status}) async => const [];
+
+  @override
+  Future<DailyProgress> fetchDailyProgress({String? date}) async =>
+      const DailyProgress(
+        date: '2026-07-13',
+        completedCount: 0,
+        minutesToday: 0,
+        streakDays: 0,
+      );
+
+  @override
+  Future<List<GoalNudge>> fetchNudges() async => const [];
+}
+
+class _FakeCompletionRepository extends CompletionRepository {
+  @override
+  Future<List<ActivityCompletion>> fetchCompletions({
+    int? activityId,
+    String? fromDate,
+    String? toDate,
+  }) async =>
+      const [];
 }
 
 Widget _app(GoRouter router) {
@@ -83,6 +112,8 @@ void main() {
       authService: _FakeAuthService(sessionExists: true),
       activityRepository: _FakeActivityRepository(),
       groupRepository: _FakeGroupRepository(),
+      goalRepository: _FakeGoalRepository(),
+      completionRepository: _FakeCompletionRepository(),
     );
     final themeMode = ValueNotifier(ThemeMode.system);
     final rootKey = GlobalKey<NavigatorState>();

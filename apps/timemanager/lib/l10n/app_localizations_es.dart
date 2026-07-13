@@ -21,6 +21,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navOverview => 'Resumen';
 
   @override
+  String get navGoals => 'Metas';
+
+  @override
   String get tooltipRefresh => 'Actualizar';
 
   @override
@@ -33,6 +36,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tooltipAddActivityForDay => 'Añadir actividad para este día';
 
   @override
+  String get tooltipAddGoal => 'Añadir meta';
+
+  @override
   String get tooltipSettings => 'Ajustes';
 
   @override
@@ -40,6 +46,264 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tooltipAddGroup => 'Añadir grupo';
+
+  @override
+  String get goalsEmptyTitle => 'Aún no hay metas';
+
+  @override
+  String get goalsEmptyHint => 'Crea una meta para seguir completaciones y tiempo hacia un objetivo.';
+
+  @override
+  String get goalsEmptyAction => 'Añadir meta';
+
+  @override
+  String get goalsFilterActive => 'Activas';
+
+  @override
+  String get goalsFilterPaused => 'Pausadas';
+
+  @override
+  String get goalsFilterCompleted => 'Hechas';
+
+  @override
+  String get goalsFilterArchived => 'Archivadas';
+
+  @override
+  String get goalsFilterAll => 'Todas';
+
+  @override
+  String get goalsDetailTitle => 'Meta';
+
+  @override
+  String get goalsNotFound => 'Meta no encontrada';
+
+  @override
+  String get goalsDeleteTitle => '¿Eliminar meta?';
+
+  @override
+  String goalsDeleteConfirm(String title) {
+    return '¿Quitar \"$title\" y su historial de progreso?';
+  }
+
+  @override
+  String get goalsPause => 'Pausar';
+
+  @override
+  String get goalsResume => 'Reanudar';
+
+  @override
+  String get goalsArchive => 'Archivar';
+
+  @override
+  String goalsProgressPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String goalsRemainingCount(int count) {
+    return '$count restantes';
+  }
+
+  @override
+  String goalsRemainingMinutes(int minutes) {
+    return '$minutes min restantes';
+  }
+
+  @override
+  String get goalsDeadlineApproaching => 'Fecha cercana';
+
+  @override
+  String get goalsDeadlineOverdue => 'Vencida';
+
+  @override
+  String get goalsDeadlineFailed => 'Fallida';
+
+  @override
+  String get goalsRuleActivityCount => 'Completar una actividad N veces';
+
+  @override
+  String get goalsRuleActivityDuration => 'Tiempo en una actividad';
+
+  @override
+  String get goalsRuleGroupDuration => 'Tiempo en un grupo';
+
+  @override
+  String get goalsRuleGroupCount => 'Completar actividades del grupo N veces';
+
+  @override
+  String get goalsRuleGroupAnyCount => 'Completar cualquiera del grupo N veces';
+
+  @override
+  String get goalsRuleGroupAllComplete => 'Completar todas las actividades del grupo';
+
+  @override
+  String get goalsRuleMultiDuration => 'Tiempo en actividades seleccionadas';
+
+  @override
+  String get goalsRuleStreak => 'Racha de días consecutivos';
+
+  @override
+  String get goalsRuleTimeOfDay => 'Completar antes/después de una hora';
+
+  @override
+  String get goalsRuleComposite => 'Compuesta (metas hijas)';
+
+  @override
+  String get goalsFormNew => 'Nueva meta';
+
+  @override
+  String get goalsFormEdit => 'Editar meta';
+
+  @override
+  String get goalsFormTitle => 'Título';
+
+  @override
+  String get goalsFormRuleType => 'Tipo de meta';
+
+  @override
+  String get goalsFormTargetCount => 'Objetivo (veces)';
+
+  @override
+  String get goalsFormTargetMinutes => 'Objetivo (minutos)';
+
+  @override
+  String get goalsFormTargetInvalid => 'Introduce un número positivo';
+
+  @override
+  String get goalsFormLinkedActivities => 'Actividades vinculadas';
+
+  @override
+  String get goalsFormLinkedGroups => 'Grupos vinculados';
+
+  @override
+  String get goalsFormDependencies => 'Dependencias';
+
+  @override
+  String get goalsFormSelectActivity => 'Selecciona al menos una actividad';
+
+  @override
+  String get goalsFormSelectGroup => 'Selecciona al menos un grupo';
+
+  @override
+  String get goalsFormSelectDependency => 'Selecciona al menos una dependencia';
+
+  @override
+  String get goalsFormCompositeMode => 'Modo compuesto';
+
+  @override
+  String get goalsCompositeAll => 'Todas las hijas';
+
+  @override
+  String get goalsCompositeAny => 'Cualquier N hijas';
+
+  @override
+  String get goalsCompositeWeighted => 'Promedio ponderado';
+
+  @override
+  String get goalsFormBlockUntilUnlocked => 'Bloquear progreso hasta cumplir dependencias';
+
+  @override
+  String get goalsFormRecurrence => 'Recurrencia';
+
+  @override
+  String get goalsFormRecurrencePeriod => 'Se repite';
+
+  @override
+  String get goalsFormOneTime => 'Una sola vez';
+
+  @override
+  String get goalsFormInterval => 'Intervalo';
+
+  @override
+  String get goalsRecurrenceQuarterly => 'Trimestral';
+
+  @override
+  String get goalsFormDeadline => 'Fecha límite';
+
+  @override
+  String get goalsFormDeadlineKind => 'Tipo de fecha límite';
+
+  @override
+  String get goalsFormNoDeadline => 'Sin fecha límite';
+
+  @override
+  String get goalsFormDeadlineAbsolute => 'Fecha fija';
+
+  @override
+  String get goalsFormDeadlineRelative => 'Días tras inicio del ciclo';
+
+  @override
+  String get goalsFormDeadlineDays => 'Días tras el inicio del ciclo';
+
+  @override
+  String get goalsFormSaving => 'Guardando…';
+
+  @override
+  String get goalsLinkedSources => 'Fuentes vinculadas';
+
+  @override
+  String get goalsDanglingLink => 'Fuente eliminada';
+
+  @override
+  String get goalsDependencies => 'Dependencias';
+
+  @override
+  String goalsDependencyId(int id) {
+    return 'Meta #$id';
+  }
+
+  @override
+  String get goalsHistory => 'Historial de progreso';
+
+  @override
+  String goalsCycleSummary(int current, int target) {
+    return '$current / $target';
+  }
+
+  @override
+  String get goalsActiveStrip => 'Metas activas';
+
+  @override
+  String get goalsViewAll => 'Ver todas las metas';
+
+  @override
+  String get goalsNudges => 'Ideas';
+
+  @override
+  String get overviewStatCompleted => 'Completadas';
+
+  @override
+  String get overviewStatMinutes => 'Minutos hoy';
+
+  @override
+  String get overviewStatStreak => 'Racha';
+
+  @override
+  String get overviewDailyProgress => 'Progreso de hoy';
+
+  @override
+  String get overviewMarkDone => 'Marcar hecha';
+
+  @override
+  String get overviewLogTime => 'Registrar tiempo';
+
+  @override
+  String get overviewUndoDone => 'Deshacer';
+
+  @override
+  String get overviewCompletedBadge => 'Hecha';
+
+  @override
+  String get logTimeTitle => 'Registrar tiempo';
+
+  @override
+  String get logTimeMinutes => 'Minutos';
+
+  @override
+  String get logTimeInvalid => 'Introduce un número positivo de minutos';
+
+  @override
+  String get logTimeSave => 'Guardar';
 
   @override
   String get groupsTitle => 'Grupos';

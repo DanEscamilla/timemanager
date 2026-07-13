@@ -6,7 +6,7 @@ import '../router/app_routes.dart';
 import '../router/auth_controller.dart';
 import '../theme/tokens/app_breakpoints.dart';
 
-/// App shell: Overview + Activities + Calendar with URL-synced navigation.
+/// App shell: Overview + Activities + Calendar + Goals with URL-synced navigation.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
@@ -20,6 +20,7 @@ class HomeScreen extends StatelessWidget {
   static const _overviewIndex = 0;
   static const _activitiesIndex = 1;
   static const _calendarIndex = 2;
+  static const _goalsIndex = 3;
 
   void _onFabPressed() {
     switch (navigationShell.currentIndex) {
@@ -29,6 +30,8 @@ class HomeScreen extends StatelessWidget {
         authController.activitiesKey.currentState?.openCreateForm();
       case _calendarIndex:
         authController.calendarKey.currentState?.openCreateForSelectedDay();
+      case _goalsIndex:
+        authController.goalsKey.currentState?.openCreateForm();
     }
   }
 
@@ -36,7 +39,8 @@ class HomeScreen extends StatelessWidget {
     return switch (navigationShell.currentIndex) {
       _overviewIndex => l10n.navOverview,
       _activitiesIndex => l10n.navActivities,
-      _ => l10n.navCalendar,
+      _calendarIndex => l10n.navCalendar,
+      _ => l10n.navGoals,
     };
   }
 
@@ -69,6 +73,11 @@ class HomeScreen extends StatelessWidget {
         selectedIcon: const Icon(Icons.calendar_today),
         label: l10n.navCalendar,
       ),
+      NavigationDestination(
+        icon: const Icon(Icons.flag_outlined),
+        selectedIcon: const Icon(Icons.flag),
+        label: l10n.navGoals,
+      ),
     ];
 
     final railDestinations = [
@@ -87,11 +96,18 @@ class HomeScreen extends StatelessWidget {
         selectedIcon: const Icon(Icons.calendar_today),
         label: Text(l10n.navCalendar),
       ),
+      NavigationRailDestination(
+        icon: const Icon(Icons.flag_outlined),
+        selectedIcon: const Icon(Icons.flag),
+        label: Text(l10n.navGoals),
+      ),
     ];
 
-    final fabTooltip = index == _calendarIndex
-        ? l10n.tooltipAddActivityForDay
-        : l10n.tooltipAddActivity;
+    final fabTooltip = switch (index) {
+      _calendarIndex => l10n.tooltipAddActivityForDay,
+      _goalsIndex => l10n.tooltipAddGoal,
+      _ => l10n.tooltipAddActivity,
+    };
 
     return Scaffold(
       appBar: AppBar(

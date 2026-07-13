@@ -6,24 +6,34 @@ import type {
   Database,
   Group as GroupRow,
   NewActivity,
+  NewActivityCompletion,
+  NewGoalEvent,
   NewGroup,
   NewRecurrencePattern,
   RecurrencePattern as RecurrencePatternRow,
 } from "../../db/types/schema.ts";
+import { recomputeAffectedCycles } from "../../goals/progress.ts";
 import {
+  CompleteActivityInput,
   CreateActivityInput,
   CreateGroupInput,
+  LogTimeInput,
   RecurrenceConfig,
   RecurrencePatternInput,
   UpdateActivityInput,
   UpdateGroupInput,
 } from "../types.ts";
 import {
+  InvalidCompletionError,
   InvalidGroupError,
   validateActivitySchedule,
+  validateDurationMinutes,
   validateGroupColor,
   validateGroupName,
+  validateOccurrenceDate,
+  validatePositiveDuration,
 } from "../validation.ts";
+import { GoalMutation, GoalQuery } from "./goals_resolvers.ts";
 
 interface ParsedRecurrencePattern extends Omit<RecurrencePatternRow, "config"> {
   config: RecurrenceConfig;
@@ -78,6 +88,15 @@ async function resolveGroupId(
     throw new InvalidGroupError("group not found");
   }
   return group.id;
+}
+
+async function fetchOwnedActivity(activityId: number, userId: number) {
+  return await db
+    .selectFrom("activities")
+    .where("id", "=", activityId)
+    .where("user_id", "=", userId)
+    .selectAll()
+    .executeTakeFirst();
 }
 
 // Pylon resolves nested GraphQL fields from (possibly async) properties on
@@ -150,6 +169,32 @@ export const Query = {
       .executeTakeFirst();
     return row ? withActivityRelations(row) : null;
   },
+
+  activityCompletions: async (args?: {
+    activityId?: number;
+    fromDate?: string;
+    toDate?: string;
+  }) => {
+    const userId = requireUserId();
+    let query = db
+      .selectFrom("activity_completions")
+      .where("user_id", "=", userId)
+      .orderBy("occurrence_date", "desc")
+      .selectAll();
+
+    if (args?.activityId != null) {
+      query = query.where("activity_id", "=", args.activityId);
+    }
+    if (args?.fromDate) {
+      query = query.where("occurrence_date", ">=", args.fromDate);
+    }
+    if (args?.toDate) {
+      query = query.where("occurrence_date", "<=", args.toDate);
+    }
+    return await query.execute();
+  },
+
+  ...GoalQuery,
 };
 
 export const Mutation = {
@@ -367,6 +412,189 @@ export const Mutation = {
 
     return result.length > 0;
   },
+
+  completeActivity: async (args: { input: CompleteActivityInput }) => {
+    const userId = requireUserId();
+    const { input } = args;
+    const occurrenceDate = validateOccurrenceDate(input.occurrenceDate);
+    const durationMinutes = validateDurationMinutes(input.durationMinutes);
+
+    const activity = await fetchOwnedActivity(input.activityId, userId);
+    if (!activity) {
+      throw new InvalidCompletionError("activity not found");
+    }
+
+    const now = new Date().toISOString();
+    const completion = await db.transaction().execute(async (trx) => {
+      const existing = await trx
+        .selectFrom("activity_completions")
+        .where("activity_id", "=", activity.id)
+        .where("occurrence_date", "=", occurrenceDate)
+        .selectAll()
+        .executeTakeFirst();
+
+      if (existing) {
+        await trx
+          .deleteFrom("goal_events")
+          .where("completion_id", "=", existing.id)
+          .execute();
+      }
+
+      const completion = await trx
+        .insertInto("activity_completions")
+        .values({
+          activity_id: activity.id,
+          user_id: userId,
+          occurrence_date: occurrenceDate,
+          duration_minutes: durationMinutes,
+          completed_at: now,
+          metadata: input.notes
+            ? JSON.stringify({ notes: input.notes, title: activity.title })
+            : JSON.stringify({ title: activity.title }),
+        } as NewActivityCompletion)
+        .onConflict((oc) =>
+          oc.columns(["activity_id", "occurrence_date"]).doUpdateSet({
+            duration_minutes: durationMinutes,
+            completed_at: now,
+            metadata: input.notes
+              ? JSON.stringify({ notes: input.notes, title: activity.title })
+              : JSON.stringify({ title: activity.title }),
+          })
+        )
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      // Count event
+      await trx
+        .insertInto("goal_events")
+        .values({
+          user_id: userId,
+          source_type: "completion",
+          activity_id: activity.id,
+          group_id: activity.group_id,
+          completion_id: completion.id,
+          occurred_at: now,
+          occurrence_date: occurrenceDate,
+          metric: "count",
+          amount: 1,
+          metadata: null,
+          created_at: now,
+        } as NewGoalEvent)
+        .execute();
+
+      // Optional duration event when minutes provided or derived from schedule.
+      let minutes = durationMinutes;
+      if (minutes == null) {
+        // Derive from scheduled slot when possible.
+        const [sh, sm] = activity.start_time.split(":").map(Number);
+        const [eh, em] = activity.end_time.split(":").map(Number);
+        const derived = (eh * 60 + em) - (sh * 60 + sm);
+        if (derived > 0) minutes = derived;
+      }
+      if (minutes != null && minutes > 0) {
+        await trx
+          .insertInto("goal_events")
+          .values({
+            user_id: userId,
+            source_type: "completion",
+            activity_id: activity.id,
+            group_id: activity.group_id,
+            completion_id: completion.id,
+            occurred_at: now,
+            occurrence_date: occurrenceDate,
+            metric: "duration",
+            amount: minutes,
+            metadata: null,
+            created_at: now,
+          } as NewGoalEvent)
+          .execute();
+      }
+
+      return completion;
+    });
+
+    await recomputeAffectedCycles(db, userId, {
+      activityId: activity.id,
+      groupId: activity.group_id,
+    });
+
+    return completion;
+  },
+
+  undoCompletion: async (args: { id: number }) => {
+    const userId = requireUserId();
+    const existing = await db
+      .selectFrom("activity_completions")
+      .where("id", "=", args.id)
+      .where("user_id", "=", userId)
+      .selectAll()
+      .executeTakeFirst();
+    if (!existing) return false;
+
+    const activity = await fetchOwnedActivity(existing.activity_id, userId);
+
+    await db.transaction().execute(async (trx) => {
+      await trx
+        .deleteFrom("goal_events")
+        .where("completion_id", "=", existing.id)
+        .execute();
+      await trx
+        .deleteFrom("activity_completions")
+        .where("id", "=", existing.id)
+        .execute();
+    });
+
+    await recomputeAffectedCycles(db, userId, {
+      activityId: existing.activity_id,
+      groupId: activity?.group_id ?? null,
+    });
+
+    return true;
+  },
+
+  logTime: async (args: { input: LogTimeInput }) => {
+    const userId = requireUserId();
+    const { input } = args;
+    const minutes = validatePositiveDuration(input.durationMinutes);
+    const occurrenceDate = validateOccurrenceDate(
+      input.occurrenceDate ?? new Date().toISOString().slice(0, 10),
+    );
+
+    const activity = await fetchOwnedActivity(input.activityId, userId);
+    if (!activity) {
+      throw new InvalidCompletionError("activity not found");
+    }
+
+    const now = new Date().toISOString();
+    const event = await db
+      .insertInto("goal_events")
+      .values({
+        user_id: userId,
+        source_type: "time_log",
+        activity_id: activity.id,
+        group_id: activity.group_id,
+        completion_id: null,
+        occurred_at: now,
+        occurrence_date: occurrenceDate,
+        metric: "duration",
+        amount: minutes,
+        metadata: input.notes
+          ? JSON.stringify({ notes: input.notes })
+          : null,
+        created_at: now,
+      } as NewGoalEvent)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    await recomputeAffectedCycles(db, userId, {
+      activityId: activity.id,
+      groupId: activity.group_id,
+    });
+
+    return event;
+  },
+
+  ...GoalMutation,
 };
 
 export const resolvers = {

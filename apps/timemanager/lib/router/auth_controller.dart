@@ -2,9 +2,11 @@ import 'package:flutter/widgets.dart';
 
 import '../screens/activities_screen.dart';
 import '../screens/calendar_screen.dart';
+import '../screens/goals_screen.dart';
 import '../screens/overview_screen.dart';
 import '../services/activity_repository.dart';
 import '../services/auth_service.dart';
+import '../services/goal_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
 
@@ -16,9 +18,13 @@ class AuthController extends ChangeNotifier {
     AuthService? authService,
     ActivityRepository? activityRepository,
     GroupRepository? groupRepository,
+    GoalRepository? goalRepository,
+    CompletionRepository? completionRepository,
   })  : _auth = authService ?? AuthService(),
         _activityRepository = activityRepository,
-        _groupRepository = groupRepository;
+        _groupRepository = groupRepository,
+        _goalRepository = goalRepository,
+        _completionRepository = completionRepository;
 
   final AuthService _auth;
 
@@ -27,10 +33,13 @@ class AuthController extends ChangeNotifier {
 
   ActivityRepository? _activityRepository;
   GroupRepository? _groupRepository;
+  GoalRepository? _goalRepository;
+  CompletionRepository? _completionRepository;
 
   final overviewKey = GlobalKey<OverviewScreenState>();
   final activitiesKey = GlobalKey<ActivitiesScreenState>();
   final calendarKey = GlobalKey<CalendarScreenState>();
+  final goalsKey = GlobalKey<GoalsScreenState>();
 
   AuthService get authService => _auth;
 
@@ -46,6 +55,18 @@ class AuthController extends ChangeNotifier {
 
   GroupRepository get groupRepository {
     final repo = _groupRepository;
+    assert(repo != null, 'Session services require a signed-in user');
+    return repo!;
+  }
+
+  GoalRepository get goalRepository {
+    final repo = _goalRepository;
+    assert(repo != null, 'Session services require a signed-in user');
+    return repo!;
+  }
+
+  CompletionRepository get completionRepository {
+    final repo = _completionRepository;
     assert(repo != null, 'Session services require a signed-in user');
     return repo!;
   }
@@ -81,6 +102,8 @@ class AuthController extends ChangeNotifier {
     await _auth.signOut();
     _activityRepository = null;
     _groupRepository = null;
+    _goalRepository = null;
+    _completionRepository = null;
     _signedIn = false;
     notifyListeners();
   }
@@ -89,6 +112,7 @@ class AuthController extends ChangeNotifier {
     overviewKey.currentState?.reload();
     activitiesKey.currentState?.reload();
     calendarKey.currentState?.reload();
+    goalsKey.currentState?.reload();
   }
 
   void _ensureSessionServices() {
@@ -102,5 +126,7 @@ class AuthController extends ChangeNotifier {
     );
     _activityRepository = ActivityRepository(client: client);
     _groupRepository = GroupRepository(client: client);
+    _goalRepository = GoalRepository(client: client);
+    _completionRepository = CompletionRepository(client: client);
   }
 }

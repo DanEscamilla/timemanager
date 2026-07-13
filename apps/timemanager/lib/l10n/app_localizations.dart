@@ -119,6 +119,12 @@ abstract class AppLocalizations {
   /// **'Overview'**
   String get navOverview;
 
+  /// No description provided for @navGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get navGoals;
+
   /// No description provided for @tooltipRefresh.
   ///
   /// In en, this message translates to:
@@ -143,6 +149,12 @@ abstract class AppLocalizations {
   /// **'Add activity for this day'**
   String get tooltipAddActivityForDay;
 
+  /// No description provided for @tooltipAddGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add goal'**
+  String get tooltipAddGoal;
+
   /// No description provided for @tooltipSettings.
   ///
   /// In en, this message translates to:
@@ -160,6 +172,498 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add group'**
   String get tooltipAddGroup;
+
+  /// No description provided for @goalsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No goals yet'**
+  String get goalsEmptyTitle;
+
+  /// No description provided for @goalsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a goal to track completions and time toward a target.'**
+  String get goalsEmptyHint;
+
+  /// No description provided for @goalsEmptyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add goal'**
+  String get goalsEmptyAction;
+
+  /// No description provided for @goalsFilterActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get goalsFilterActive;
+
+  /// No description provided for @goalsFilterPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get goalsFilterPaused;
+
+  /// No description provided for @goalsFilterCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get goalsFilterCompleted;
+
+  /// No description provided for @goalsFilterArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get goalsFilterArchived;
+
+  /// No description provided for @goalsFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get goalsFilterAll;
+
+  /// No description provided for @goalsDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get goalsDetailTitle;
+
+  /// No description provided for @goalsNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal not found'**
+  String get goalsNotFound;
+
+  /// No description provided for @goalsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete goal?'**
+  String get goalsDeleteTitle;
+
+  /// No description provided for @goalsDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{title}\" and its progress history?'**
+  String goalsDeleteConfirm(String title);
+
+  /// No description provided for @goalsPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get goalsPause;
+
+  /// No description provided for @goalsResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get goalsResume;
+
+  /// No description provided for @goalsArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get goalsArchive;
+
+  /// No description provided for @goalsProgressPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String goalsProgressPercent(int percent);
+
+  /// No description provided for @goalsRemainingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} left'**
+  String goalsRemainingCount(int count);
+
+  /// No description provided for @goalsRemainingMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min left'**
+  String goalsRemainingMinutes(int minutes);
+
+  /// No description provided for @goalsDeadlineApproaching.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline soon'**
+  String get goalsDeadlineApproaching;
+
+  /// No description provided for @goalsDeadlineOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get goalsDeadlineOverdue;
+
+  /// No description provided for @goalsDeadlineFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get goalsDeadlineFailed;
+
+  /// No description provided for @goalsRuleActivityCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete an activity N times'**
+  String get goalsRuleActivityCount;
+
+  /// No description provided for @goalsRuleActivityDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Time on an activity'**
+  String get goalsRuleActivityDuration;
+
+  /// No description provided for @goalsRuleGroupDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Time on a group'**
+  String get goalsRuleGroupDuration;
+
+  /// No description provided for @goalsRuleGroupCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete group activities N times'**
+  String get goalsRuleGroupCount;
+
+  /// No description provided for @goalsRuleGroupAnyCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete any from a group N times'**
+  String get goalsRuleGroupAnyCount;
+
+  /// No description provided for @goalsRuleGroupAllComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete all activities in a group'**
+  String get goalsRuleGroupAllComplete;
+
+  /// No description provided for @goalsRuleMultiDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Time across selected activities'**
+  String get goalsRuleMultiDuration;
+
+  /// No description provided for @goalsRuleStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Consecutive-day streak'**
+  String get goalsRuleStreak;
+
+  /// No description provided for @goalsRuleTimeOfDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete before/after a time'**
+  String get goalsRuleTimeOfDay;
+
+  /// No description provided for @goalsRuleComposite.
+  ///
+  /// In en, this message translates to:
+  /// **'Composite (child goals)'**
+  String get goalsRuleComposite;
+
+  /// No description provided for @goalsFormNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New goal'**
+  String get goalsFormNew;
+
+  /// No description provided for @goalsFormEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit goal'**
+  String get goalsFormEdit;
+
+  /// No description provided for @goalsFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get goalsFormTitle;
+
+  /// No description provided for @goalsFormRuleType.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal type'**
+  String get goalsFormRuleType;
+
+  /// No description provided for @goalsFormTargetCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Target count'**
+  String get goalsFormTargetCount;
+
+  /// No description provided for @goalsFormTargetMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Target minutes'**
+  String get goalsFormTargetMinutes;
+
+  /// No description provided for @goalsFormTargetInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive number'**
+  String get goalsFormTargetInvalid;
+
+  /// No description provided for @goalsFormLinkedActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked activities'**
+  String get goalsFormLinkedActivities;
+
+  /// No description provided for @goalsFormLinkedGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked groups'**
+  String get goalsFormLinkedGroups;
+
+  /// No description provided for @goalsFormDependencies.
+  ///
+  /// In en, this message translates to:
+  /// **'Dependencies'**
+  String get goalsFormDependencies;
+
+  /// No description provided for @goalsFormSelectActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one activity'**
+  String get goalsFormSelectActivity;
+
+  /// No description provided for @goalsFormSelectGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one group'**
+  String get goalsFormSelectGroup;
+
+  /// No description provided for @goalsFormSelectDependency.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one dependency'**
+  String get goalsFormSelectDependency;
+
+  /// No description provided for @goalsFormCompositeMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Composite mode'**
+  String get goalsFormCompositeMode;
+
+  /// No description provided for @goalsCompositeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All children'**
+  String get goalsCompositeAll;
+
+  /// No description provided for @goalsCompositeAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any N children'**
+  String get goalsCompositeAny;
+
+  /// No description provided for @goalsCompositeWeighted.
+  ///
+  /// In en, this message translates to:
+  /// **'Weighted average'**
+  String get goalsCompositeWeighted;
+
+  /// No description provided for @goalsFormBlockUntilUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Block progress until dependencies met'**
+  String get goalsFormBlockUntilUnlocked;
+
+  /// No description provided for @goalsFormRecurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurrence'**
+  String get goalsFormRecurrence;
+
+  /// No description provided for @goalsFormRecurrencePeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeats'**
+  String get goalsFormRecurrencePeriod;
+
+  /// No description provided for @goalsFormOneTime.
+  ///
+  /// In en, this message translates to:
+  /// **'One-time'**
+  String get goalsFormOneTime;
+
+  /// No description provided for @goalsFormInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval'**
+  String get goalsFormInterval;
+
+  /// No description provided for @goalsRecurrenceQuarterly.
+  ///
+  /// In en, this message translates to:
+  /// **'Quarterly'**
+  String get goalsRecurrenceQuarterly;
+
+  /// No description provided for @goalsFormDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get goalsFormDeadline;
+
+  /// No description provided for @goalsFormDeadlineKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline type'**
+  String get goalsFormDeadlineKind;
+
+  /// No description provided for @goalsFormNoDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'No deadline'**
+  String get goalsFormNoDeadline;
+
+  /// No description provided for @goalsFormDeadlineAbsolute.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed date'**
+  String get goalsFormDeadlineAbsolute;
+
+  /// No description provided for @goalsFormDeadlineRelative.
+  ///
+  /// In en, this message translates to:
+  /// **'Days after cycle starts'**
+  String get goalsFormDeadlineRelative;
+
+  /// No description provided for @goalsFormDeadlineDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days after cycle start'**
+  String get goalsFormDeadlineDays;
+
+  /// No description provided for @goalsFormSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get goalsFormSaving;
+
+  /// No description provided for @goalsLinkedSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked sources'**
+  String get goalsLinkedSources;
+
+  /// No description provided for @goalsDanglingLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed source'**
+  String get goalsDanglingLink;
+
+  /// No description provided for @goalsDependencies.
+  ///
+  /// In en, this message translates to:
+  /// **'Dependencies'**
+  String get goalsDependencies;
+
+  /// No description provided for @goalsDependencyId.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal #{id}'**
+  String goalsDependencyId(int id);
+
+  /// No description provided for @goalsHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress history'**
+  String get goalsHistory;
+
+  /// No description provided for @goalsCycleSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {target}'**
+  String goalsCycleSummary(int current, int target);
+
+  /// No description provided for @goalsActiveStrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Active goals'**
+  String get goalsActiveStrip;
+
+  /// No description provided for @goalsViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all goals'**
+  String get goalsViewAll;
+
+  /// No description provided for @goalsNudges.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get goalsNudges;
+
+  /// No description provided for @overviewStatCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get overviewStatCompleted;
+
+  /// No description provided for @overviewStatMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes today'**
+  String get overviewStatMinutes;
+
+  /// No description provided for @overviewStatStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get overviewStatStreak;
+
+  /// No description provided for @overviewDailyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s progress'**
+  String get overviewDailyProgress;
+
+  /// No description provided for @overviewMarkDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark done'**
+  String get overviewMarkDone;
+
+  /// No description provided for @overviewLogTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Log time'**
+  String get overviewLogTime;
+
+  /// No description provided for @overviewUndoDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get overviewUndoDone;
+
+  /// No description provided for @overviewCompletedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get overviewCompletedBadge;
+
+  /// No description provided for @logTimeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log time'**
+  String get logTimeTitle;
+
+  /// No description provided for @logTimeMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get logTimeMinutes;
+
+  /// No description provided for @logTimeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive number of minutes'**
+  String get logTimeInvalid;
+
+  /// No description provided for @logTimeSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get logTimeSave;
 
   /// No description provided for @groupsTitle.
   ///

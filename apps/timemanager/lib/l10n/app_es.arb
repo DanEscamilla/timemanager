@@ -6,14 +6,129 @@
   "navActivities": "Actividades",
   "navCalendar": "Calendario",
   "navOverview": "Resumen",
+  "navGoals": "Metas",
   "tooltipRefresh": "Actualizar",
   "tooltipSignOut": "Cerrar sesión",
   "tooltipAddActivity": "Añadir actividad",
   "tooltipAddActivityForDay": "Añadir actividad para este día",
+  "tooltipAddGoal": "Añadir meta",
   "tooltipSettings": "Ajustes",
   "tooltipGroups": "Grupos",
   "tooltipAddGroup": "Añadir grupo",
 
+  "goalsEmptyTitle": "Aún no hay metas",
+  "goalsEmptyHint": "Crea una meta para seguir completaciones y tiempo hacia un objetivo.",
+  "goalsEmptyAction": "Añadir meta",
+  "goalsFilterActive": "Activas",
+  "goalsFilterPaused": "Pausadas",
+  "goalsFilterCompleted": "Hechas",
+  "goalsFilterArchived": "Archivadas",
+  "goalsFilterAll": "Todas",
+  "goalsDetailTitle": "Meta",
+  "goalsNotFound": "Meta no encontrada",
+  "goalsDeleteTitle": "¿Eliminar meta?",
+  "goalsDeleteConfirm": "¿Quitar \"{title}\" y su historial de progreso?",
+  "@goalsDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "goalsPause": "Pausar",
+  "goalsResume": "Reanudar",
+  "goalsArchive": "Archivar",
+  "goalsProgressPercent": "{percent}%",
+  "@goalsProgressPercent": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "goalsRemainingCount": "{count} restantes",
+  "@goalsRemainingCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "goalsRemainingMinutes": "{minutes} min restantes",
+  "@goalsRemainingMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "goalsDeadlineApproaching": "Fecha cercana",
+  "goalsDeadlineOverdue": "Vencida",
+  "goalsDeadlineFailed": "Fallida",
+  "goalsRuleActivityCount": "Completar una actividad N veces",
+  "goalsRuleActivityDuration": "Tiempo en una actividad",
+  "goalsRuleGroupDuration": "Tiempo en un grupo",
+  "goalsRuleGroupCount": "Completar actividades del grupo N veces",
+  "goalsRuleGroupAnyCount": "Completar cualquiera del grupo N veces",
+  "goalsRuleGroupAllComplete": "Completar todas las actividades del grupo",
+  "goalsRuleMultiDuration": "Tiempo en actividades seleccionadas",
+  "goalsRuleStreak": "Racha de días consecutivos",
+  "goalsRuleTimeOfDay": "Completar antes/después de una hora",
+  "goalsRuleComposite": "Compuesta (metas hijas)",
+  "goalsFormNew": "Nueva meta",
+  "goalsFormEdit": "Editar meta",
+  "goalsFormTitle": "Título",
+  "goalsFormRuleType": "Tipo de meta",
+  "goalsFormTargetCount": "Objetivo (veces)",
+  "goalsFormTargetMinutes": "Objetivo (minutos)",
+  "goalsFormTargetInvalid": "Introduce un número positivo",
+  "goalsFormLinkedActivities": "Actividades vinculadas",
+  "goalsFormLinkedGroups": "Grupos vinculados",
+  "goalsFormDependencies": "Dependencias",
+  "goalsFormSelectActivity": "Selecciona al menos una actividad",
+  "goalsFormSelectGroup": "Selecciona al menos un grupo",
+  "goalsFormSelectDependency": "Selecciona al menos una dependencia",
+  "goalsFormCompositeMode": "Modo compuesto",
+  "goalsCompositeAll": "Todas las hijas",
+  "goalsCompositeAny": "Cualquier N hijas",
+  "goalsCompositeWeighted": "Promedio ponderado",
+  "goalsFormBlockUntilUnlocked": "Bloquear progreso hasta cumplir dependencias",
+  "goalsFormRecurrence": "Recurrencia",
+  "goalsFormRecurrencePeriod": "Se repite",
+  "goalsFormOneTime": "Una sola vez",
+  "goalsFormInterval": "Intervalo",
+  "goalsRecurrenceQuarterly": "Trimestral",
+  "goalsFormDeadline": "Fecha límite",
+  "goalsFormDeadlineKind": "Tipo de fecha límite",
+  "goalsFormNoDeadline": "Sin fecha límite",
+  "goalsFormDeadlineAbsolute": "Fecha fija",
+  "goalsFormDeadlineRelative": "Días tras inicio del ciclo",
+  "goalsFormDeadlineDays": "Días tras el inicio del ciclo",
+  "goalsFormSaving": "Guardando…",
+  "goalsLinkedSources": "Fuentes vinculadas",
+  "goalsDanglingLink": "Fuente eliminada",
+  "goalsDependencies": "Dependencias",
+  "goalsDependencyId": "Meta #{id}",
+  "@goalsDependencyId": {
+    "placeholders": {
+      "id": { "type": "int" }
+    }
+  },
+  "goalsHistory": "Historial de progreso",
+  "goalsCycleSummary": "{current} / {target}",
+  "@goalsCycleSummary": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "target": { "type": "int" }
+    }
+  },
+  "goalsActiveStrip": "Metas activas",
+  "goalsViewAll": "Ver todas las metas",
+  "goalsNudges": "Ideas",
+  "overviewStatCompleted": "Completadas",
+  "overviewStatMinutes": "Minutos hoy",
+  "overviewStatStreak": "Racha",
+  "overviewDailyProgress": "Progreso de hoy",
+  "overviewMarkDone": "Marcar hecha",
+  "overviewLogTime": "Registrar tiempo",
+  "overviewUndoDone": "Deshacer",
+  "overviewCompletedBadge": "Hecha",
+  "logTimeTitle": "Registrar tiempo",
+  "logTimeMinutes": "Minutos",
+  "logTimeInvalid": "Introduce un número positivo de minutos",
+  "logTimeSave": "Guardar",
   "groupsTitle": "Grupos",
   "groupsEmptyTitle": "Aún no hay grupos",
   "groupsEmptyHint": "Crea un grupo para organizar tus actividades por color.",
