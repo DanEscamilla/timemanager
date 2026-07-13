@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'theme/app_theme.dart';
 import 'widgets/auth_gate.dart';
 
 void main() {
@@ -13,10 +14,7 @@ class TimeManagerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Time Manager',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
-      ),
+      theme: buildAppTheme(),
       home: const AuthGate(),
     );
   }

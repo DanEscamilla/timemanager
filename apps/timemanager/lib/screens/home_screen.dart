@@ -6,7 +6,7 @@ import '../services/graphql_client.dart';
 import 'activities_screen.dart';
 import 'calendar_screen.dart';
 
-/// Bottom-nav shell: Activities list + day calendar.
+/// Bottom-nav shell: Activities list + Day/Week/Month calendar.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
