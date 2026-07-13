@@ -32,13 +32,13 @@ Data flow: Flutter authenticates via SuperTokens (`user-manager-api` `:3001`), t
 ## Common commands
 
 ```bash
-pnpm timemanager      # Flutter + GraphQL API (also starts user-manager-api + DB)
+pnpm timemanager      # GraphQL API + auth + DB; launch Flutter via IDE (Run and Debug → timemanager)
 pnpm user-manager     # nx run-many -t serve -p user-manager-web,user-manager-api
 pnpm db:up            # start Postgres + pgAdmin, then run migrations
 pnpm db:down          # stop the DB stack
 ```
 
-`timemanager:serve` depends on `user-manager-api:serve` (continuous); `timemanager-api:serve` depends on `migrate` (which starts the DB). More detail in [`.ai/workflows.md`](.ai/workflows.md).
+`timemanager-api:serve` depends on `migrate` (DB) and `user-manager-api:serve` (auth). Flutter is launched from `.vscode/launch.json`, not from `pnpm timemanager`. More detail in [`.ai/workflows.md`](.ai/workflows.md).
 
 ## Reference docs
 

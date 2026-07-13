@@ -14,4 +14,4 @@ Key files:
 
 Auth flow: clients never call the SuperTokens Core directly — they call this backend, which calls the Core. SuperTokens auto-handles requests under `${apiDomain}/auth`.
 
-Commands: `nx serve user-manager-api` (continuous; also started by `nx serve timemanager`), `nx build user-manager-api` (`tsc`), `nx lint user-manager-api`.
+Commands: `nx serve user-manager-api` (continuous; also started by `pnpm timemanager` / `nx serve timemanager-api`), `nx build user-manager-api` (`tsc`), `nx lint user-manager-api`.

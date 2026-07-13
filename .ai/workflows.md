@@ -5,18 +5,23 @@ All commands run from the repo root unless noted. Prefer Nx targets and the root
 ## Run the apps
 
 ```bash
-# timemanager stack (Flutter + Deno GraphQL API; Flutter also starts user-manager-api; GraphQL API starts the DB)
-pnpm timemanager            # nx run-many -t serve -p timemanager,timemanager-api
+# timemanager APIs (GraphQL + auth; also starts DB via migrate)
+pnpm timemanager            # nx serve timemanager-api
+
+# Flutter client — Run and Debug in the IDE (launch config: "timemanager")
+# Chrome on :4444 by default; use "timemanager (macos)" for native hot reload
 
 # user-manager stack (React web + Express API)
 pnpm user-manager           # nx run-many -t serve -p user-manager-web,user-manager-api
 
 # individual projects
 nx serve timemanager        # flutter run -d chrome --web-port=4444 (also starts user-manager-api; override: -- -d macos|ios|…)
-nx serve timemanager-api    # deno task dev (also runs migrate → timemanager-db:up)
+nx serve timemanager-api    # deno task dev (also runs migrate → DB + user-manager-api)
 nx serve user-manager-web   # vite dev server
 nx serve user-manager-api   # express server
 ```
+
+`pnpm timemanager` / `nx serve timemanager-api` starts the GraphQL API on `:3000`, SuperTokens auth on `:3001`, and Postgres. Launch the Flutter app from the IDE with **Run and Debug → timemanager** (debug mode, hot reload on save).
 
 ## Database
 

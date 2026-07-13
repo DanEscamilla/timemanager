@@ -1,23 +1,40 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "timemanager (debug mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "debug"
-        },
-        {
-            "name": "timemanager (profile mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "timemanager (release mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        }
-    ]
-} 
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "timemanager",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "chrome",
+      "toolArgs": ["--web-port=4444"]
+    },
+    {
+      "name": "timemanager (macos)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "macos"
+    },
+    {
+      "name": "timemanager (profile)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "profile",
+      "deviceId": "chrome",
+      "toolArgs": ["--web-port=4444"]
+    },
+    {
+      "name": "timemanager (release)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "release",
+      "deviceId": "chrome",
+      "toolArgs": ["--web-port=4444"]
+    }
+  ]
+}

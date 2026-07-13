@@ -6,7 +6,7 @@ alwaysApply: true
 Run everything through Nx from the repo root. Convenience scripts in root `package.json`:
 
 ```bash
-pnpm timemanager      # nx run-many -t serve -p timemanager,timemanager-api
+pnpm timemanager      # nx serve timemanager-api (GraphQL + auth + DB); Flutter via IDE launch.json
 pnpm user-manager     # nx run-many -t serve -p user-manager-web,user-manager-api
 pnpm db:up            # nx run timemanager-api:migrate (starts Postgres + pgAdmin, then migrates)
 pnpm db:down          # nx run timemanager-db:down
@@ -23,6 +23,6 @@ Project tags (in each `project.json`) — use for filtering and to understand sc
 Notes:
 
 - `timemanager-api:migrate` `dependsOn` `timemanager-db:up`; `serve` and `seed` depend on `migrate`, so schema is applied before the API or seed runs.
-- `timemanager:serve` `dependsOn` `user-manager-api:serve` (continuous), so the auth API starts with the Flutter client.
+- `timemanager-api:serve` `dependsOn` `user-manager-api:serve` (continuous), so auth starts with the GraphQL API; Flutter is launched from the IDE (`.vscode/launch.json`).
 - Deno and Flutter targets are `nx:run-commands` wrappers (no `@nx/deno` plugin).
 - Full workflows (seed, migrations, smoke checks): [.ai/workflows.md](mdc:.ai/workflows.md).
