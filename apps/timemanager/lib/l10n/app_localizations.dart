@@ -197,6 +197,12 @@ abstract class AppLocalizations {
   /// **'Active'**
   String get goalsFilterActive;
 
+  /// No description provided for @goalsFilterScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get goalsFilterScheduled;
+
   /// No description provided for @goalsFilterPaused.
   ///
   /// In en, this message translates to:
@@ -220,6 +226,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All'**
   String get goalsFilterAll;
+
+  /// No description provided for @goalsStartsAtScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get goalsStartsAtScheduled;
+
+  /// No description provided for @goalsStartsInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts in {days} days'**
+  String goalsStartsInDays(int days);
+
+  /// No description provided for @goalsStartsTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts tomorrow'**
+  String get goalsStartsTomorrow;
+
+  /// No description provided for @goalsStartsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts today'**
+  String get goalsStartsToday;
+
+  /// No description provided for @goalsFormStartsAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get goalsFormStartsAt;
+
+  /// No description provided for @goalsFormStartsAtCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a start date'**
+  String get goalsFormStartsAtCustom;
+
+  /// No description provided for @goalsFormStartsAtHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave off to start immediately when created.'**
+  String get goalsFormStartsAtHint;
+
+  /// No description provided for @goalsStartsAtConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move start later?'**
+  String get goalsStartsAtConfirmTitle;
+
+  /// No description provided for @goalsStartsAtConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving the start date later may remove progress already counted. Continue?'**
+  String get goalsStartsAtConfirmBody;
+
+  /// No description provided for @goalsStartsAtConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Move start'**
+  String get goalsStartsAtConfirmAction;
+
+  /// No description provided for @goalsStartingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting soon'**
+  String get goalsStartingSoon;
 
   /// No description provided for @goalsDetailTitle.
   ///

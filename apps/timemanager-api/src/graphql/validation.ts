@@ -302,7 +302,44 @@ export function validateGoalDeadline(
   return deadline
 }
 
-export function validateCreateGoalInput(input: CreateGoalInput) {
+const MAX_START_YEARS_AHEAD = 5
+
+/** Parse and validate an optional ISO-8601 startsAt. Returns null if omitted. */
+export function validateStartsAt(
+  startsAt: string | null | undefined,
+  now: Date = new Date(),
+): Date | null {
+  if (startsAt == null || startsAt === '') return null
+  const parsed = new Date(startsAt)
+  if (Number.isNaN(parsed.getTime())) {
+    throw new InvalidGoalError('startsAt must be a valid ISO-8601 datetime')
+  }
+  const max = new Date(now)
+  max.setUTCFullYear(max.getUTCFullYear() + MAX_START_YEARS_AHEAD)
+  if (parsed > max) {
+    throw new InvalidGoalError(
+      `startsAt must be within ${MAX_START_YEARS_AHEAD} years from now`,
+    )
+  }
+  return parsed
+}
+
+/** Reject absolute deadlines that end before the goal starts. */
+export function assertDeadlineAfterStart(
+  startsAt: Date,
+  deadline: GoalDeadlineInput | null | undefined,
+): void {
+  if (!deadline || deadline.kind !== 'absolute' || !deadline.date) return
+  const deadlineAt = new Date(deadline.date + 'T23:59:59.999Z')
+  if (deadlineAt < startsAt) {
+    throw new InvalidGoalError('deadline must be on or after the goal start')
+  }
+}
+
+export function validateCreateGoalInput(
+  input: CreateGoalInput,
+  now: Date = new Date(),
+) {
   const title = validateGoalTitle(input.title)
   const color = validateGoalColor(input.color)
   const ruleType = validateRuleType(input.ruleType)
@@ -314,6 +351,8 @@ export function validateCreateGoalInput(input: CreateGoalInput) {
   const dependencies = validateGoalDependencies(input.dependencies, ruleType)
   const recurrence = validateGoalRecurrence(input.recurrence)
   const deadline = validateGoalDeadline(input.deadline)
+  const startsAt = validateStartsAt(input.startsAt, now) ?? now
+  assertDeadlineAfterStart(startsAt, deadline)
 
   if (input.config?.beforeTime && !TIME_RE.test(input.config.beforeTime)) {
     throw new InvalidGoalError('beforeTime must be HH:mm')
@@ -331,10 +370,15 @@ export function validateCreateGoalInput(input: CreateGoalInput) {
     dependencies,
     recurrence,
     deadline,
+    startsAt,
   }
 }
 
-export function validateUpdateGoalInput(input: UpdateGoalInput, existingRuleType: string) {
+export function validateUpdateGoalInput(
+  input: UpdateGoalInput,
+  existingRuleType: string,
+  now: Date = new Date(),
+) {
   const ruleType = input.ruleType != null
     ? validateRuleType(input.ruleType)
     : existingRuleType
@@ -364,8 +408,11 @@ export function validateUpdateGoalInput(input: UpdateGoalInput, existingRuleType
   const deadline = input.deadline !== undefined
     ? validateGoalDeadline(input.deadline)
     : undefined
+  const startsAt = input.startsAt !== undefined
+    ? validateStartsAt(input.startsAt, now)
+    : undefined
 
-  return { ruleType, links, dependencies, recurrence, deadline }
+  return { ruleType, links, dependencies, recurrence, deadline, startsAt }
 }
 
 /**

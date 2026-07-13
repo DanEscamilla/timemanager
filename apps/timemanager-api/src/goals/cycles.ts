@@ -7,7 +7,14 @@ import type {
   GoalRecurrenceConfig,
   NewGoalCycle,
 } from '../db/types/schema.ts'
+import { cycleHasStarted } from './lifecycle.ts'
 import { recomputeCycle } from './progress.ts'
+
+export {
+  cycleHasStarted,
+  lifecyclePhase,
+  type GoalLifecyclePhase,
+} from './lifecycle.ts'
 
 type DbLike = Kysely<Database> | Transaction<Database>
 
@@ -119,6 +126,7 @@ async function writeSnapshot(
 
 /**
  * Create the first cycle for a newly created goal.
+ * Uses goal.starts_at as the cycle window start (not wall-clock now).
  */
 export async function createInitialCycle(
   db: DbLike,
@@ -127,7 +135,7 @@ export async function createInitialCycle(
 ): Promise<GoalCycle> {
   const recurrence = parseJson<GoalRecurrenceConfig>(goal.recurrence)
   const deadline = parseJson<GoalDeadlineConfig>(goal.deadline)
-  const startsAt = now
+  const startsAt = new Date(goal.starts_at)
   const endsAt = computeCycleEnd(startsAt, recurrence)
   const deadlineAt = computeDeadlineAt(startsAt, deadline)
 
@@ -151,6 +159,37 @@ export async function createInitialCycle(
 }
 
 /**
+ * Rewrite an active cycle's window from a new starts_at (and optional
+ * updated goal recurrence/deadline/target). Used when editing start date
+ * before progress / when rescheduling an unstarted cycle.
+ */
+export async function rescheduleActiveCycle(
+  db: DbLike,
+  goal: Goal,
+  cycle: GoalCycle,
+  startsAt: Date,
+  now: Date = new Date(),
+): Promise<GoalCycle> {
+  const recurrence = parseJson<GoalRecurrenceConfig>(goal.recurrence)
+  const deadline = parseJson<GoalDeadlineConfig>(goal.deadline)
+  const endsAt = computeCycleEnd(startsAt, recurrence)
+  const deadlineAt = computeDeadlineAt(startsAt, deadline)
+
+  return await db
+    .updateTable('goal_cycles')
+    .set({
+      starts_at: startsAt.toISOString(),
+      ends_at: endsAt ? endsAt.toISOString() : null,
+      deadline_at: deadlineAt ? deadlineAt.toISOString() : null,
+      target_value: Number(goal.target_value),
+      updated_at: now.toISOString(),
+    })
+    .where('id', '=', cycle.id)
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+/**
  * Close an active cycle and open the next one when recurrence applies.
  * Uses lazy-on-read: call before returning goals to the client.
  */
@@ -160,6 +199,11 @@ export async function rollOverIfNeeded(
   cycle: GoalCycle,
   now: Date = new Date(),
 ): Promise<GoalCycle> {
+  // Do not roll over, miss-backfill, or fail deadlines before the cycle starts.
+  if (!cycleHasStarted(cycle, now)) {
+    return cycle
+  }
+
   const recurrence = parseJson<GoalRecurrenceConfig>(goal.recurrence)
   if (!recurrence || !cycle.ends_at) {
     // One-time: maybe fail on deadline grace.

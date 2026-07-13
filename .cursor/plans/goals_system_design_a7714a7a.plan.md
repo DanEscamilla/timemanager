@@ -26,6 +26,8 @@ isProject: false
 # Goals System — Product & Technical Design
 
 > Design document only. No code changes. Serves as the implementation roadmap.
+>
+> **Revision — Goal start dates:** See [Goal Start Dates design](goal_start_dates_26c66c91.plan.md). Every goal has required `goals.starts_at` (optional in the UI; server defaults to now). Initial cycle seeds from it. Scheduled is a derived `lifecyclePhase`, not a stored status. `recurrence.anchor` remains deferred.
 
 ## 0. The pivotal constraint (read first)
 
@@ -135,7 +137,8 @@ erDiagram
   - Rationale: goals evaluate against `goal_events`, not directly against completions, so future sources (imported time, manual adjustments) plug in without touching evaluators.
 
 **Goals core**
-- `goals`: `id`, `user_id`, `title`, `description?`, `color` (palette hex), `icon?`, `rule_type varchar`, `metric` ('count'|'duration'), `target_value numeric`, `config jsonb` (rule-specific), `status` ('active'|'paused'|'completed'|'archived'|'failed'), `recurrence jsonb?` (null = one-time), `deadline jsonb?`, `priority int`, `sort_order int`, timestamps. Index `(user_id, status)`.
+- `goals`: `id`, `user_id`, `title`, `description?`, `color` (palette hex), `icon?`, `rule_type varchar`, `metric` ('count'|'duration'), `target_value numeric`, `config jsonb` (rule-specific), `status` ('active'|'paused'|'completed'|'archived'|'failed'), `starts_at timestamp NOT NULL` (effective start; seeds cycle 0; UI-optional → server `now`), `recurrence jsonb?` (null = one-time), `deadline jsonb?`, `priority int`, `sort_order int`, timestamps. Index `(user_id, status)`.
+  - Derived `lifecyclePhase`: `scheduled` when `status === 'active' && starts_at > now`; otherwise mirrors status / active.
   - Keep `rule_type` as an open string (not a DB enum) so new strategies need no migration; validate against a registry in code.
 - `goal_links` (M:N to activities/groups): `id`, `goal_id`, `link_type` ('activity'|'group'), `activity_id?`, `group_id?`, `weight numeric default 1`. Enables same-activity-to-many-goals and goal-to-many-targets. `ON DELETE`: if an activity/group is deleted, keep the link but mark it dangling (see Edge cases).
 - `goal_cycles` (uniform evaluation window + history): `id`, `goal_id`, `cycle_index int`, `starts_at`, `ends_at?`, `deadline_at?`, `target_value numeric` (snapshot), `current_value numeric default 0` (materialized cache), `status` ('active'|'succeeded'|'failed'|'missed'), `carry_over numeric default 0`, timestamps. Index `(goal_id, status)`.
@@ -211,11 +214,13 @@ Client additions mirror existing patterns: `lib/models/goal.dart` (+ cycle/progr
 - `goals.recurrence` jsonb reuses the activity recurrence vocabulary plus period presets: `{ period: 'weekly'|'monthly'|'quarterly'|'every_x_days', interval, anchor, carry_over: 'none'|'overflow', reset: 'hard' }`.
 - Roll-over job: when `now >= cycle.ends_at`, set cycle status (`succeeded` if target met, else `failed`/`missed`), write final snapshot, create next cycle with fresh `current_value`, snapshot `target_value`, apply carry-over (excess above target flows into next cycle's starting value only if `carry_over='overflow'`).
 - Missed recurrences: if the app was offline across multiple boundaries, the job back-fills intermediate cycles as `missed` so history has no gaps.
-- Notifications (future): cycle-start, behind-pace mid-cycle, cycle-complete summary.
+- Notifications (future): cycle-start, behind-pace mid-cycle, cycle-complete summary; `goal_starting_soon` for scheduled goals within 3 days (in-app nudges).
 
 ## 12. Deadline handling
 
 - `goals.deadline` jsonb: one-time -> `{ kind: 'absolute', date }`; recurring -> `{ kind: 'relative', days_after_cycle_start }` -> materialized into each cycle's `deadline_at`.
+- Absolute deadlines must be on or after `goals.starts_at` (validation error otherwise).
+- Deadline failure / overdue nudges do not run while `now < starts_at`.
 - States: on-track -> approaching (within warn window) -> overdue (past deadline, within grace) -> failed (past grace, target unmet).
 - `grace_days` optional in config. UI: color escalation on deadline chip; dashboard "Upcoming deadlines"; reminders (future).
 
@@ -242,6 +247,7 @@ Client additions mirror existing patterns: `lib/models/goal.dart` (+ cycle/progr
 
 ## 15. Open questions
 
+- `recurrence.anchor` remains deferred (calendar alignment); do not overload as goal start — use `goals.starts_at`.
 - Confirm **Phase 0 scope**: build the completion + time-logging capture layer as part of Goals, or is a separate tracking feature planned first? (Everything depends on this.)
 - Time capture UX: manual "log N minutes", start/stop timer, or derive from scheduled slot on completion? Determines `duration` source.
 - Server-side occurrence expansion: port `occurrence_expander` to API/shared lib now, or keep goal evaluators event-only (no "planned" awareness) in MVP?

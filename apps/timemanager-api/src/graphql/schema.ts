@@ -84,6 +84,8 @@ export const typeDefs = gql`
     metric: String!
     targetValue: Float!
     status: String!
+    startsAt: String!
+    lifecyclePhase: String!
     priority: Int!
     sortOrder: Int!
     createdAt: String!
@@ -216,6 +218,7 @@ export const typeDefs = gql`
     dependencies: [GoalDependencyInput!]
     recurrence: GoalRecurrenceInput
     deadline: GoalDeadlineInput
+    startsAt: String
     priority: Int
     sortOrder: Int
   }
@@ -232,6 +235,8 @@ export const typeDefs = gql`
     dependencies: [GoalDependencyInput!]
     recurrence: GoalRecurrenceInput
     deadline: GoalDeadlineInput
+    startsAt: String
+    confirmStartsAtChange: Boolean
     status: String
     priority: Int
     sortOrder: Int

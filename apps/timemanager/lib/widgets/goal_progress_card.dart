@@ -120,7 +120,13 @@ class GoalProgressCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (deadlineChip != null) ...[
+              if (goal.isScheduled) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: _scheduledChip(context, goal, l10n),
+                ),
+              ] else if (deadlineChip != null) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Align(alignment: Alignment.centerLeft, child: deadlineChip),
               ],
@@ -128,6 +134,29 @@ class GoalProgressCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _scheduledChip(
+    BuildContext context,
+    Goal goal,
+    AppLocalizations l10n,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final days = goal.daysUntilStart();
+    final label = days <= 0
+        ? l10n.goalsStartsToday
+        : days == 1
+            ? l10n.goalsStartsTomorrow
+            : l10n.goalsStartsInDays(days);
+    return Chip(
+      avatar: Icon(Icons.schedule, size: 14, color: scheme.primary),
+      label: Text(label),
+      visualDensity: VisualDensity.compact,
+      backgroundColor: scheme.primary.withValues(alpha: 0.12),
+      labelStyle: TextStyle(color: scheme.primary, fontSize: 12),
+      side: BorderSide.none,
+      padding: EdgeInsets.zero,
     );
   }
 

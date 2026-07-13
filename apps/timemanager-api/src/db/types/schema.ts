@@ -171,6 +171,8 @@ export interface GoalsTable {
   >
   priority: number
   sort_order: number
+  /** Effective start of the goal (seeds cycle 0). Always set. */
+  starts_at: ColumnType<Date, string, string>
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string, string>
 }
@@ -193,7 +195,7 @@ export interface GoalCyclesTable {
   id: Generated<number>
   goal_id: number
   cycle_index: number
-  starts_at: ColumnType<Date, string, never>
+  starts_at: ColumnType<Date, string, string>
   ends_at: ColumnType<Date | null, string | null, string | null>
   deadline_at: ColumnType<Date | null, string | null, string | null>
   target_value: number

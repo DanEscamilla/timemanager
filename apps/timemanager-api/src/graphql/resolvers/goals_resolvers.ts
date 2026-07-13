@@ -1,33 +1,39 @@
 import type { Transaction } from 'kysely'
 import { getContext } from '@getcronit/pylon'
-import { db } from '../db/database.ts'
+import { db } from '../../db/database.ts'
 import type {
   Database,
   Goal as GoalRow,
   GoalConfig,
+  GoalCycle as GoalCycleRow,
   GoalDeadlineConfig,
+  GoalDependency as GoalDependencyRow,
+  GoalLink as GoalLinkRow,
+  GoalProgressSnapshot as GoalSnapshotRow,
   GoalRecurrenceConfig,
   NewGoal,
   NewGoalDependency,
   NewGoalLink,
-} from '../db/types/schema.ts'
-import { createInitialCycle, deadlineState, rollOverIfNeeded, rollOverUserGoals } from '../goals/cycles.ts'
-import { buildGoalNudges } from '../goals/nudges.ts'
-import { recomputeAllActiveCycles, recomputeCycle } from '../goals/progress.ts'
+} from '../../db/types/schema.ts'
+import { createInitialCycle, deadlineState, lifecyclePhase, rescheduleActiveCycle, rollOverIfNeeded, rollOverUserGoals } from '../../goals/cycles.ts'
+import { buildGoalNudges } from '../../goals/nudges.ts'
+import { recomputeAllActiveCycles, recomputeCycle } from '../../goals/progress.ts'
 import type {
   CreateGoalInput,
   GoalDependencyInput,
   GoalLinkInput,
   UpdateGoalInput,
-} from './types.ts'
+} from '../types.ts'
 import {
+  assertDeadlineAfterStart,
   InvalidGoalError,
   validateCreateGoalInput,
   validateGoalColor,
   validateGoalTitle,
   validateUpdateGoalInput,
   wouldCreateDependencyCycle,
-} from './validation.ts'
+} from '../validation.ts'
+import { asNumber, asNumberOrNull } from '../numeric.ts'
 
 function requireUserId(): number {
   const userId = getContext().get('userId')
@@ -47,6 +53,38 @@ function parseJson<T>(value: unknown): T | null {
     }
   }
   return value as T
+}
+
+/** Postgres `numeric` arrives as string via `pg`; GraphQL Number requires JS number. */
+function mapCycleScalars<T extends GoalCycleRow>(cycle: T) {
+  return {
+    ...cycle,
+    target_value: asNumber(cycle.target_value),
+    current_value: asNumber(cycle.current_value),
+    carry_over: asNumber(cycle.carry_over),
+  }
+}
+
+function mapLinkScalars(link: GoalLinkRow) {
+  return {
+    ...link,
+    weight: asNumber(link.weight, 1),
+  }
+}
+
+function mapDependencyScalars(dep: GoalDependencyRow) {
+  return {
+    ...dep,
+    threshold: asNumberOrNull(dep.threshold),
+    weight: asNumber(dep.weight, 1),
+  }
+}
+
+function mapSnapshotScalars(snapshot: GoalSnapshotRow) {
+  return {
+    ...snapshot,
+    value: asNumber(snapshot.value),
+  }
 }
 
 function toRecurrenceJson(
@@ -253,7 +291,14 @@ async function dependenciesMet(
     if (!cycle) return false
 
     if (dep.requirement === 'complete') {
-      if (cycle.status !== 'succeeded' && childGoal.status !== 'completed') {
+      const targetMet =
+        Number(cycle.target_value) > 0 &&
+        Number(cycle.current_value) >= Number(cycle.target_value)
+      if (
+        cycle.status !== 'succeeded' &&
+        childGoal.status !== 'completed' &&
+        !targetMet
+      ) {
         return false
       }
     } else {
@@ -268,9 +313,13 @@ function withGoalRelations(goal: GoalRow) {
   const config = parseJson<GoalConfig>(goal.config) ?? {}
   const recurrence = parseJson<GoalRecurrenceConfig>(goal.recurrence)
   const deadline = parseJson<GoalDeadlineConfig>(goal.deadline)
+  const now = new Date()
 
   return {
     ...goal,
+    target_value: asNumber(goal.target_value),
+    startsAt: new Date(goal.starts_at).toISOString(),
+    lifecyclePhase: lifecyclePhase(goal, now),
     config,
     recurrence,
     deadline,
@@ -281,7 +330,7 @@ function withGoalRelations(goal: GoalRow) {
         .selectAll()
         .execute()
       return rows.map((link) => ({
-        ...link,
+        ...mapLinkScalars(link),
         activity: async () => {
           if (link.activity_id == null) return null
           return await db
@@ -311,27 +360,52 @@ function withGoalRelations(goal: GoalRow) {
       if (cycle && goal.status === 'active') {
         cycle = await rollOverIfNeeded(db, goal, cycle)
       }
+      // Fall back to latest cycle so completed / mid-window succeeded cycles
+      // still expose progress. Also repair recurring cycles that were closed
+      // early (before ends_at) so they remain the active window.
+      if (!cycle) {
+        const latest = await db
+          .selectFrom('goal_cycles')
+          .where('goal_id', '=', goal.id)
+          .orderBy('cycle_index', 'desc')
+          .selectAll()
+          .executeTakeFirst()
+        if (
+          latest &&
+          goal.status === 'active' &&
+          goal.recurrence != null &&
+          latest.status === 'succeeded' &&
+          (!latest.ends_at || now < new Date(latest.ends_at))
+        ) {
+          cycle = await db
+            .updateTable('goal_cycles')
+            .set({ status: 'active', updated_at: now.toISOString() })
+            .where('id', '=', latest.id)
+            .returningAll()
+            .executeTakeFirstOrThrow()
+        } else {
+          cycle = latest
+        }
+      }
       if (!cycle) return null
       const state = deadlineState(cycle, deadline)
+      const target = asNumber(cycle.target_value)
+      const current = asNumber(cycle.current_value)
       return {
-        ...cycle,
+        ...mapCycleScalars(cycle),
         deadlineState: state,
-        percentComplete: Number(cycle.target_value) > 0
-          ? Math.min(1, Number(cycle.current_value) / Number(cycle.target_value))
-          : 0,
-        remaining: Math.max(
-          0,
-          Number(cycle.target_value) - Number(cycle.current_value),
-        ),
+        percentComplete: target > 0 ? Math.min(1, current / target) : 0,
+        remaining: Math.max(0, target - current),
       }
     },
     cycles: async () => {
-      return await db
+      const rows = await db
         .selectFrom('goal_cycles')
         .where('goal_id', '=', goal.id)
         .orderBy('cycle_index', 'asc')
         .selectAll()
         .execute()
+      return rows.map(mapCycleScalars)
     },
     dependencies: async () => {
       const rows = await db
@@ -340,7 +414,7 @@ function withGoalRelations(goal: GoalRow) {
         .selectAll()
         .execute()
       return rows.map((dep) => ({
-        ...dep,
+        ...mapDependencyScalars(dep),
         dependsOn: async () => {
           const g = await db
             .selectFrom('goals')
@@ -360,12 +434,13 @@ function withGoalRelations(goal: GoalRow) {
         .selectAll()
         .executeTakeFirst()
       if (!cycle) return []
-      return await db
+      const rows = await db
         .selectFrom('goal_progress_snapshots')
         .where('goal_cycle_id', '=', cycle.id)
         .orderBy('as_of', 'asc')
         .selectAll()
         .execute()
+      return rows.map(mapSnapshotScalars)
     },
     isLocked: async () => {
       if (!config.block_until_unlocked) return false
@@ -486,8 +561,8 @@ export const GoalMutation = {
   createGoal: async (args: { input: CreateGoalInput }) => {
     const userId = requireUserId()
     const input = args.input
-    const validated = validateCreateGoalInput(input)
     const now = new Date()
+    const validated = validateCreateGoalInput(input, now)
 
     const goal = await db.transaction().execute(async (trx) => {
       const created = await trx
@@ -511,6 +586,7 @@ export const GoalMutation = {
             : null,
           priority: input.priority ?? 0,
           sort_order: input.sortOrder ?? 0,
+          starts_at: validated.startsAt.toISOString(),
           created_at: now.toISOString(),
           updated_at: now.toISOString(),
         } as NewGoal)
@@ -531,6 +607,7 @@ export const GoalMutation = {
         .where('goal_id', '=', goal.id)
         .selectAll()
         .executeTakeFirstOrThrow()),
+      now,
     )
 
     return withGoalRelations(
@@ -551,9 +628,79 @@ export const GoalMutation = {
       .selectAll()
       .executeTakeFirstOrThrow()
 
-    const validated = validateUpdateGoalInput(args.input, existing.rule_type)
+    const nowDate = new Date()
+    const validated = validateUpdateGoalInput(
+      args.input,
+      existing.rule_type,
+      nowDate,
+    )
     const input = args.input
-    const now = new Date().toISOString()
+    const now = nowDate.toISOString()
+
+    const activeCycle = await db
+      .selectFrom('goal_cycles')
+      .where('goal_id', '=', existing.id)
+      .where('status', '=', 'active')
+      .orderBy('cycle_index', 'desc')
+      .selectAll()
+      .executeTakeFirst()
+
+    let nextStartsAt: Date | undefined
+    if (validated.startsAt !== undefined) {
+      if (existing.status === 'completed' || existing.status === 'failed') {
+        throw new InvalidGoalError(
+          'cannot change startsAt on a completed or failed goal',
+        )
+      }
+      if (validated.startsAt == null) {
+        throw new InvalidGoalError('startsAt cannot be cleared; omit to leave unchanged')
+      }
+      nextStartsAt = validated.startsAt
+
+      const closedCycles = await db
+        .selectFrom('goal_cycles')
+        .where('goal_id', '=', existing.id)
+        .where('status', '!=', 'active')
+        .select('id')
+        .executeTakeFirst()
+
+      // After cycle 0 has closed, start is frozen.
+      if (closedCycles != null) {
+        throw new InvalidGoalError(
+          'cannot change startsAt after the first cycle has closed',
+        )
+      }
+
+      const progressBegun =
+        activeCycle != null && Number(activeCycle.current_value) > 0
+
+      if (
+        progressBegun &&
+        nextStartsAt.getTime() > new Date(existing.starts_at).getTime()
+      ) {
+        if (!input.confirmStartsAtChange) {
+          throw new InvalidGoalError(
+            'moving startsAt later after progress requires confirmStartsAtChange',
+          )
+        }
+      }
+    }
+
+    const effectiveStartsAt = nextStartsAt ?? new Date(existing.starts_at)
+    const effectiveDeadline = validated.deadline !== undefined
+      ? validated.deadline
+      : (() => {
+        const d = parseJson<GoalDeadlineConfig>(existing.deadline)
+        if (!d) return null
+        return {
+          kind: d.kind,
+          date: d.date,
+          daysAfterCycleStart: d.days_after_cycle_start,
+          graceDays: d.grace_days,
+          warnDays: d.warn_days,
+        }
+      })()
+    assertDeadlineAfterStart(effectiveStartsAt, effectiveDeadline)
 
     await db.transaction().execute(async (trx) => {
       await trx
@@ -592,6 +739,9 @@ export const GoalMutation = {
                 : null,
             }
             : {}),
+          ...(nextStartsAt != null
+            ? { starts_at: nextStartsAt.toISOString() }
+            : {}),
           ...(input.priority != null ? { priority: input.priority } : {}),
           ...(input.sortOrder != null ? { sort_order: input.sortOrder } : {}),
           updated_at: now,
@@ -607,17 +757,45 @@ export const GoalMutation = {
         await replaceDependencies(trx, args.id, userId, validated.dependencies)
       }
 
-      // Keep active cycle target in sync when target changes.
-      if (input.targetValue != null) {
+      const goalAfter = await trx
+        .selectFrom('goals')
+        .where('id', '=', args.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      const cycle = await trx
+        .selectFrom('goal_cycles')
+        .where('goal_id', '=', args.id)
+        .where('status', '=', 'active')
+        .orderBy('cycle_index', 'desc')
+        .selectAll()
+        .executeTakeFirst()
+
+      if (cycle && nextStartsAt != null) {
+        await rescheduleActiveCycle(trx, goalAfter, cycle, nextStartsAt, nowDate)
+      } else if (cycle && input.targetValue != null) {
         await trx
           .updateTable('goal_cycles')
           .set({
             target_value: input.targetValue,
             updated_at: now,
           })
-          .where('goal_id', '=', args.id)
-          .where('status', '=', 'active')
+          .where('id', '=', cycle.id)
           .execute()
+      } else if (
+        cycle &&
+        (validated.deadline !== undefined || validated.recurrence !== undefined) &&
+        Number(cycle.current_value) === 0 &&
+        cycle.cycle_index === 0
+      ) {
+        // Refresh bounds on unstarted cycle 0 when deadline/recurrence change.
+        await rescheduleActiveCycle(
+          trx,
+          goalAfter,
+          cycle,
+          new Date(goalAfter.starts_at),
+          nowDate,
+        )
       }
     })
 
@@ -632,7 +810,7 @@ export const GoalMutation = {
       .where('status', '=', 'active')
       .selectAll()
       .executeTakeFirst()
-    if (cycle) await recomputeCycle(db, goal, cycle)
+    if (cycle) await recomputeCycle(db, goal, cycle, nowDate)
 
     return withGoalRelations(goal)
   },

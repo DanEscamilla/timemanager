@@ -124,6 +124,8 @@ export interface CreateGoalInput {
   dependencies?: GoalDependencyInput[]
   recurrence?: GoalRecurrenceInput | null
   deadline?: GoalDeadlineInput | null
+  /** ISO-8601; omit/null → server now. */
+  startsAt?: string | null
   priority?: number
   sortOrder?: number
 }
@@ -141,6 +143,10 @@ export interface UpdateGoalInput {
   dependencies?: GoalDependencyInput[]
   recurrence?: GoalRecurrenceInput | null
   deadline?: GoalDeadlineInput | null
+  /** ISO-8601 start timestamp. */
+  startsAt?: string | null
+  /** Required when moving start later after progress has begun. */
+  confirmStartsAtChange?: boolean | null
   status?: 'active' | 'paused' | 'completed' | 'archived' | 'failed'
   priority?: number
   sortOrder?: number

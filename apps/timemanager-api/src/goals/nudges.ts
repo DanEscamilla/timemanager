@@ -7,6 +7,7 @@ export type GoalNudgeKind =
   | 'behind_pace'
   | 'cycle_complete'
   | 'dependency_unlocked'
+  | 'goal_starting_soon'
 
 export interface GoalNudge {
   kind: GoalNudgeKind
@@ -28,9 +29,12 @@ function parseDeadline(value: unknown): GoalDeadlineConfig | null {
   return value as GoalDeadlineConfig
 }
 
+const STARTING_SOON_DAYS = 3
+
 /**
  * Build in-app nudges for dashboard / notifications surface.
  * Pure function — no I/O.
+ * Skips deadline/behind_pace for goals that have not started yet.
  */
 export function buildGoalNudges(
   goals: Array<{ goal: Goal; cycle: GoalCycle | null }>,
@@ -41,7 +45,30 @@ export function buildGoalNudges(
   for (const { goal, cycle } of goals) {
     if (!cycle || goal.status !== 'active') continue
 
-    if (cycle.status === 'succeeded') {
+    const startsAt = new Date(goal.starts_at)
+    if (startsAt > now) {
+      const msUntil = startsAt.getTime() - now.getTime()
+      const daysUntil = msUntil / (24 * 60 * 60 * 1000)
+      if (daysUntil <= STARTING_SOON_DAYS) {
+        const daysLabel = Math.max(1, Math.ceil(daysUntil))
+        nudges.push({
+          kind: 'goal_starting_soon',
+          goalId: goal.id,
+          title: goal.title,
+          message: `“${goal.title}” starts in ${daysLabel} day${
+            daysLabel === 1 ? '' : 's'
+          }.`,
+          severity: 'info',
+        })
+      }
+      continue
+    }
+
+    const targetMet =
+      cycle.status === 'succeeded' ||
+      (Number(cycle.target_value) > 0 &&
+        Number(cycle.current_value) >= Number(cycle.target_value))
+    if (targetMet) {
       nudges.push({
         kind: 'cycle_complete',
         goalId: goal.id,

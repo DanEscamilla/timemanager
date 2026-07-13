@@ -24,6 +24,7 @@ class _OverviewData {
   const _OverviewData({
     required this.activities,
     required this.goals,
+    required this.scheduledGoals,
     required this.daily,
     required this.nudges,
     required this.completionsByActivity,
@@ -31,6 +32,7 @@ class _OverviewData {
 
   final List<Activity> activities;
   final List<Goal> goals;
+  final List<Goal> scheduledGoals;
   final DailyProgress daily;
   final List<GoalNudge> nudges;
   final Map<int, ActivityCompletion> completionsByActivity;
@@ -95,7 +97,12 @@ class OverviewScreenState extends State<OverviewScreen> {
     }
     return _OverviewData(
       activities: activities,
-      goals: goals.where((g) => g.status == GoalStatus.active).toList(),
+      goals: goals
+          .where((g) => g.lifecyclePhase == GoalLifecyclePhase.active)
+          .toList(),
+      scheduledGoals: goals
+          .where((g) => g.lifecyclePhase == GoalLifecyclePhase.scheduled)
+          .toList(),
       daily: daily,
       nudges: nudges,
       completionsByActivity: byActivity,
@@ -264,6 +271,13 @@ class OverviewScreenState extends State<OverviewScreen> {
                     const SizedBox(height: AppSpacing.md),
                     _ActiveGoalsStrip(
                       goals: data.goals.take(4).toList(),
+                      onOpenGoals: widget.onOpenGoals,
+                    ),
+                  ],
+                  if (data.scheduledGoals.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    _StartingSoonStrip(
+                      goals: data.scheduledGoals.take(3).toList(),
                       onOpenGoals: widget.onOpenGoals,
                     ),
                   ],
@@ -443,6 +457,50 @@ class _ActiveGoalsStrip extends StatelessWidget {
             Expanded(
               child: Text(
                 l10n.goalsActiveStrip,
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+            if (onOpenGoals != null)
+              TextButton(
+                onPressed: onOpenGoals,
+                child: Text(l10n.goalsViewAll),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        ...goals.map(
+          (g) => Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: GoalProgressCard(goal: g, compact: true),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StartingSoonStrip extends StatelessWidget {
+  const _StartingSoonStrip({
+    required this.goals,
+    this.onOpenGoals,
+  });
+
+  final List<Goal> goals;
+  final VoidCallback? onOpenGoals;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.goalsStartingSoon,
                 style: theme.textTheme.titleLarge,
               ),
             ),

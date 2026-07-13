@@ -31,6 +31,7 @@ function makeGoal(overrides: Partial<Goal> = {}): Goal {
     deadline: null,
     priority: 0,
     sort_order: 0,
+    starts_at: new Date('2026-01-01T00:00:00Z'),
     created_at: new Date(),
     updated_at: new Date(),
     ...overrides,

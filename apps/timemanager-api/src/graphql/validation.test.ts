@@ -221,6 +221,77 @@ Deno.test('validateCreateGoalInput accepts a valid count goal', () => {
   assertEquals(result.links.length, 1)
 })
 
+Deno.test('validateCreateGoalInput defaults startsAt to now when omitted', () => {
+  const now = new Date('2026-03-01T12:00:00Z')
+  const result = validateCreateGoalInput(
+    {
+      title: 'Workout',
+      color: '#0F766E',
+      ruleType: 'activity_count',
+      metric: 'count',
+      targetValue: 10,
+      links: [{ linkType: 'activity', activityId: 1 }],
+    },
+    now,
+  )
+  assertEquals(result.startsAt.toISOString(), now.toISOString())
+})
+
+Deno.test('validateCreateGoalInput accepts future startsAt', () => {
+  const now = new Date('2026-03-01T12:00:00Z')
+  const result = validateCreateGoalInput(
+    {
+      title: 'Workout',
+      color: '#0F766E',
+      ruleType: 'activity_count',
+      metric: 'count',
+      targetValue: 10,
+      links: [{ linkType: 'activity', activityId: 1 }],
+      startsAt: '2026-04-01T00:00:00.000Z',
+    },
+    now,
+  )
+  assertEquals(result.startsAt.toISOString(), '2026-04-01T00:00:00.000Z')
+})
+
+Deno.test('validateCreateGoalInput rejects deadline before start', () => {
+  assertThrows(
+    () =>
+      validateCreateGoalInput(
+        {
+          title: 'Workout',
+          color: '#0F766E',
+          ruleType: 'activity_count',
+          metric: 'count',
+          targetValue: 10,
+          links: [{ linkType: 'activity', activityId: 1 }],
+          startsAt: '2026-04-01T00:00:00.000Z',
+          deadline: { kind: 'absolute', date: '2026-03-01' },
+        },
+        new Date('2026-01-01T00:00:00Z'),
+      ),
+    InvalidGoalError,
+    'deadline must be on or after the goal start',
+  )
+})
+
+Deno.test('validateCreateGoalInput rejects invalid startsAt', () => {
+  assertThrows(
+    () =>
+      validateCreateGoalInput({
+        title: 'Workout',
+        color: '#0F766E',
+        ruleType: 'activity_count',
+        metric: 'count',
+        targetValue: 10,
+        links: [{ linkType: 'activity', activityId: 1 }],
+        startsAt: 'not-a-date',
+      }),
+    InvalidGoalError,
+    'startsAt must be a valid ISO-8601 datetime',
+  )
+})
+
 Deno.test('wouldCreateDependencyCycle detects a loop', () => {
   const edges = new Map<number, number[]>([
     [1, [2]],

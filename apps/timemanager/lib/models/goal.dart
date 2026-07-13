@@ -6,6 +6,15 @@ enum GoalMetric { count, duration }
 
 enum GoalStatus { active, paused, completed, archived, failed }
 
+enum GoalLifecyclePhase {
+  scheduled,
+  active,
+  paused,
+  completed,
+  archived,
+  failed,
+}
+
 enum GoalCycleStatus { active, succeeded, failed, missed }
 
 enum GoalLinkType { activity, group }
@@ -336,6 +345,8 @@ class Goal {
     required this.targetValue,
     required this.config,
     required this.status,
+    required this.startsAt,
+    this.lifecyclePhase = GoalLifecyclePhase.active,
     this.recurrence,
     this.deadline,
     this.priority = 0,
@@ -360,6 +371,8 @@ class Goal {
   final double targetValue;
   final GoalConfig config;
   final GoalStatus status;
+  final DateTime startsAt;
+  final GoalLifecyclePhase lifecyclePhase;
   final GoalRecurrence? recurrence;
   final GoalDeadline? deadline;
   final int priority;
@@ -371,6 +384,8 @@ class Goal {
   final List<GoalDependency> dependencies;
   final List<GoalProgressSnapshot> snapshots;
   final bool isLocked;
+
+  bool get isScheduled => lifecyclePhase == GoalLifecyclePhase.scheduled;
 
   Color get colorValue {
     final hex = color.replaceFirst('#', '');
@@ -385,12 +400,37 @@ class Goal {
 
   double get progressRatio => activeCycle?.progressRatio ?? 0;
 
+  /// Days until start (0 if already started or starting today).
+  int daysUntilStart({DateTime? now}) {
+    final n = now ?? DateTime.now();
+    if (!startsAt.isAfter(n)) return 0;
+    return startsAt.difference(n).inDays +
+        (startsAt.difference(n).inHours % 24 > 0 ? 1 : 0);
+  }
+
   factory Goal.fromJson(Map<String, dynamic> json) {
     GoalStatus parseStatus(String? raw) {
       return GoalStatus.values.firstWhere(
         (e) => e.name == raw,
         orElse: () => GoalStatus.active,
       );
+    }
+
+    GoalLifecyclePhase parsePhase(String? raw, GoalStatus status, DateTime startsAt) {
+      if (raw != null) {
+        return GoalLifecyclePhase.values.firstWhere(
+          (e) => e.name == raw,
+          orElse: () => GoalLifecyclePhase.active,
+        );
+      }
+      if (status == GoalStatus.paused) return GoalLifecyclePhase.paused;
+      if (status == GoalStatus.completed) return GoalLifecyclePhase.completed;
+      if (status == GoalStatus.archived) return GoalLifecyclePhase.archived;
+      if (status == GoalStatus.failed) return GoalLifecyclePhase.failed;
+      if (status == GoalStatus.active && startsAt.isAfter(DateTime.now())) {
+        return GoalLifecyclePhase.scheduled;
+      }
+      return GoalLifecyclePhase.active;
     }
 
     GoalMetric parseMetric(String? raw) {
@@ -400,6 +440,14 @@ class Goal {
     final linksRaw = json['links'] as List<dynamic>? ?? [];
     final depsRaw = json['dependencies'] as List<dynamic>? ?? [];
     final snapsRaw = json['snapshots'] as List<dynamic>? ?? [];
+    final status = parseStatus(json['status'] as String?);
+    final startsAt = DateTime.tryParse(
+          json['startsAt'] as String? ??
+              json['starts_at'] as String? ??
+              '',
+        ) ??
+        DateTime.tryParse(json['created_at'] as String? ?? '') ??
+        DateTime.now();
 
     return Goal(
       id: json['id'] as int,
@@ -416,7 +464,13 @@ class Goal {
             ? Map<String, dynamic>.from(json['config'] as Map)
             : null,
       ),
-      status: parseStatus(json['status'] as String?),
+      status: status,
+      startsAt: startsAt,
+      lifecyclePhase: parsePhase(
+        json['lifecyclePhase'] as String?,
+        status,
+        startsAt,
+      ),
       recurrence: json['recurrence'] is Map<String, dynamic>
           ? GoalRecurrence.fromJson(json['recurrence'] as Map<String, dynamic>)
           : null,

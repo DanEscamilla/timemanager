@@ -20,10 +20,27 @@
   "goalsEmptyHint": "Crea una meta para seguir completaciones y tiempo hacia un objetivo.",
   "goalsEmptyAction": "Añadir meta",
   "goalsFilterActive": "Activas",
+  "goalsFilterScheduled": "Programadas",
   "goalsFilterPaused": "Pausadas",
   "goalsFilterCompleted": "Hechas",
   "goalsFilterArchived": "Archivadas",
   "goalsFilterAll": "Todas",
+  "goalsStartsAtScheduled": "Programada",
+  "goalsStartsInDays": "Empieza en {days} días",
+  "@goalsStartsInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "goalsStartsTomorrow": "Empieza mañana",
+  "goalsStartsToday": "Empieza hoy",
+  "goalsFormStartsAt": "Fecha de inicio",
+  "goalsFormStartsAtCustom": "Definir fecha de inicio",
+  "goalsFormStartsAtHint": "Si no la defines, la meta empieza al crearla.",
+  "goalsStartsAtConfirmTitle": "¿Retrasar el inicio?",
+  "goalsStartsAtConfirmBody": "Retrasar la fecha de inicio puede quitar progreso ya contado. ¿Continuar?",
+  "goalsStartsAtConfirmAction": "Mover inicio",
+  "goalsStartingSoon": "Próximas a empezar",
   "goalsDetailTitle": "Meta",
   "goalsNotFound": "Meta no encontrada",
   "goalsDeleteTitle": "¿Eliminar meta?",

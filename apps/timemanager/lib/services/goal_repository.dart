@@ -39,6 +39,9 @@ class GoalRepository {
     }
     priority
     sort_order
+    starts_at
+    startsAt
+    lifecyclePhase
     created_at
     updated_at
     isLocked
@@ -164,6 +167,7 @@ class GoalRepository {
     List<Map<String, dynamic>>? dependencies,
     Map<String, dynamic>? recurrence,
     Map<String, dynamic>? deadline,
+    String? startsAt,
     int priority = 0,
   }) async {
     final data = await _client.mutate('''
@@ -186,6 +190,7 @@ class GoalRepository {
         if (dependencies != null) 'dependencies': dependencies,
         if (recurrence != null) 'recurrence': recurrence,
         if (deadline != null) 'deadline': deadline,
+        if (startsAt != null) 'startsAt': startsAt,
         'priority': priority,
       },
     });
@@ -207,6 +212,8 @@ class GoalRepository {
     List<Map<String, dynamic>>? dependencies,
     Map<String, dynamic>? recurrence,
     Map<String, dynamic>? deadline,
+    String? startsAt,
+    bool? confirmStartsAtChange,
     String? status,
     int? priority,
   }) async {
@@ -231,6 +238,9 @@ class GoalRepository {
         if (dependencies != null) 'dependencies': dependencies,
         if (recurrence != null) 'recurrence': recurrence,
         if (deadline != null) 'deadline': deadline,
+        if (startsAt != null) 'startsAt': startsAt,
+        if (confirmStartsAtChange != null)
+          'confirmStartsAtChange': confirmStartsAtChange,
         if (status != null) 'status': status,
         if (priority != null) 'priority': priority,
       },

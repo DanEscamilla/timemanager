@@ -47,6 +47,9 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
   String? _deadlineKind;
   DateTime? _absoluteDeadline;
   int _relativeDeadlineDays = 7;
+  /// null = start immediately (omit startsAt on create).
+  DateTime? _startDate;
+  bool _useCustomStart = false;
   bool _blockUntilUnlocked = false;
   String _compositeMode = 'all';
   int _countRequired = 1;
@@ -92,6 +95,9 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
         _absoluteDeadline = DateTime.tryParse(g.deadline!.date!);
       }
       _relativeDeadlineDays = g.deadline?.daysAfterCycleStart ?? 7;
+      final localStart = g.startsAt.toLocal();
+      _startDate = DateTime(localStart.year, localStart.month, localStart.day);
+      _useCustomStart = true;
     }
     _loadOptions();
   }
@@ -225,6 +231,13 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
       _ => _metric == GoalMetric.duration ? 'duration' : 'count',
     };
 
+    /// Local calendar date → start of that day as UTC ISO (server stores UTC).
+    String? startsAtIso;
+    if (_useCustomStart && _startDate != null) {
+      final local = DateTime(_startDate!.year, _startDate!.month, _startDate!.day);
+      startsAtIso = local.toUtc().toIso8601String();
+    }
+
     try {
       if (widget.goal == null) {
         await widget.goalRepository.createGoal(
@@ -241,8 +254,42 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
           dependencies: deps.isEmpty ? null : deps,
           recurrence: recurrence,
           deadline: deadline,
+          startsAt: startsAtIso,
         );
       } else {
+        var confirmLaterStart = false;
+        final existing = widget.goal!;
+        if (startsAtIso != null) {
+          final newStart = DateTime.parse(startsAtIso);
+          final progressBegun =
+              (existing.activeCycle?.currentValue ?? 0) > 0;
+          if (progressBegun && newStart.isAfter(existing.startsAt)) {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: Text(l10n.goalsStartsAtConfirmTitle),
+                content: Text(l10n.goalsStartsAtConfirmBody),
+                    actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: Text(l10n.activitiesCancel),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: Text(l10n.goalsStartsAtConfirmAction),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed != true) {
+              if (!mounted) return;
+              setState(() => _saving = false);
+              return;
+            }
+            confirmLaterStart = true;
+          }
+        }
+
         await widget.goalRepository.updateGoal(
           id: widget.goal!.id,
           title: _titleController.text.trim(),
@@ -258,6 +305,8 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
           dependencies: deps,
           recurrence: recurrence,
           deadline: deadline,
+          startsAt: startsAtIso,
+          confirmStartsAtChange: confirmLaterStart ? true : null,
         );
       }
       if (!mounted) return;
@@ -461,6 +510,49 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
                       title: Text(l10n.goalsFormBlockUntilUnlocked),
                       value: _blockUntilUnlocked,
                       onChanged: (v) => setState(() => _blockUntilUnlocked = v),
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(l10n.goalsFormStartsAt,
+                      style: Theme.of(context).textTheme.titleSmall),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.goalsFormStartsAtCustom),
+                    subtitle: Text(l10n.goalsFormStartsAtHint),
+                    value: _useCustomStart,
+                    onChanged: (v) => setState(() {
+                      _useCustomStart = v;
+                      if (v && _startDate == null) {
+                        _startDate = DateTime(
+                          DateTime.now().year,
+                          DateTime.now().month,
+                          DateTime.now().day,
+                        );
+                      }
+                    }),
+                  ),
+                  if (_useCustomStart) ...[
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        _startDate == null
+                            ? l10n.formSelectDate
+                            : '${_startDate!.year.toString().padLeft(4, '0')}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.day.toString().padLeft(2, '0')}',
+                      ),
+                      trailing: const Icon(Icons.calendar_today_outlined),
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: _startDate ?? DateTime.now(),
+                          firstDate: DateTime.now()
+                              .subtract(const Duration(days: 3650)),
+                          lastDate: DateTime.now()
+                              .add(const Duration(days: 3650)),
+                        );
+                        if (picked != null) {
+                          setState(() => _startDate = picked);
+                        }
+                      },
                     ),
                   ],
                   const SizedBox(height: AppSpacing.lg),

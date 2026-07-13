@@ -20,10 +20,27 @@
   "goalsEmptyHint": "Create a goal to track completions and time toward a target.",
   "goalsEmptyAction": "Add goal",
   "goalsFilterActive": "Active",
+  "goalsFilterScheduled": "Scheduled",
   "goalsFilterPaused": "Paused",
   "goalsFilterCompleted": "Done",
   "goalsFilterArchived": "Archived",
   "goalsFilterAll": "All",
+  "goalsStartsAtScheduled": "Scheduled",
+  "goalsStartsInDays": "Starts in {days} days",
+  "@goalsStartsInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "goalsStartsTomorrow": "Starts tomorrow",
+  "goalsStartsToday": "Starts today",
+  "goalsFormStartsAt": "Start date",
+  "goalsFormStartsAtCustom": "Set a start date",
+  "goalsFormStartsAtHint": "Leave off to start immediately when created.",
+  "goalsStartsAtConfirmTitle": "Move start later?",
+  "goalsStartsAtConfirmBody": "Moving the start date later may remove progress already counted. Continue?",
+  "goalsStartsAtConfirmAction": "Move start",
+  "goalsStartingSoon": "Starting soon",
   "goalsDetailTitle": "Goal",
   "goalsNotFound": "Goal not found",
   "goalsDeleteTitle": "Delete goal?",

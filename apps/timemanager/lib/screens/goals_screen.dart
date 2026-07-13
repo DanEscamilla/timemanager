@@ -89,13 +89,19 @@ class GoalsScreenState extends State<GoalsScreen> {
 
   List<Goal> _filtered(List<Goal> goals) {
     return switch (_filter) {
+      'scheduled' => goals
+          .where((g) => g.lifecyclePhase == GoalLifecyclePhase.scheduled)
+          .toList(),
       'paused' => goals.where((g) => g.status == GoalStatus.paused).toList(),
       'completed' =>
         goals.where((g) => g.status == GoalStatus.completed).toList(),
       'archived' =>
         goals.where((g) => g.status == GoalStatus.archived).toList(),
       'all' => goals,
-      _ => goals.where((g) => g.status == GoalStatus.active).toList(),
+      // Active filter: accruing only (exclude scheduled).
+      _ => goals
+          .where((g) => g.lifecyclePhase == GoalLifecyclePhase.active)
+          .toList(),
     };
   }
 
@@ -117,6 +123,10 @@ class GoalsScreenState extends State<GoalsScreen> {
             child: SegmentedButton<String>(
               segments: [
                 ButtonSegment(value: 'active', label: Text(l10n.goalsFilterActive)),
+                ButtonSegment(
+                  value: 'scheduled',
+                  label: Text(l10n.goalsFilterScheduled),
+                ),
                 ButtonSegment(value: 'paused', label: Text(l10n.goalsFilterPaused)),
                 ButtonSegment(
                   value: 'completed',

@@ -33,6 +33,7 @@ import {
   validateOccurrenceDate,
   validatePositiveDuration,
 } from "../validation.ts";
+import { asNumber } from "../numeric.ts";
 import { GoalMutation, GoalQuery } from "./goals_resolvers.ts";
 
 interface ParsedRecurrencePattern extends Omit<RecurrencePatternRow, "config"> {
@@ -591,7 +592,10 @@ export const Mutation = {
       groupId: activity.group_id,
     });
 
-    return event;
+    return {
+      ...event,
+      amount: asNumber(event.amount),
+    };
   },
 
   ...GoalMutation,

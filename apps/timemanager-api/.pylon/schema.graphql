@@ -1,17 +1,119 @@
 input ArgsInput {
-	id: Number!
+	status: String
 }
 input ArgsInput_1 {
 	id: Number!
 }
 input ArgsInput_2 {
+	date: String
+}
+input ArgsInput_3 {
+	id: Number!
+}
+input ArgsInput_4 {
+	id: Number!
+}
+input ArgsInput_5 {
+	activityId: Number
+	fromDate: String
+	toDate: String
+}
+input ArgsInput_6 {
+	input: CreateGoalInputInput!
+}
+input CreateGoalInputInput {
+	title: String!
+	description: String
+	color: String!
+	icon: String
+	ruleType: String!
+	metric: COUNT_DURATIONInput!
+	targetValue: Number!
+	config: GoalConfigInputInput
+	links: [GoalLinkInputInput!]
+	dependencies: [GoalDependencyInputInput!]
+	recurrence: GoalRecurrenceInputInput
+	deadline: GoalDeadlineInputInput
+	startsAt: String
+	priority: Number
+	sortOrder: Number
+}
+input GoalConfigInputInput {
+	compositeMode: ALL_ANY_WEIGHTEDInput
+	countRequired: Number
+	beforeTime: String
+	afterTime: String
+	blockUntilUnlocked: Boolean
+}
+input GoalLinkInputInput {
+	linkType: ACTIVITY_GROUPInput!
+	activityId: Number
+	groupId: Number
+	weight: Number
+}
+input GoalDependencyInputInput {
+	dependsOnGoalId: Number!
+	requirement: COMPLETE_PROGRESSInput
+	threshold: Number
+	weight: Number
+}
+input GoalRecurrenceInputInput {
+	period: WEEKLY_MONTHLY_QUARTERLY_EVERY_X_DAYSInput!
+	interval: Number
+	anchor: String
+	carryOver: NONE_OVERFLOWInput
+	reset: String
+}
+input GoalDeadlineInputInput {
+	kind: ABSOLUTE_RELATIVEInput!
+	date: String
+	daysAfterCycleStart: Number
+	graceDays: Number
+	warnDays: Number
+}
+input ArgsInput_7 {
+	id: Number!
+	input: UpdateGoalInputInput!
+}
+input UpdateGoalInputInput {
+	title: String
+	description: String
+	color: String
+	icon: String
+	ruleType: String
+	metric: COUNT_DURATIONInput
+	targetValue: Number
+	config: GoalConfigInputInput
+	links: [GoalLinkInputInput!]
+	dependencies: [GoalDependencyInputInput!]
+	recurrence: GoalRecurrenceInputInput
+	deadline: GoalDeadlineInputInput
+	startsAt: String
+	confirmStartsAtChange: Boolean
+	status: ACTIVE_PAUSED_COMPLETED_ARCHIVED_FAILEDInput
+	priority: Number
+	sortOrder: Number
+}
+input ArgsInput_8 {
+	id: Number!
+}
+input ArgsInput_9 {
+	id: Number!
+}
+input ArgsInput_10 {
+	id: Number!
+}
+input ArgsInput_11 {
+	id: Number!
+}
+input ArgsInput_12 {
 	input: CreateGroupInputInput!
 }
 input CreateGroupInputInput {
 	name: String!
 	color: String!
 }
-input ArgsInput_3 {
+input ArgsInput_13 {
 	id: Number!
 	input: UpdateGroupInputInput!
 }
@@ -19,10 +121,10 @@ input UpdateGroupInputInput {
 	name: String
 	color: String
 }
-input ArgsInput_4 {
+input ArgsInput_14 {
 	id: Number!
 }
-input ArgsInput_5 {
+input ArgsInput_15 {
 	input: CreateActivityInputInput!
 }
 input CreateActivityInputInput {
@@ -47,7 +149,7 @@ input RecurrenceConfigInput {
 	start_date: String!
 	end_date: String
 }
-input ArgsInput_6 {
+input ArgsInput_16 {
 	id: Number!
 	input: UpdateActivityInputInput!
 }
@@ -61,33 +163,208 @@ input UpdateActivityInputInput {
 	recurrencePattern: RecurrencePatternInputInput
 	groupId: Number
 }
-input ArgsInput_7 {
+input ArgsInput_17 {
 	id: Number!
 }
+input ArgsInput_18 {
+	input: CompleteActivityInputInput!
+}
+input CompleteActivityInputInput {
+	activityId: Number!
+	occurrenceDate: String!
+	durationMinutes: Number
+	notes: String
+}
+input ArgsInput_19 {
+	id: Number!
+}
+input ArgsInput_20 {
+	input: LogTimeInputInput!
+}
+input LogTimeInputInput {
+	activityId: Number!
+	durationMinutes: Number!
+	occurrenceDate: String
+	notes: String
+}
 type Query {
+goals(args: ArgsInput): [Goals!]!
+goal(args: ArgsInput_1!): Goals
+goalNudges(args: Object): [GoalNudge!]!
+dailyProgress(args: ArgsInput_2): DailyProgress!
 groups(args: Object): [Groups!]!
-group(args: ArgsInput!): Groups
+group(args: ArgsInput_3!): Groups
 activities(args: Object): [Activities!]!
-activity(args: ArgsInput_1!): Activities
+activity(args: ArgsInput_4!): Activities
+activityCompletions(args: ArgsInput_5): [ActivityCompletions!]!
+}
+type Goals {
+target_value: Number!
+startsAt: String!
+lifecyclePhase: GoalLifecyclePhase!
+config: GoalConfig!
+recurrence: GoalRecurrenceConfig
+deadline: GoalDeadlineConfig
+links: [Links!]!
+activeCycle: ActiveCycle
+cycles: [CyclesAndCycles_1!]!
+dependencies: [Dependencies!]!
+snapshots: [Snapshots!]!
+isLocked: Boolean!
+user_id: Number!
+id: Number!
+title: String!
+description: String
+color: String!
+icon: String
+rule_type: String!
+metric: GoalMetric!
+status: GoalStatus!
+priority: Number!
+sort_order: Number!
+starts_at: Date!
+created_at: Date!
+updated_at: Date!
+}
+type GoalConfig {
+composite_mode: ALL_ANY_WEIGHTED
+count_required: Number
+before_time: String
+after_time: String
+block_until_unlocked: Boolean
+}
+type GoalRecurrenceConfig {
+period: WEEKLY_MONTHLY_QUARTERLY_EVERY_X_DAYS!
+interval: Number
+anchor: String
+carry_over: NONE_OVERFLOW
+reset: String
+}
+type GoalDeadlineConfig {
+kind: ABSOLUTE_RELATIVE!
+date: String
+days_after_cycle_start: Number
+grace_days: Number
+warn_days: Number
+}
+type Links {
+activity: Activity
+group: Groups
+weight: Number!
+id: Number!
+created_at: Date!
+activity_id: Number
+goal_id: Number!
+link_type: GoalLinkType!
+group_id: Number
+}
+type Activity {
+user_id: Number!
+id: Number!
+title: String!
+description: String
+created_at: Date!
+updated_at: Date!
+group_id: Number
+start_time: String!
+end_time: String!
+is_recurring: Boolean!
+date: String
 }
 type Groups {
 user_id: Number!
 id: Number!
-name: String!
 color: String!
 created_at: Date!
 updated_at: Date!
+name: String!
+}
+type ActiveCycle {
+deadlineState: DeadlineState!
+percentComplete: Number!
+remaining: Number!
+id: Number!
+target_value: Number!
+status: GoalCycleStatus!
+starts_at: Date!
+created_at: Date!
+updated_at: Date!
+goal_id: Number!
+cycle_index: Number!
+ends_at: Date
+deadline_at: Date
+current_value: Number!
+carry_over: Number!
+}
+type CyclesAndCycles_1 {
+id: Number!
+target_value: Number!
+status: GoalCycleStatus!
+starts_at: Date!
+created_at: Date!
+updated_at: Date!
+goal_id: Number!
+cycle_index: Number!
+ends_at: Date
+deadline_at: Date
+current_value: Number!
+carry_over: Number!
+}
+type Dependencies {
+dependsOn: Goals
+threshold: Number
+weight: Number!
+id: Number!
+created_at: Date!
+goal_id: Number!
+depends_on_goal_id: Number!
+requirement: GoalDependencyRequirement!
+}
+type Snapshots {
+value: Number!
+id: Number!
+created_at: Date!
+goal_cycle_id: Number!
+as_of: String!
+}
+type GoalNudge {
+kind: GoalNudgeKind!
+goalId: Number!
+title: String!
+message: String!
+severity: INFO_WARNING_SUCCESS!
+}
+type DailyProgress {
+date: String!
+completedCount: Number!
+minutesToday: Number!
+streakDays: Number!
+completions: [ActivityCompletions!]!
+}
+type ActivityCompletions {
+user_id: Number!
+id: Number!
+activity_id: Number!
+occurrence_date: String!
+duration_minutes: Number
+completed_at: Date!
+metadata: Metadata
+}
+type Metadata {
+title: String
+notes: String
+trigger_events: [String!]
 }
 type Activities {
 recurrencePattern: ParsedRecurrencePattern
 group: Group
 user_id: Number!
 id: Number!
+title: String!
+description: String
 created_at: Date!
 updated_at: Date!
 group_id: Number
-title: String!
-description: String
 start_time: String!
 end_time: String!
 is_recurring: Boolean!
@@ -112,26 +389,62 @@ end_date: String
 type Group {
 user_id: Number!
 id: Number!
-name: String!
 color: String!
 created_at: Date!
 updated_at: Date!
+name: String!
 }
 type Mutation {
-createGroup(args: ArgsInput_2!): CreateGroup!
-updateGroup(args: ArgsInput_3!): CreateGroup!
-deleteGroup(args: ArgsInput_4!): Boolean!
-createActivity(args: ArgsInput_5!): Activities!
-updateActivity(args: ArgsInput_6!): Activities!
-deleteActivity(args: ArgsInput_7!): Boolean!
+createGoal(args: ArgsInput_6!): Goals!
+updateGoal(args: ArgsInput_7!): Goals!
+pauseGoal(args: ArgsInput_8!): Goals!
+resumeGoal(args: ArgsInput_9!): Goals!
+archiveGoal(args: ArgsInput_10!): Goals!
+deleteGoal(args: ArgsInput_11!): Boolean!
+recomputeGoalProgress(args: Object): RecomputeGoalProgress!
+createGroup(args: ArgsInput_12!): CreateGroup!
+updateGroup(args: ArgsInput_13!): CreateGroup!
+deleteGroup(args: ArgsInput_14!): Boolean!
+createActivity(args: ArgsInput_15!): Activities!
+updateActivity(args: ArgsInput_16!): Activities!
+deleteActivity(args: ArgsInput_17!): Boolean!
+completeActivity(args: ArgsInput_18!): CompleteActivity!
+undoCompletion(args: ArgsInput_19!): Boolean!
+logTime(args: ArgsInput_20!): LogTime!
+}
+type RecomputeGoalProgress {
+recomputed: Number!
 }
 type CreateGroup {
 user_id: Number!
 id: Number!
-name: String!
 color: String!
 created_at: Date!
 updated_at: Date!
+name: String!
+}
+type CompleteActivity {
+user_id: Number!
+id: Number!
+activity_id: Number!
+occurrence_date: String!
+duration_minutes: Number
+completed_at: Date!
+metadata: Metadata
+}
+type LogTime {
+amount: Number!
+user_id: Number!
+id: Number!
+metric: GoalEventMetric!
+created_at: Date!
+activity_id: Number
+occurrence_date: String
+metadata: Object
+group_id: Number
+source_type: GoalEventSourceType!
+completion_id: Number
+occurred_at: Date!
 }
 scalar ID
 scalar Int
@@ -145,10 +458,128 @@ scalar Date
 scalar JSON
 scalar String
 scalar Boolean
+enum GoalLifecyclePhase {
+	active
+	paused
+	completed
+	archived
+	failed
+	scheduled
+}
+enum GoalMetric {
+	count
+	duration
+}
+enum GoalStatus {
+	active
+	paused
+	completed
+	archived
+	failed
+}
+enum ALL_ANY_WEIGHTED {
+	all
+	any
+	weighted
+}
+enum WEEKLY_MONTHLY_QUARTERLY_EVERY_X_DAYS {
+	weekly
+	monthly
+	quarterly
+	every_x_days
+}
+enum NONE_OVERFLOW {
+	none
+	overflow
+}
+enum ABSOLUTE_RELATIVE {
+	absolute
+	relative
+}
+enum GoalLinkType {
+	activity
+	group
+}
+enum DeadlineState {
+	failed
+	on_track
+	approaching
+	overdue
+}
+enum GoalCycleStatus {
+	active
+	failed
+	succeeded
+	missed
+}
+enum GoalDependencyRequirement {
+	complete
+	progress
+}
+enum GoalNudgeKind {
+	deadline_approaching
+	deadline_overdue
+	behind_pace
+	cycle_complete
+	dependency_unlocked
+	goal_starting_soon
+}
+enum INFO_WARNING_SUCCESS {
+	info
+	warning
+	success
+}
 enum WEEKLY_MONTHLY_EVERY_X_DAYS {
 	weekly
 	monthly
 	every_x_days
+}
+enum GoalEventMetric {
+	count
+	duration
+}
+enum GoalEventSourceType {
+	completion
+	time_log
+	manual
+}
+enum COUNT_DURATIONInput {
+	count
+	duration
+}
+enum ALL_ANY_WEIGHTEDInput {
+	all
+	any
+	weighted
+}
+enum ACTIVITY_GROUPInput {
+	activity
+	group
+}
+enum COMPLETE_PROGRESSInput {
+	complete
+	progress
+}
+enum WEEKLY_MONTHLY_QUARTERLY_EVERY_X_DAYSInput {
+	weekly
+	monthly
+	quarterly
+	every_x_days
+}
+enum NONE_OVERFLOWInput {
+	none
+	overflow
+}
+enum ABSOLUTE_RELATIVEInput {
+	absolute
+	relative
+}
+enum ACTIVE_PAUSED_COMPLETED_ARCHIVED_FAILEDInput {
+	active
+	paused
+	completed
+	archived
+	failed
 }
 enum RecurrenceTypeInput {
 	weekly

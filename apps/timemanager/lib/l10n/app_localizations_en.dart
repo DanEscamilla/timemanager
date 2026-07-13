@@ -60,6 +60,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalsFilterActive => 'Active';
 
   @override
+  String get goalsFilterScheduled => 'Scheduled';
+
+  @override
   String get goalsFilterPaused => 'Paused';
 
   @override
@@ -70,6 +73,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goalsFilterAll => 'All';
+
+  @override
+  String get goalsStartsAtScheduled => 'Scheduled';
+
+  @override
+  String goalsStartsInDays(int days) {
+    return 'Starts in $days days';
+  }
+
+  @override
+  String get goalsStartsTomorrow => 'Starts tomorrow';
+
+  @override
+  String get goalsStartsToday => 'Starts today';
+
+  @override
+  String get goalsFormStartsAt => 'Start date';
+
+  @override
+  String get goalsFormStartsAtCustom => 'Set a start date';
+
+  @override
+  String get goalsFormStartsAtHint => 'Leave off to start immediately when created.';
+
+  @override
+  String get goalsStartsAtConfirmTitle => 'Move start later?';
+
+  @override
+  String get goalsStartsAtConfirmBody => 'Moving the start date later may remove progress already counted. Continue?';
+
+  @override
+  String get goalsStartsAtConfirmAction => 'Move start';
+
+  @override
+  String get goalsStartingSoon => 'Starting soon';
 
   @override
   String get goalsDetailTitle => 'Goal';
