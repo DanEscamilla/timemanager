@@ -8,7 +8,7 @@ globs: apps/timemanager/**
 Source layout (`lib/`):
 
 - `config/api_config.dart` — GraphQL (`:3000`) and SuperTokens auth API (`:3001`) endpoints.
-- `l10n/` — ARB templates (`app_en.arb`) and generated `AppLocalizations` (via `flutter gen-l10n` / `l10n.yaml`). Put all user-facing copy in ARB; do not hardcode UI strings in widgets.
+- `l10n/` — ARB templates (`app_en.arb`, `app_es.arb`, …) and generated `AppLocalizations` (via `flutter gen-l10n` / `l10n.yaml`). Put all user-facing copy in ARB; do not hardcode UI strings in widgets.
 - `models/` — data models (e.g. `activity.dart`).
 - `screens/` — UI screens (`login_screen.dart`, `activities_screen.dart`, `activity_form_screen.dart`).
 - `services/` — `auth_service.dart` (SuperTokens FDI + header tokens), `graphql_client.dart` (Bearer GraphQL), repositories.

@@ -1,0 +1,183 @@
+{
+  "@@locale": "es",
+
+  "appTitle": "Time Manager",
+
+  "navActivities": "Actividades",
+  "navCalendar": "Calendario",
+  "tooltipRefresh": "Actualizar",
+  "tooltipSignOut": "Cerrar sesión",
+  "tooltipAddActivity": "Añadir actividad",
+  "tooltipAddActivityForDay": "Añadir actividad para este día",
+
+  "loginCreateAccount": "Crear una cuenta",
+  "loginSignInContinue": "Inicia sesión para continuar",
+  "loginEmail": "Correo electrónico",
+  "loginEmailRequired": "El correo electrónico es obligatorio",
+  "loginEmailInvalid": "Introduce un correo electrónico válido",
+  "loginPassword": "Contraseña",
+  "loginPasswordRequired": "La contraseña es obligatoria",
+  "loginPasswordTooShort": "Usa al menos 8 caracteres",
+  "loginSignUp": "Registrarse",
+  "loginSignIn": "Iniciar sesión",
+  "loginAlreadyHaveAccount": "¿Ya tienes una cuenta? Inicia sesión",
+  "loginNeedAccount": "¿Necesitas una cuenta? Regístrate",
+  "loginOrContinueWith": "O continúa con",
+  "providerGoogle": "Google",
+  "providerGitHub": "GitHub",
+  "providerApple": "Apple",
+  "providerTwitter": "Twitter",
+
+  "authActionSignUp": "Registro",
+  "authActionSignIn": "Inicio de sesión",
+  "authActionOAuth": "Inicio de sesión OAuth",
+  "authFailedStatus": "{action} falló ({status})",
+  "@authFailedStatus": {
+    "placeholders": {
+      "action": { "type": "String" },
+      "status": { "type": "String" }
+    }
+  },
+  "authNoSessionToken": "{action} se completó pero no se devolvió ningún token de sesión",
+  "@authNoSessionToken": {
+    "placeholders": {
+      "action": { "type": "String" }
+    }
+  },
+  "authStartOAuthFailed": "No se pudo iniciar el inicio de sesión con {provider} ({statusCode})",
+  "@authStartOAuthFailed": {
+    "placeholders": {
+      "provider": { "type": "String" },
+      "statusCode": { "type": "int" }
+    }
+  },
+  "authAuthorisationUrlMissing": "Falta la URL de autorización en la respuesta",
+  "authCouldNotGetAuthorisationUrl": "No se pudo obtener la URL de autorización",
+  "authCouldNotOpenLogin": "No se pudo abrir el inicio de sesión con {provider}",
+  "@authCouldNotOpenLogin": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+
+  "errorNotSignedIn": "No has iniciado sesión",
+  "errorSessionExpired": "La sesión ha caducado. Vuelve a iniciar sesión.",
+  "errorRequestFailed": "La solicitud falló ({statusCode}): {body}",
+  "@errorRequestFailed": {
+    "placeholders": {
+      "statusCode": { "type": "int" },
+      "body": { "type": "String" }
+    }
+  },
+  "errorNoGraphQlData": "No hay datos en la respuesta de GraphQL",
+  "errorUnknown": "Error desconocido",
+  "errorCouldNotLoadActivities": "No se pudieron cargar las actividades",
+  "errorRetry": "Reintentar",
+
+  "activitiesEmpty": "Aún no hay actividades.\nToca + para añadir una.",
+  "activitiesDeleteTitle": "¿Eliminar actividad?",
+  "activitiesDeleteConfirm": "¿Eliminar \"{title}\"?",
+  "@activitiesDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "activitiesCancel": "Cancelar",
+  "activitiesDelete": "Eliminar",
+  "activitiesDeleted": "Actividad eliminada",
+  "activitiesEdit": "Editar",
+  "activitiesRecurring": "Recurrente",
+
+  "calendarDay": "Día",
+  "calendarWeek": "Semana",
+  "calendarMonth": "Mes",
+
+  "formEditActivity": "Editar actividad",
+  "formNewActivity": "Nueva actividad",
+  "formTitle": "Título",
+  "formTitleRequired": "El título es obligatorio",
+  "formDescriptionOptional": "Descripción (opcional)",
+  "formStart": "Inicio",
+  "formEnd": "Fin",
+  "formRecurring": "Recurrente",
+  "formOneTime": "Única",
+  "formRepeatsOnSchedule": "Se repite según un horario",
+  "formHappensOnSingleDate": "Ocurre en una sola fecha",
+  "formDate": "Fecha",
+  "formSelectDate": "Seleccionar fecha",
+  "formRepeats": "Se repite",
+  "formStarts": "Comienza",
+  "formSelectStartDate": "Seleccionar fecha de inicio",
+  "formEndsOptional": "Termina (opcional)",
+  "formNoEndDate": "Sin fecha de fin",
+  "formClearEndDate": "Borrar fecha de fin",
+  "formDaysOfWeek": "Días de la semana",
+  "formDaysOfMonth": "Días del mes",
+  "formLastDayOfMonth": "Último día del mes",
+  "formRepeatEveryNDays": "Repetir cada N días",
+  "formIntervalAtLeastOne": "Introduce un entero de al menos 1",
+  "formSaveChanges": "Guardar cambios",
+  "formCreate": "Crear",
+  "formEndTimeAfterStart": "La hora de fin debe ser posterior a la de inicio",
+  "formDateRequired": "La fecha es obligatoria para actividades únicas",
+  "formRecurrenceStartRequired": "La fecha de inicio de la recurrencia es obligatoria",
+  "formEndDateAfterStart": "La fecha de fin debe ser igual o posterior a la de inicio",
+  "formSelectWeekday": "Selecciona al menos un día de la semana",
+  "formSelectMonthDay": "Selecciona al menos un día del mes, o el último día",
+  "formIntervalInvalid": "El intervalo debe ser un entero de al menos 1",
+
+  "weekdaySun": "Dom",
+  "weekdayMon": "Lun",
+  "weekdayTue": "Mar",
+  "weekdayWed": "Mié",
+  "weekdayThu": "Jue",
+  "weekdayFri": "Vie",
+  "weekdaySat": "Sáb",
+
+  "recurrenceWeekly": "Semanal",
+  "recurrenceMonthly": "Mensual",
+  "recurrenceEveryXDays": "Cada X días",
+  "recurrenceWeeklyWithDays": "Semanal · {days}",
+  "@recurrenceWeeklyWithDays": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "recurrenceMonthlyWithParts": "Mensual · {parts}",
+  "@recurrenceMonthlyWithParts": {
+    "placeholders": {
+      "parts": { "type": "String" }
+    }
+  },
+  "recurrenceLastDay": "último día",
+  "recurrenceEveryDay": "Todos los días",
+  "recurrenceEveryNDays": "Cada {count} días",
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "scheduleTimeRange": "{start} – {end}",
+  "@scheduleTimeRange": {
+    "placeholders": {
+      "start": { "type": "String" },
+      "end": { "type": "String" }
+    }
+  },
+  "scheduleDateTimeRange": "{date} · {start} – {end}",
+  "@scheduleDateTimeRange": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "start": { "type": "String" },
+      "end": { "type": "String" }
+    }
+  },
+  "scheduleSummaryTimeRange": "{summary} · {start} – {end}",
+  "@scheduleSummaryTimeRange": {
+    "placeholders": {
+      "summary": { "type": "String" },
+      "start": { "type": "String" },
+      "end": { "type": "String" }
+    }
+  }
+}
