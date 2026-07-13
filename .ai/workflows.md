@@ -12,7 +12,7 @@ pnpm timemanager            # nx run-many -t serve -p timemanager,timemanager-ap
 pnpm user-manager           # nx run-many -t serve -p user-manager-web,user-manager-api
 
 # individual projects
-nx serve timemanager        # flutter run -d chrome (also starts user-manager-api; override: -- -d macos|ios|…)
+nx serve timemanager        # flutter run -d chrome --web-port=4444 (also starts user-manager-api; override: -- -d macos|ios|…)
 nx serve timemanager-api    # deno task dev (also runs migrate → timemanager-db:up)
 nx serve user-manager-web   # vite dev server
 nx serve user-manager-api   # express server

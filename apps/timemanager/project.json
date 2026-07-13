@@ -10,7 +10,7 @@
       "continuous": true,
       "dependsOn": ["user-manager-api:serve"],
       "options": {
-        "command": "flutter run -d chrome",
+        "command": "flutter run -d chrome --web-port=4444",
         "cwd": "apps/timemanager"
       }
     },

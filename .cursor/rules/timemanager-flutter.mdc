@@ -15,6 +15,6 @@ Source layout (`lib/`):
 
 Auth: email/password + OAuth against `user-manager-api`. Tokens are stored via `shared_preferences` and sent as `Authorization: Bearer` (header mode). The official `supertokens_flutter` package is Android/iOS-only; this app targets Chrome, so FDI is called directly.
 
-Commands (prefer Nx targets): `nx serve timemanager` (`flutter run -d chrome`; also starts `user-manager-api` via continuous `dependsOn`; override with `nx serve timemanager -- -d <device>`), `nx test timemanager`, `nx run timemanager:analyze`, `nx run timemanager:pub-get`.
+Commands (prefer Nx targets): `nx serve timemanager` (`flutter run -d chrome --web-port=4444`; also starts `user-manager-api` via continuous `dependsOn`; override with `nx serve timemanager -- -d <device>`), `nx test timemanager`, `nx run timemanager:analyze`, `nx run timemanager:pub-get`.
 
 Do not edit generated/platform output: `build/`, `.dart_tool/`, `android/`, `ios/`, `linux/`, `macos/`, `windows/` (unless a change genuinely requires touching a platform folder).
