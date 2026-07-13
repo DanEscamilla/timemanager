@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:timemanager/main.dart';
+import 'package:timemanager/screens/login_screen.dart';
+import 'package:timemanager/widgets/debug_menu.dart';
 
 void main() {
-  testWidgets('shows session bootstrap loading', (WidgetTester tester) async {
-    await tester.pumpWidget(const TimeManagerApp());
-    await tester.pump();
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
-    // AuthGate checks session before routing to login or home.
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  testWidgets('boots to login with debug menu shell', (WidgetTester tester) async {
+    await tester.pumpWidget(const TimeManagerApp());
+    await tester.pump(); // start async bootstrap / prefs
+    await tester.pump(); // settle AuthGate FutureBuilder
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(DebugMenuShell), findsOneWidget);
+    expect(find.byType(Banner), findsOneWidget);
   });
 }
