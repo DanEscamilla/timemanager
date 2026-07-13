@@ -20,6 +20,16 @@ export interface RecurrencePatternInput {
   config: RecurrenceConfig
 }
 
+export interface CreateGroupInput {
+  name: string
+  color: string
+}
+
+export interface UpdateGroupInput {
+  name?: string
+  color?: string
+}
+
 export interface CreateActivityInput {
   title: string
   description?: string | null
@@ -30,6 +40,8 @@ export interface CreateActivityInput {
   date?: string | null
   // Required when isRecurring is true; ignored when isRecurring is false.
   recurrencePattern?: RecurrencePatternInput | null
+  // Optional group assignment (must belong to the same user).
+  groupId?: number | null
 }
 
 export interface UpdateActivityInput {
@@ -40,4 +52,6 @@ export interface UpdateActivityInput {
   isRecurring?: boolean
   date?: string | null
   recurrencePattern?: RecurrencePatternInput | null
-} 
+  // Pass null to clear the group assignment.
+  groupId?: number | null
+}

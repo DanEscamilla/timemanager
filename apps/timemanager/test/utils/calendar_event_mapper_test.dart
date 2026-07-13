@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timemanager/models/activity.dart';
+import 'package:timemanager/models/group.dart';
 import 'package:timemanager/utils/calendar_event_mapper.dart';
 
 Activity _activity({
@@ -9,6 +10,7 @@ Activity _activity({
   required String endTime,
   bool isRecurring = false,
   String? description,
+  ActivityGroup? group,
 }) {
   final now = DateTime(2026, 7, 1);
   return Activity(
@@ -20,6 +22,8 @@ Activity _activity({
     endTime: endTime,
     isRecurring: isRecurring,
     date: '2026-07-12',
+    groupId: group?.id,
+    group: group,
     createdAt: now,
     updatedAt: now,
   );
@@ -86,6 +90,33 @@ void main() {
       expect(events[1].endTime, DateTime(2026, 7, 13, 12, 30));
       expect(events[1].color, Colors.orange);
       expect(events[1].event?.id, 2);
+    });
+
+    test('uses group color when assigned', () {
+      final now = DateTime(2026, 7, 1);
+      final group = ActivityGroup(
+        id: 10,
+        userId: 1,
+        name: 'Work',
+        color: '#2563EB',
+        createdAt: now,
+        updatedAt: now,
+      );
+      final grouped = _activity(
+        id: 3,
+        startTime: '09:00',
+        endTime: '10:00',
+        group: group,
+      );
+
+      final events = toCalendarEvents(
+        [ActivityOccurrence(activity: grouped, date: DateTime(2026, 7, 12))],
+        oneOffColor: Colors.teal,
+        recurringColor: Colors.orange,
+      );
+
+      expect(events, hasLength(1));
+      expect(events[0].color, parseGroupColor('#2563EB'));
     });
   });
 }

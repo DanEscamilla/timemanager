@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
+import '../services/group_repository.dart';
 import '../theme/tokens/app_icon_sizes.dart';
 import '../theme/tokens/app_radius.dart';
 import '../theme/tokens/app_spacing.dart';
@@ -20,10 +21,12 @@ class CalendarScreen extends StatefulWidget {
   const CalendarScreen({
     super.key,
     required this.repository,
+    required this.groupRepository,
     this.onChanged,
   });
 
   final ActivityRepository repository;
+  final GroupRepository groupRepository;
 
   /// Called after a successful create/update so siblings can refresh.
   final VoidCallback? onChanged;
@@ -133,6 +136,7 @@ class CalendarScreenState extends State<CalendarScreen> {
         builder:
             (_) => ActivityFormScreen(
               repository: widget.repository,
+              groupRepository: widget.groupRepository,
               activity: activity,
               initialDate: initialDate,
             ),

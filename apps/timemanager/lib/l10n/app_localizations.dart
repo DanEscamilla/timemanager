@@ -149,6 +149,102 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get tooltipSettings;
 
+  /// No description provided for @tooltipGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get tooltipGroups;
+
+  /// No description provided for @tooltipAddGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Add group'**
+  String get tooltipAddGroup;
+
+  /// No description provided for @groupsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get groupsTitle;
+
+  /// No description provided for @groupsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No groups yet'**
+  String get groupsEmptyTitle;
+
+  /// No description provided for @groupsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a group to organize your activities by color.'**
+  String get groupsEmptyHint;
+
+  /// No description provided for @groupsEmptyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add group'**
+  String get groupsEmptyAction;
+
+  /// No description provided for @groupsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete group?'**
+  String get groupsDeleteTitle;
+
+  /// No description provided for @groupsDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{name}\"? Activities in this group will be ungrouped.'**
+  String groupsDeleteConfirm(String name);
+
+  /// No description provided for @groupsDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Group deleted'**
+  String get groupsDeleted;
+
+  /// No description provided for @formEditGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit group'**
+  String get formEditGroup;
+
+  /// No description provided for @formNewGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'New group'**
+  String get formNewGroup;
+
+  /// No description provided for @formGroupName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get formGroupName;
+
+  /// No description provided for @formGroupNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required'**
+  String get formGroupNameRequired;
+
+  /// No description provided for @formGroupColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get formGroupColor;
+
+  /// No description provided for @formGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Group'**
+  String get formGroup;
+
+  /// No description provided for @formNoGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'No group'**
+  String get formNoGroup;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:

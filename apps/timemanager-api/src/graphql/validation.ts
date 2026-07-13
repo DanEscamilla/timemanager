@@ -1,6 +1,8 @@
 import { RecurrenceConfig, RecurrencePatternInput } from './types.ts'
+import { isAllowedGroupColor, normalizeGroupColor } from './group_palette.ts'
 
 export class InvalidActivityScheduleError extends Error {}
+export class InvalidGroupError extends Error {}
 
 interface ActivitySchedule {
   isRecurring: boolean
@@ -52,6 +54,33 @@ export function validateActivitySchedule(input: ActivitySchedule): void {
         `Unsupported recurrenceType: ${recurrenceType}`,
       )
   }
+}
+
+/**
+ * Validates a group color against the shared hex allowlist.
+ * Returns the canonical palette value (e.g. `#0F766E`).
+ */
+export function validateGroupColor(color: string): string {
+  if (!isAllowedGroupColor(color)) {
+    throw new InvalidGroupError(
+      'color must be a hex value from the group palette (e.g. #0F766E)',
+    )
+  }
+  return normalizeGroupColor(color)
+}
+
+/**
+ * Validates group name is non-empty after trim.
+ */
+export function validateGroupName(name: string): string {
+  const trimmed = name.trim()
+  if (!trimmed) {
+    throw new InvalidGroupError('name is required')
+  }
+  if (trimmed.length > 255) {
+    throw new InvalidGroupError('name must be at most 255 characters')
+  }
+  return trimmed
 }
 
 function validateDaysOfWeek(daysOfWeek: RecurrenceConfig['days_of_week']): void {

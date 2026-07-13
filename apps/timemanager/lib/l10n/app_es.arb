@@ -11,6 +11,29 @@
   "tooltipAddActivity": "Añadir actividad",
   "tooltipAddActivityForDay": "Añadir actividad para este día",
   "tooltipSettings": "Ajustes",
+  "tooltipGroups": "Grupos",
+  "tooltipAddGroup": "Añadir grupo",
+
+  "groupsTitle": "Grupos",
+  "groupsEmptyTitle": "Aún no hay grupos",
+  "groupsEmptyHint": "Crea un grupo para organizar tus actividades por color.",
+  "groupsEmptyAction": "Añadir grupo",
+  "groupsDeleteTitle": "¿Eliminar grupo?",
+  "groupsDeleteConfirm": "¿Quitar \"{name}\"? Las actividades de este grupo quedarán sin grupo.",
+  "@groupsDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "groupsDeleted": "Grupo eliminado",
+
+  "formEditGroup": "Editar grupo",
+  "formNewGroup": "Nuevo grupo",
+  "formGroupName": "Nombre",
+  "formGroupNameRequired": "El nombre es obligatorio",
+  "formGroupColor": "Color",
+  "formGroup": "Grupo",
+  "formNoGroup": "Sin grupo",
 
   "settingsTitle": "Ajustes",
   "settingsTheme": "Tema",

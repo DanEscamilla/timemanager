@@ -2,6 +2,27 @@ input ArgsInput {
 	id: Number!
 }
 input ArgsInput_1 {
+	id: Number!
+}
+input ArgsInput_2 {
+	input: CreateGroupInputInput!
+}
+input CreateGroupInputInput {
+	name: String!
+	color: String!
+}
+input ArgsInput_3 {
+	id: Number!
+	input: UpdateGroupInputInput!
+}
+input UpdateGroupInputInput {
+	name: String
+	color: String
+}
+input ArgsInput_4 {
+	id: Number!
+}
+input ArgsInput_5 {
 	input: CreateActivityInputInput!
 }
 input CreateActivityInputInput {
@@ -12,6 +33,7 @@ input CreateActivityInputInput {
 	isRecurring: Boolean!
 	date: String
 	recurrencePattern: RecurrencePatternInputInput
+	groupId: Number
 }
 input RecurrencePatternInputInput {
 	recurrenceType: RecurrenceTypeInput!
@@ -25,7 +47,7 @@ input RecurrenceConfigInput {
 	start_date: String!
 	end_date: String
 }
-input ArgsInput_2 {
+input ArgsInput_6 {
 	id: Number!
 	input: UpdateActivityInputInput!
 }
@@ -37,26 +59,39 @@ input UpdateActivityInputInput {
 	isRecurring: Boolean
 	date: String
 	recurrencePattern: RecurrencePatternInputInput
+	groupId: Number
 }
-input ArgsInput_3 {
+input ArgsInput_7 {
 	id: Number!
 }
 type Query {
+groups(args: Object): [Groups!]!
+group(args: ArgsInput!): Groups
 activities(args: Object): [Activities!]!
-activity(args: ArgsInput!): Activities
+activity(args: ArgsInput_1!): Activities
+}
+type Groups {
+user_id: Number!
+id: Number!
+name: String!
+color: String!
+created_at: Date!
+updated_at: Date!
 }
 type Activities {
 recurrencePattern: ParsedRecurrencePattern
+group: Group
 user_id: Number!
 id: Number!
+created_at: Date!
+updated_at: Date!
+group_id: Number
 title: String!
 description: String
 start_time: String!
 end_time: String!
 is_recurring: Boolean!
 date: String
-created_at: Date!
-updated_at: Date!
 }
 type ParsedRecurrencePattern {
 config: RecurrenceConfig!
@@ -74,10 +109,29 @@ interval_days: Number
 start_date: String!
 end_date: String
 }
+type Group {
+user_id: Number!
+id: Number!
+name: String!
+color: String!
+created_at: Date!
+updated_at: Date!
+}
 type Mutation {
-createActivity(args: ArgsInput_1!): Activities!
-updateActivity(args: ArgsInput_2!): Activities!
-deleteActivity(args: ArgsInput_3!): Boolean!
+createGroup(args: ArgsInput_2!): CreateGroup!
+updateGroup(args: ArgsInput_3!): CreateGroup!
+deleteGroup(args: ArgsInput_4!): Boolean!
+createActivity(args: ArgsInput_5!): Activities!
+updateActivity(args: ArgsInput_6!): Activities!
+deleteActivity(args: ArgsInput_7!): Boolean!
+}
+type CreateGroup {
+user_id: Number!
+id: Number!
+name: String!
+color: String!
+created_at: Date!
+updated_at: Date!
 }
 scalar ID
 scalar Int

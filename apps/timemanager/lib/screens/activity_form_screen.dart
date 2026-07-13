@@ -4,8 +4,10 @@ import 'package:intl/intl.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
+import '../models/group.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
+import '../services/group_repository.dart';
 import '../theme/tokens/app_radius.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../utils/recurrence_summary.dart';
@@ -15,11 +17,13 @@ class ActivityFormScreen extends StatefulWidget {
   const ActivityFormScreen({
     super.key,
     required this.repository,
+    required this.groupRepository,
     this.activity,
     this.initialDate,
   });
 
   final ActivityRepository repository;
+  final GroupRepository groupRepository;
   final Activity? activity;
 
   /// Prefills one-time date when creating from the calendar.
@@ -49,6 +53,10 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   late bool _isLastDayOfMonth;
   bool _saving = false;
 
+  List<ActivityGroup> _groups = const [];
+  int? _groupId;
+  bool _groupsLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -60,6 +68,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
     _startTime = _parseTime(activity?.startTime ?? '09:00');
     _endTime = _parseTime(activity?.endTime ?? '10:00');
     _isRecurring = activity?.isRecurring ?? false;
+    _groupId = activity?.groupId ?? activity?.group?.id;
 
     final pattern = activity?.recurrencePattern;
     _recurrenceType = pattern?.recurrenceType ?? RecurrenceType.weekly;
@@ -86,6 +95,27 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
       }
     } else {
       _recurrenceStartDate = _dateOnly(DateTime.now());
+    }
+
+    _loadGroups();
+  }
+
+  Future<void> _loadGroups() async {
+    try {
+      final groups = await widget.groupRepository.fetchGroups();
+      if (!mounted) return;
+      setState(() {
+        _groups = groups;
+        _groupsLoading = false;
+        // Drop a stale groupId if the group was deleted.
+        if (_groupId != null &&
+            !_groups.any((group) => group.id == _groupId)) {
+          _groupId = null;
+        }
+      });
+    } on GraphQLException {
+      if (!mounted) return;
+      setState(() => _groupsLoading = false);
     }
   }
 
@@ -269,6 +299,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
           isRecurring: _isRecurring,
           date: date,
           recurrencePattern: pattern,
+          groupId: _groupId,
         );
       } else {
         await widget.repository.createActivity(
@@ -279,6 +310,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
           isRecurring: _isRecurring,
           date: date,
           recurrencePattern: pattern,
+          groupId: _groupId,
         );
       }
 
@@ -355,6 +387,48 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                     time: _endTime,
                     onTap: () => _pickTime(isStart: false),
                   ),
+                  const SizedBox(height: AppSpacing.md),
+                  if (_groupsLoading)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                      child: LinearProgressIndicator(),
+                    )
+                  else
+                    DropdownButtonFormField<int?>(
+                      value: _groupId,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: l10n.formGroup,
+                      ),
+                      items: [
+                        DropdownMenuItem<int?>(
+                          value: null,
+                          child: Text(l10n.formNoGroup),
+                        ),
+                        for (final group in _groups)
+                          DropdownMenuItem<int?>(
+                            value: group.id,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  margin: const EdgeInsets.only(
+                                    right: AppSpacing.sm,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: group.colorValue,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                Text(group.name),
+                              ],
+                            ),
+                          ),
+                      ],
+                      onChanged: (value) => setState(() => _groupId = value),
+                    ),
                 ],
               ),
             ),

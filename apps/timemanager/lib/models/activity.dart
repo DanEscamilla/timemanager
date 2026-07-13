@@ -1,3 +1,5 @@
+import 'group.dart';
+
 enum RecurrenceType {
   weekly,
   monthly,
@@ -124,6 +126,8 @@ class Activity {
     required this.endTime,
     required this.isRecurring,
     this.date,
+    this.groupId,
+    this.group,
     this.recurrencePattern,
     required this.createdAt,
     required this.updatedAt,
@@ -137,12 +141,15 @@ class Activity {
   final String endTime;
   final bool isRecurring;
   final String? date;
+  final int? groupId;
+  final ActivityGroup? group;
   final RecurrencePattern? recurrencePattern;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   factory Activity.fromJson(Map<String, dynamic> json) {
     final patternJson = json['recurrencePattern'] as Map<String, dynamic>?;
+    final groupJson = json['group'] as Map<String, dynamic>?;
     return Activity(
       id: _asInt(json['id']),
       userId: _asInt(json['user_id']),
@@ -152,6 +159,8 @@ class Activity {
       endTime: _formatTime(json['end_time']),
       isRecurring: json['is_recurring'] as bool? ?? false,
       date: json['date'] as String?,
+      groupId: json['group_id'] != null ? _asInt(json['group_id']) : null,
+      group: groupJson != null ? ActivityGroup.fromJson(groupJson) : null,
       recurrencePattern:
           patternJson != null ? RecurrencePattern.fromJson(patternJson) : null,
       createdAt: _parseDate(json['created_at']),

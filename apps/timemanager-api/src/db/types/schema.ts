@@ -3,6 +3,7 @@ import { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysel
 // Main Database interface that describes all tables
 export interface Database {
   users: UsersTable
+  groups: GroupsTable
   activities: ActivitiesTable
   recurrence_patterns: RecurrencePatternsTable
   activity_completions: ActivityCompletionsTable
@@ -20,10 +21,24 @@ export interface UsersTable {
   updated_at: ColumnType<Date, string, string>
 }
 
+// Groups table interface — user-scoped activity taxonomy with display color.
+export interface GroupsTable {
+  id: Generated<number>
+  user_id: number
+  name: string
+  // Hex color from the shared preset palette, e.g. "#0F766E"
+  color: string
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string, string>
+}
+
 // Activities table interface
 export interface ActivitiesTable {
   id: Generated<number>
   user_id: number
+  // Optional group assignment. Null when ungrouped; cleared if the group
+  // is deleted (ON DELETE SET NULL).
+  group_id: number | null
   title: string
   description: string | null
   start_time: string // Time of day in HH:mm format
@@ -82,6 +97,10 @@ export interface ActivityCompletionsTable {
 export type User = Selectable<UsersTable>
 export type NewUser = Insertable<UsersTable>
 export type UserUpdate = Updateable<UsersTable>
+
+export type Group = Selectable<GroupsTable>
+export type NewGroup = Insertable<GroupsTable>
+export type GroupUpdate = Updateable<GroupsTable>
 
 export type Activity = Selectable<ActivitiesTable>
 export type NewActivity = Insertable<ActivitiesTable>

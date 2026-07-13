@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
+import '../services/group_repository.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../widgets/activity_list_tile.dart';
 import '../widgets/empty_state.dart';
@@ -15,10 +16,12 @@ class ActivitiesScreen extends StatefulWidget {
   const ActivitiesScreen({
     super.key,
     required this.repository,
+    required this.groupRepository,
     this.onChanged,
   });
 
   final ActivityRepository repository;
+  final GroupRepository groupRepository;
 
   /// Called after a successful create/update/delete so siblings can refresh.
   final VoidCallback? onChanged;
@@ -49,6 +52,7 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
       MaterialPageRoute(
         builder: (_) => ActivityFormScreen(
           repository: widget.repository,
+          groupRepository: widget.groupRepository,
           activity: activity,
         ),
       ),

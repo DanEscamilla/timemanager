@@ -1,5 +1,11 @@
 import { assertEquals, assertThrows } from 'jsr:@std/assert@^1.0.0'
-import { InvalidActivityScheduleError, validateActivitySchedule } from './validation.ts'
+import {
+  InvalidActivityScheduleError,
+  InvalidGroupError,
+  validateActivitySchedule,
+  validateGroupColor,
+  validateGroupName,
+} from './validation.ts'
 
 Deno.test('non-recurring activity requires a date', () => {
   assertThrows(
@@ -149,4 +155,36 @@ Deno.test('every_x_days with a valid interval is valid', () => {
     }),
     undefined,
   )
+})
+
+Deno.test('group color rejects non-hex values', () => {
+  assertThrows(
+    () => validateGroupColor('teal'),
+    InvalidGroupError,
+    'group palette',
+  )
+})
+
+Deno.test('group color rejects hex values outside the palette', () => {
+  assertThrows(
+    () => validateGroupColor('#FFFFFF'),
+    InvalidGroupError,
+    'group palette',
+  )
+})
+
+Deno.test('group color accepts a palette color (case-insensitive)', () => {
+  assertEquals(validateGroupColor('#0f766e'), '#0F766E')
+})
+
+Deno.test('group name rejects blank strings', () => {
+  assertThrows(
+    () => validateGroupName('   '),
+    InvalidGroupError,
+    'name is required',
+  )
+})
+
+Deno.test('group name trims whitespace', () => {
+  assertEquals(validateGroupName('  Work  '), 'Work')
 })

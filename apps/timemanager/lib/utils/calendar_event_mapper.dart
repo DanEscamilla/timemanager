@@ -24,6 +24,9 @@ DateTime combineDateAndTime(DateTime date, String time) {
 }
 
 /// Maps expanded occurrences to [CalendarEventData] for calendar_view.
+///
+/// Uses the activity's group color when assigned; otherwise falls back to
+/// [oneOffColor] / [recurringColor].
 List<CalendarEventData<Activity>> toCalendarEvents(
   List<ActivityOccurrence> occurrences, {
   required Color oneOffColor,
@@ -43,7 +46,8 @@ List<CalendarEventData<Activity>> toCalendarEvents(
           occurrence.date,
           occurrence.activity.endTime,
         ),
-        color: occurrence.activity.isRecurring ? recurringColor : oneOffColor,
+        color: occurrence.activity.group?.colorValue ??
+            (occurrence.activity.isRecurring ? recurringColor : oneOffColor),
         event: occurrence.activity,
       ),
   ];

@@ -28,6 +28,12 @@ class ActivityListTile extends StatelessWidget {
   final bool showMenu;
   final bool compact;
 
+  Color _accentColor(ColorScheme colorScheme) {
+    final group = activity.group;
+    if (group != null) return group.colorValue;
+    return activity.isRecurring ? colorScheme.tertiary : colorScheme.primary;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -36,6 +42,7 @@ class ActivityListTile extends StatelessWidget {
     final type = activity.recurrencePattern?.recurrenceType;
     final schedule =
         scheduleOverride ?? formatActivitySchedule(activity, l10n);
+    final accent = _accentColor(colorScheme);
 
     final tile = ListTile(
       contentPadding: compact
@@ -54,6 +61,13 @@ class ActivityListTile extends StatelessWidget {
               color: colorScheme.onSurfaceVariant,
             ),
           ),
+          if (!compact && activity.group != null)
+            Text(
+              activity.group!.name,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: accent,
+              ),
+            ),
           if (!compact && activity.description?.isNotEmpty == true)
             Text(
               activity.description!,
@@ -63,14 +77,13 @@ class ActivityListTile extends StatelessWidget {
             ),
         ],
       ),
-      isThreeLine: !compact && activity.description?.isNotEmpty == true,
+      isThreeLine: !compact &&
+          (activity.description?.isNotEmpty == true || activity.group != null),
       leading: Container(
         width: 4,
         height: 40,
         decoration: BoxDecoration(
-          color: activity.isRecurring
-              ? colorScheme.tertiary
-              : colorScheme.primary,
+          color: accent,
           borderRadius: AppRadius.borderPill,
         ),
       ),

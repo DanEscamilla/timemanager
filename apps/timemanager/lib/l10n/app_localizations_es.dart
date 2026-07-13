@@ -36,6 +36,56 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tooltipSettings => 'Ajustes';
 
   @override
+  String get tooltipGroups => 'Grupos';
+
+  @override
+  String get tooltipAddGroup => 'Añadir grupo';
+
+  @override
+  String get groupsTitle => 'Grupos';
+
+  @override
+  String get groupsEmptyTitle => 'Aún no hay grupos';
+
+  @override
+  String get groupsEmptyHint => 'Crea un grupo para organizar tus actividades por color.';
+
+  @override
+  String get groupsEmptyAction => 'Añadir grupo';
+
+  @override
+  String get groupsDeleteTitle => '¿Eliminar grupo?';
+
+  @override
+  String groupsDeleteConfirm(String name) {
+    return '¿Quitar \"$name\"? Las actividades de este grupo quedarán sin grupo.';
+  }
+
+  @override
+  String get groupsDeleted => 'Grupo eliminado';
+
+  @override
+  String get formEditGroup => 'Editar grupo';
+
+  @override
+  String get formNewGroup => 'Nuevo grupo';
+
+  @override
+  String get formGroupName => 'Nombre';
+
+  @override
+  String get formGroupNameRequired => 'El nombre es obligatorio';
+
+  @override
+  String get formGroupColor => 'Color';
+
+  @override
+  String get formGroup => 'Grupo';
+
+  @override
+  String get formNoGroup => 'Sin grupo';
+
+  @override
   String get settingsTitle => 'Ajustes';
 
   @override

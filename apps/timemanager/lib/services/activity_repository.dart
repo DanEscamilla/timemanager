@@ -16,8 +16,17 @@ class ActivityRepository {
     end_time
     is_recurring
     date
+    group_id
     created_at
     updated_at
+    group {
+      id
+      user_id
+      name
+      color
+      created_at
+      updated_at
+    }
     recurrencePattern {
       id
       activity_id
@@ -58,6 +67,7 @@ class ActivityRepository {
     required bool isRecurring,
     String? date,
     RecurrencePattern? recurrencePattern,
+    int? groupId,
   }) async {
     final data = await _client.mutate('''
       mutation CreateActivity(\$input: CreateActivityInputInput!) {
@@ -75,6 +85,7 @@ class ActivityRepository {
         if (date != null) 'date': date,
         if (recurrencePattern != null)
           'recurrencePattern': recurrencePattern.toInputMap(),
+        'groupId': groupId,
       },
     });
 
@@ -92,6 +103,7 @@ class ActivityRepository {
     required bool isRecurring,
     String? date,
     RecurrencePattern? recurrencePattern,
+    int? groupId,
   }) async {
     final data = await _client.mutate('''
       mutation UpdateActivity(\$id: Number!, \$input: UpdateActivityInputInput!) {
@@ -110,6 +122,7 @@ class ActivityRepository {
         if (date != null) 'date': date,
         if (recurrencePattern != null)
           'recurrencePattern': recurrencePattern.toInputMap(),
+        'groupId': groupId,
       },
     });
 

@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
+import '../services/group_repository.dart';
 import '../theme/tokens/app_breakpoints.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../utils/overview_stats.dart';
@@ -21,12 +22,14 @@ class OverviewScreen extends StatefulWidget {
   const OverviewScreen({
     super.key,
     required this.repository,
+    required this.groupRepository,
     this.onOpenCalendar,
     this.onOpenActivities,
     this.onChanged,
   });
 
   final ActivityRepository repository;
+  final GroupRepository groupRepository;
   final VoidCallback? onOpenCalendar;
   final VoidCallback? onOpenActivities;
   final VoidCallback? onChanged;
@@ -55,6 +58,7 @@ class OverviewScreenState extends State<OverviewScreen> {
       MaterialPageRoute(
         builder: (_) => ActivityFormScreen(
           repository: widget.repository,
+          groupRepository: widget.groupRepository,
           initialDate: DateTime.now(),
         ),
       ),
@@ -70,6 +74,7 @@ class OverviewScreenState extends State<OverviewScreen> {
       MaterialPageRoute(
         builder: (_) => ActivityFormScreen(
           repository: widget.repository,
+          groupRepository: widget.groupRepository,
           activity: activity,
         ),
       ),

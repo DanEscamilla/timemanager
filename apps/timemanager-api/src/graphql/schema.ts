@@ -7,6 +7,15 @@ export const typeDefs = gql`
     name: String!
   }
 
+  type Group {
+    id: ID!
+    userId: ID!
+    name: String!
+    color: String!
+    createdAt: String!
+    updatedAt: String!
+  }
+
   type Activity {
     id: ID!
     userId: ID!
@@ -17,6 +26,8 @@ export const typeDefs = gql`
     isRecurring: Boolean!
     # Set when isRecurring is false; null when isRecurring is true.
     date: String
+    groupId: ID
+    group: Group
     recurrencePattern: RecurrencePattern
     createdAt: String!
     updatedAt: String!
@@ -55,6 +66,16 @@ export const typeDefs = gql`
     endDate: String
   }
 
+  input CreateGroupInput {
+    name: String!
+    color: String!
+  }
+
+  input UpdateGroupInput {
+    name: String
+    color: String
+  }
+
   input CreateActivityInput {
     title: String!
     description: String
@@ -65,6 +86,7 @@ export const typeDefs = gql`
     date: String
     # Required when isRecurring is true; ignored when isRecurring is false.
     recurrencePattern: CreateRecurrencePatternInput
+    groupId: ID
   }
 
   input CreateRecurrencePatternInput {
@@ -80,6 +102,8 @@ export const typeDefs = gql`
     isRecurring: Boolean
     date: String
     recurrencePattern: UpdateRecurrencePatternInput
+    # Pass null to clear the group assignment.
+    groupId: ID
   }
 
   input UpdateRecurrencePatternInput {
@@ -88,11 +112,16 @@ export const typeDefs = gql`
   }
 
   type Query {
+    groups: [Group!]!
+    group(id: ID!): Group
     activities: [Activity!]!
     activity(id: ID!): Activity
   }
 
   type Mutation {
+    createGroup(input: CreateGroupInput!): Group!
+    updateGroup(id: ID!, input: UpdateGroupInput!): Group!
+    deleteGroup(id: ID!): Boolean!
     createActivity(input: CreateActivityInput!): Activity!
     updateActivity(id: ID!, input: UpdateActivityInput!): Activity!
     deleteActivity(id: ID!): Boolean!

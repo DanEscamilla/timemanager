@@ -5,8 +5,10 @@ import '../theme/tokens/app_breakpoints.dart';
 import '../services/activity_repository.dart';
 import '../services/auth_service.dart';
 import '../services/graphql_client.dart';
+import '../services/group_repository.dart';
 import 'activities_screen.dart';
 import 'calendar_screen.dart';
+import 'groups_screen.dart';
 import 'overview_screen.dart';
 import 'settings_screen.dart';
 
@@ -15,6 +17,7 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
     this.repository,
+    this.groupRepository,
     this.authService,
     this.onSignedOut,
     this.themeMode = ThemeMode.system,
@@ -22,6 +25,7 @@ class HomeScreen extends StatefulWidget {
   });
 
   final ActivityRepository? repository;
+  final GroupRepository? groupRepository;
   final AuthService? authService;
   final Future<void> Function()? onSignedOut;
   final ThemeMode themeMode;
@@ -33,15 +37,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final AuthService _auth = widget.authService ?? AuthService();
-  late final ActivityRepository _repository = widget.repository ??
-      ActivityRepository(
-        client: GraphQLClient(
-          authService: _auth,
-          onUnauthorized: () async {
-            await widget.onSignedOut?.call();
-          },
-        ),
-      );
+  late final GraphQLClient _client = GraphQLClient(
+    authService: _auth,
+    onUnauthorized: () async {
+      await widget.onSignedOut?.call();
+    },
+  );
+  late final ActivityRepository _repository =
+      widget.repository ?? ActivityRepository(client: _client);
+  late final GroupRepository _groupRepository =
+      widget.groupRepository ?? GroupRepository(client: _client);
 
   final _overviewKey = GlobalKey<OverviewScreenState>();
   final _activitiesKey = GlobalKey<ActivitiesScreenState>();
@@ -76,6 +81,17 @@ class _HomeScreenState extends State<HomeScreen> {
       _activitiesIndex => l10n.navActivities,
       _ => l10n.navCalendar,
     };
+  }
+
+  Future<void> _openGroups() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => GroupsScreen(
+          repository: _groupRepository,
+          onChanged: _reloadAll,
+        ),
+      ),
+    );
   }
 
   Future<void> _openSettings() async {
@@ -140,6 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
         OverviewScreen(
           key: _overviewKey,
           repository: _repository,
+          groupRepository: _groupRepository,
           onOpenCalendar: () => setState(() => _index = _calendarIndex),
           onOpenActivities: () => setState(() => _index = _activitiesIndex),
           onChanged: _reloadAll,
@@ -147,6 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ActivitiesScreen(
           key: _activitiesKey,
           repository: _repository,
+          groupRepository: _groupRepository,
           onChanged: () {
             _calendarKey.currentState?.reload();
             _overviewKey.currentState?.reload();
@@ -155,6 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
         CalendarScreen(
           key: _calendarKey,
           repository: _repository,
+          groupRepository: _groupRepository,
           onChanged: () {
             _activitiesKey.currentState?.reload();
             _overviewKey.currentState?.reload();
@@ -175,6 +194,11 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: l10n.tooltipRefresh,
             onPressed: _reloadAll,
             icon: const Icon(Icons.refresh),
+          ),
+          IconButton(
+            tooltip: l10n.tooltipGroups,
+            onPressed: _openGroups,
+            icon: const Icon(Icons.folder_outlined),
           ),
           IconButton(
             tooltip: l10n.tooltipSettings,
