@@ -1,14 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:go_router/go_router.dart';
 
 import 'l10n/app_localizations.dart';
+import 'router/app_router.dart';
+import 'router/auth_controller.dart';
 import 'services/locale_preference_service.dart';
 import 'services/theme_mode_preference_service.dart';
 import 'theme/app_theme.dart';
-import 'widgets/auth_gate.dart';
 import 'widgets/debug_menu.dart';
 
 void main() {
+  usePathUrlStrategy();
   runApp(const TimeManagerApp());
 }
 
@@ -17,10 +21,12 @@ class TimeManagerApp extends StatefulWidget {
     super.key,
     this.localePreferenceService,
     this.themeModePreferenceService,
+    this.authController,
   });
 
   final LocalePreferenceService? localePreferenceService;
   final ThemeModePreferenceService? themeModePreferenceService;
+  final AuthController? authController;
 
   @override
   State<TimeManagerApp> createState() => _TimeManagerAppState();
@@ -31,14 +37,35 @@ class _TimeManagerAppState extends State<TimeManagerApp> {
       widget.localePreferenceService ?? LocalePreferenceService();
   late final ThemeModePreferenceService _themePrefs =
       widget.themeModePreferenceService ?? ThemeModePreferenceService();
+  late final AuthController _auth =
+      widget.authController ?? AuthController();
+
+  final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
   Locale? _overrideLocale;
-  ThemeMode _themeMode = ThemeMode.system;
+  late final ValueNotifier<ThemeMode> _themeMode =
+      ValueNotifier(ThemeMode.system);
+  late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    _router = createAppRouter(
+      auth: _auth,
+      rootNavigatorKey: _rootNavigatorKey,
+      themeMode: _themeMode,
+      onThemeModeChanged: _onThemeModeChanged,
+    );
     _loadPreferences();
+    _auth.bootstrap();
+  }
+
+  @override
+  void dispose() {
+    _themeMode.dispose();
+    _router.dispose();
+    _auth.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPreferences() async {
@@ -47,8 +74,8 @@ class _TimeManagerAppState extends State<TimeManagerApp> {
     if (!mounted) return;
     setState(() {
       _overrideLocale = locale;
-      _themeMode = themeMode;
     });
+    _themeMode.value = themeMode;
   }
 
   Future<void> _onLocaleChanged(Locale? locale) async {
@@ -57,36 +84,38 @@ class _TimeManagerAppState extends State<TimeManagerApp> {
   }
 
   Future<void> _onThemeModeChanged(ThemeMode mode) async {
-    setState(() => _themeMode = mode);
+    _themeMode.value = mode;
     await _themePrefs.save(mode);
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: _overrideLocale,
-      theme: buildLightTheme(),
-      darkTheme: buildDarkTheme(),
-      themeMode: _themeMode,
-      debugShowCheckedModeBanner: false,
-      builder: (context, child) {
-        final content = child ?? const SizedBox.shrink();
-        if (!kDebugMode) return content;
-        return DebugMenuShell(
-          localeOverride: _overrideLocale,
-          onLocaleChanged: _onLocaleChanged,
-          themeMode: _themeMode,
-          onThemeModeChanged: _onThemeModeChanged,
-          child: content,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: _themeMode,
+      builder: (context, themeMode, _) {
+        return MaterialApp.router(
+          onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: _overrideLocale,
+          theme: buildLightTheme(),
+          darkTheme: buildDarkTheme(),
+          themeMode: themeMode,
+          debugShowCheckedModeBanner: false,
+          routerConfig: _router,
+          builder: (context, child) {
+            final content = child ?? const SizedBox.shrink();
+            if (!kDebugMode) return content;
+            return DebugMenuShell(
+              localeOverride: _overrideLocale,
+              onLocaleChanged: _onLocaleChanged,
+              themeMode: themeMode,
+              onThemeModeChanged: _onThemeModeChanged,
+              child: content,
+            );
+          },
         );
       },
-      home: AuthGate(
-        onThemeModeChanged: _onThemeModeChanged,
-        themeMode: _themeMode,
-      ),
     );
   }
 }

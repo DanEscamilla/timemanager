@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     try {
       await widget.authService.startOAuth(provider);
-      // Session completes after redirect via AuthGate bootstrap.
+      // Session completes after redirect via AuthController bootstrap.
     } on AuthException catch (e) {
       if (!mounted) return;
       setState(() => _error = e.localize(AppLocalizations.of(context)));

@@ -1,118 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localizations.dart';
+import '../router/app_routes.dart';
+import '../router/auth_controller.dart';
 import '../theme/tokens/app_breakpoints.dart';
-import '../services/activity_repository.dart';
-import '../services/auth_service.dart';
-import '../services/graphql_client.dart';
-import '../services/group_repository.dart';
-import 'activities_screen.dart';
-import 'calendar_screen.dart';
-import 'groups_screen.dart';
-import 'overview_screen.dart';
-import 'settings_screen.dart';
 
-/// App shell: Overview + Activities + Calendar with responsive navigation.
-class HomeScreen extends StatefulWidget {
+/// App shell: Overview + Activities + Calendar with URL-synced navigation.
+class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
-    this.repository,
-    this.groupRepository,
-    this.authService,
-    this.onSignedOut,
-    this.themeMode = ThemeMode.system,
-    this.onThemeModeChanged,
+    required this.navigationShell,
+    required this.authController,
   });
 
-  final ActivityRepository? repository;
-  final GroupRepository? groupRepository;
-  final AuthService? authService;
-  final Future<void> Function()? onSignedOut;
-  final ThemeMode themeMode;
-  final ValueChanged<ThemeMode>? onThemeModeChanged;
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  late final AuthService _auth = widget.authService ?? AuthService();
-  late final GraphQLClient _client = GraphQLClient(
-    authService: _auth,
-    onUnauthorized: () async {
-      await widget.onSignedOut?.call();
-    },
-  );
-  late final ActivityRepository _repository =
-      widget.repository ?? ActivityRepository(client: _client);
-  late final GroupRepository _groupRepository =
-      widget.groupRepository ?? GroupRepository(client: _client);
-
-  final _overviewKey = GlobalKey<OverviewScreenState>();
-  final _activitiesKey = GlobalKey<ActivitiesScreenState>();
-  final _calendarKey = GlobalKey<CalendarScreenState>();
-
-  int _index = 0;
+  final StatefulNavigationShell navigationShell;
+  final AuthController authController;
 
   static const _overviewIndex = 0;
   static const _activitiesIndex = 1;
   static const _calendarIndex = 2;
 
-  void _reloadAll() {
-    _overviewKey.currentState?.reload();
-    _activitiesKey.currentState?.reload();
-    _calendarKey.currentState?.reload();
-  }
-
   void _onFabPressed() {
-    switch (_index) {
+    switch (navigationShell.currentIndex) {
       case _overviewIndex:
-        _overviewKey.currentState?.openCreateForm();
+        authController.overviewKey.currentState?.openCreateForm();
       case _activitiesIndex:
-        _activitiesKey.currentState?.openCreateForm();
+        authController.activitiesKey.currentState?.openCreateForm();
       case _calendarIndex:
-        _calendarKey.currentState?.openCreateForSelectedDay();
+        authController.calendarKey.currentState?.openCreateForSelectedDay();
     }
   }
 
   String _title(AppLocalizations l10n) {
-    return switch (_index) {
+    return switch (navigationShell.currentIndex) {
       _overviewIndex => l10n.navOverview,
       _activitiesIndex => l10n.navActivities,
       _ => l10n.navCalendar,
     };
   }
 
-  Future<void> _openGroups() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => GroupsScreen(
-          repository: _groupRepository,
-          onChanged: _reloadAll,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _openSettings() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SettingsScreen(
-          themeMode: widget.themeMode,
-          onThemeModeChanged: (mode) {
-            widget.onThemeModeChanged?.call(mode);
-          },
-          onSignedOut: widget.onSignedOut,
-        ),
-      ),
+  void _onDestinationSelected(int index) {
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final wide =
-        MediaQuery.sizeOf(context).width >= AppBreakpoints.medium;
+    final wide = MediaQuery.sizeOf(context).width >= AppBreakpoints.medium;
+    final index = navigationShell.currentIndex;
 
     final destinations = [
       NavigationDestination(
@@ -150,39 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ];
 
-    final body = IndexedStack(
-      index: _index,
-      children: [
-        OverviewScreen(
-          key: _overviewKey,
-          repository: _repository,
-          groupRepository: _groupRepository,
-          onOpenCalendar: () => setState(() => _index = _calendarIndex),
-          onOpenActivities: () => setState(() => _index = _activitiesIndex),
-          onChanged: _reloadAll,
-        ),
-        ActivitiesScreen(
-          key: _activitiesKey,
-          repository: _repository,
-          groupRepository: _groupRepository,
-          onChanged: () {
-            _calendarKey.currentState?.reload();
-            _overviewKey.currentState?.reload();
-          },
-        ),
-        CalendarScreen(
-          key: _calendarKey,
-          repository: _repository,
-          groupRepository: _groupRepository,
-          onChanged: () {
-            _activitiesKey.currentState?.reload();
-            _overviewKey.currentState?.reload();
-          },
-        ),
-      ],
-    );
-
-    final fabTooltip = _index == _calendarIndex
+    final fabTooltip = index == _calendarIndex
         ? l10n.tooltipAddActivityForDay
         : l10n.tooltipAddActivity;
 
@@ -192,17 +99,17 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             tooltip: l10n.tooltipRefresh,
-            onPressed: _reloadAll,
+            onPressed: authController.reloadAll,
             icon: const Icon(Icons.refresh),
           ),
           IconButton(
             tooltip: l10n.tooltipGroups,
-            onPressed: _openGroups,
+            onPressed: () => context.push(AppRoutes.groups),
             icon: const Icon(Icons.folder_outlined),
           ),
           IconButton(
             tooltip: l10n.tooltipSettings,
-            onPressed: _openSettings,
+            onPressed: () => context.push(AppRoutes.settings),
             icon: const Icon(Icons.settings_outlined),
           ),
         ],
@@ -211,17 +118,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ? Row(
               children: [
                 NavigationRail(
-                  selectedIndex: _index,
-                  onDestinationSelected: (index) =>
-                      setState(() => _index = index),
+                  selectedIndex: index,
+                  onDestinationSelected: _onDestinationSelected,
                   labelType: NavigationRailLabelType.all,
                   destinations: railDestinations,
                 ),
                 const VerticalDivider(width: 1),
-                Expanded(child: body),
+                Expanded(child: navigationShell),
               ],
             )
-          : body,
+          : navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: _onFabPressed,
@@ -231,9 +137,8 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: wide
           ? null
           : NavigationBar(
-              selectedIndex: _index,
-              onDestinationSelected: (index) =>
-                  setState(() => _index = index),
+              selectedIndex: index,
+              onDestinationSelected: _onDestinationSelected,
               destinations: destinations,
             ),
     );

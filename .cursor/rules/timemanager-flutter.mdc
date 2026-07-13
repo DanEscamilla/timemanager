@@ -10,11 +10,12 @@ Source layout (`lib/`):
 - `config/api_config.dart` — GraphQL (`:3000`) and SuperTokens auth API (`:3001`) endpoints.
 - `l10n/` — ARB templates (`app_en.arb`, `app_es.arb`, …) and generated `AppLocalizations` (via `flutter gen-l10n` / `l10n.yaml`). Put all user-facing copy in ARB; do not hardcode UI strings in widgets.
 - `models/` — data models (e.g. `activity.dart`).
+- `router/` — `go_router` config (`app_router.dart`, `app_routes.dart`, `auth_controller.dart`). Browser path syncs to shell tabs (`/overview`, `/activities`, `/calendar`) plus `/login`, `/groups`, `/settings`.
 - `screens/` — UI screens (`login_screen.dart`, `activities_screen.dart`, `activity_form_screen.dart`).
 - `services/` — `auth_service.dart` (SuperTokens FDI + header tokens), `graphql_client.dart` (Bearer GraphQL), repositories.
-- `widgets/auth_gate.dart` — session gate (login vs activities).
+- `widgets/` — shared UI helpers.
 
-Auth: email/password + OAuth against `user-manager-api`. Tokens are stored via `shared_preferences` and sent as `Authorization: Bearer` (header mode). The official `supertokens_flutter` package is Android/iOS-only; this app targets Chrome, so FDI is called directly.
+Auth: email/password + OAuth against `user-manager-api`. Tokens are stored via `shared_preferences` and sent as `Authorization: Bearer` (header mode). The official `supertokens_flutter` package is Android/iOS-only; this app targets Chrome, so FDI is called directly. `AuthController` bootstraps the session (including OAuth query params) and drives router redirects.
 
 Dev workflow: `pnpm timemanager` starts the API stack only; launch the Flutter client from the IDE (**Run and Debug → timemanager**, Chrome `:4444`, hot reload on save). CLI alternatives: `nx serve timemanager` (`flutter run -d chrome --web-port=4444`; also starts `user-manager-api`), `nx test timemanager`, `nx run timemanager:analyze`, `nx run timemanager:pub-get`.
 
