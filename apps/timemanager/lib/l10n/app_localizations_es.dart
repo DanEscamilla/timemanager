@@ -18,6 +18,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navCalendar => 'Calendario';
 
   @override
+  String get navOverview => 'Resumen';
+
+  @override
   String get tooltipRefresh => 'Actualizar';
 
   @override
@@ -28,6 +31,83 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tooltipAddActivityForDay => 'Añadir actividad para este día';
+
+  @override
+  String get tooltipSettings => 'Ajustes';
+
+  @override
+  String get settingsTitle => 'Ajustes';
+
+  @override
+  String get settingsTheme => 'Tema';
+
+  @override
+  String get settingsThemeSystem => 'Sistema';
+
+  @override
+  String get settingsThemeLight => 'Claro';
+
+  @override
+  String get settingsThemeDark => 'Oscuro';
+
+  @override
+  String get settingsSignOut => 'Cerrar sesión';
+
+  @override
+  String get overviewGreeting => 'Hola';
+
+  @override
+  String overviewTodayDate(String date) {
+    return '$date';
+  }
+
+  @override
+  String get overviewStatToday => 'Hoy';
+
+  @override
+  String get overviewStatWeek => 'Esta semana';
+
+  @override
+  String get overviewStatRecurring => 'Recurrentes';
+
+  @override
+  String get overviewTodaySchedule => 'Agenda de hoy';
+
+  @override
+  String get overviewUpcoming => 'Próximas';
+
+  @override
+  String get overviewQuickActions => 'Acciones rápidas';
+
+  @override
+  String get overviewAddActivity => 'Añadir actividad';
+
+  @override
+  String get overviewOpenCalendar => 'Abrir calendario';
+
+  @override
+  String get overviewEmptyToday => 'Nada programado hoy';
+
+  @override
+  String get overviewEmptyTodayHint => 'Añade una actividad para llenar tu día.';
+
+  @override
+  String get overviewEmptyUpcoming => 'No hay actividades próximas';
+
+  @override
+  String get overviewViewAll => 'Ver todas las actividades';
+
+  @override
+  String get calendarEmptyHint => 'No hay eventos en este rango. Toca + para añadir uno.';
+
+  @override
+  String get activitiesEmptyTitle => 'Aún no hay actividades';
+
+  @override
+  String get activitiesEmptyHint => 'Toca + para añadir tu primera actividad.';
+
+  @override
+  String get activitiesEmptyAction => 'Añadir actividad';
 
   @override
   String get loginCreateAccount => 'Crear una cuenta';

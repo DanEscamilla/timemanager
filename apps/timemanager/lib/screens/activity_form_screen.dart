@@ -6,7 +6,10 @@ import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
+import '../theme/tokens/app_radius.dart';
+import '../theme/tokens/app_spacing.dart';
 import '../utils/recurrence_summary.dart';
+import '../widgets/app_card.dart';
 
 class ActivityFormScreen extends StatefulWidget {
   const ActivityFormScreen({
@@ -301,6 +304,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final weekdays = weekdayLabels(l10n);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -311,236 +315,237 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.screen),
           children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                labelText: l10n.formTitle,
-                border: const OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.sentences,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return l10n.formTitleRequired;
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: InputDecoration(
-                labelText: l10n.formDescriptionOptional,
-                border: const OutlineInputBorder(),
-              ),
-              maxLines: 3,
-              textCapitalization: TextCapitalization.sentences,
-            ),
-            const SizedBox(height: 16),
-            _TimeField(
-              label: l10n.formStart,
-              time: _startTime,
-              onTap: () => _pickTime(isStart: true),
-            ),
-            const SizedBox(height: 12),
-            _TimeField(
-              label: l10n.formEnd,
-              time: _endTime,
-              onTap: () => _pickTime(isStart: false),
-            ),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                _isRecurring ? l10n.formRecurring : l10n.formOneTime,
-              ),
-              subtitle: Text(
-                _isRecurring
-                    ? l10n.formRepeatsOnSchedule
-                    : l10n.formHappensOnSingleDate,
-              ),
-              value: _isRecurring,
-              onChanged: (value) => setState(() => _isRecurring = value),
-            ),
-            const SizedBox(height: 8),
-            if (!_isRecurring) ...[
-              _DateField(
-                label: l10n.formDate,
-                value:
-                    _oneOffDate == null
-                        ? l10n.formSelectDate
-                        : _displayDate(_oneOffDate!),
-                onTap:
-                    () => _pickDate(
-                      current: _oneOffDate,
-                      onPicked:
-                          (picked) => setState(() => _oneOffDate = picked),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      labelText: l10n.formTitle,
                     ),
-              ),
-            ] else ...[
-              DropdownButtonFormField<RecurrenceType>(
-                value: _recurrenceType,
-                decoration: InputDecoration(
-                  labelText: l10n.formRepeats,
-                  border: const OutlineInputBorder(),
-                ),
-                items:
-                    RecurrenceType.values
-                        .map(
-                          (type) => DropdownMenuItem(
-                            value: type,
-                            child: Text(recurrenceTypeLabel(type, l10n)),
-                          ),
-                        )
-                        .toList(),
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _recurrenceType = value);
-                },
-              ),
-              const SizedBox(height: 12),
-              _DateField(
-                label: l10n.formStarts,
-                value:
-                    _recurrenceStartDate == null
-                        ? l10n.formSelectStartDate
-                        : _displayDate(_recurrenceStartDate!),
-                onTap:
-                    () => _pickDate(
-                      current: _recurrenceStartDate,
-                      onPicked:
-                          (picked) =>
-                              setState(() => _recurrenceStartDate = picked),
-                    ),
-              ),
-              const SizedBox(height: 12),
-              _DateField(
-                label: l10n.formEndsOptional,
-                value:
-                    _recurrenceEndDate == null
-                        ? l10n.formNoEndDate
-                        : _displayDate(_recurrenceEndDate!),
-                onTap:
-                    () => _pickDate(
-                      current: _recurrenceEndDate ?? _recurrenceStartDate,
-                      onPicked:
-                          (picked) =>
-                              setState(() => _recurrenceEndDate = picked),
-                    ),
-                trailing:
-                    _recurrenceEndDate == null
-                        ? null
-                        : IconButton(
-                          tooltip: l10n.formClearEndDate,
-                          onPressed:
-                              () => setState(() => _recurrenceEndDate = null),
-                          icon: const Icon(Icons.clear),
-                        ),
-              ),
-              const SizedBox(height: 16),
-              if (_recurrenceType == RecurrenceType.weekly) ...[
-                Text(
-                  l10n.formDaysOfWeek,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: List.generate(7, (index) {
-                    final selected = _daysOfWeek.contains(index);
-                    return FilterChip(
-                      label: Text(weekdays[index]),
-                      selected: selected,
-                      onSelected: (value) {
-                        setState(() {
-                          if (value) {
-                            _daysOfWeek.add(index);
-                          } else {
-                            _daysOfWeek.remove(index);
-                          }
-                        });
-                      },
-                    );
-                  }),
-                ),
-              ],
-              if (_recurrenceType == RecurrenceType.monthly) ...[
-                Text(
-                  l10n.formDaysOfMonth,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: List.generate(31, (index) {
-                    final day = index + 1;
-                    final selected = _daysOfMonth.contains(day);
-                    return FilterChip(
-                      label: Text('$day'),
-                      selected: selected,
-                      visualDensity: VisualDensity.compact,
-                      onSelected: (value) {
-                        setState(() {
-                          if (value) {
-                            _daysOfMonth.add(day);
-                          } else {
-                            _daysOfMonth.remove(day);
-                          }
-                        });
-                      },
-                    );
-                  }),
-                ),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.formLastDayOfMonth),
-                  value: _isLastDayOfMonth,
-                  onChanged: (value) {
-                    setState(() => _isLastDayOfMonth = value ?? false);
-                  },
-                ),
-              ],
-              if (_recurrenceType == RecurrenceType.everyXDays) ...[
-                TextFormField(
-                  controller: _intervalController,
-                  decoration: InputDecoration(
-                    labelText: l10n.formRepeatEveryNDays,
-                    border: const OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) {
-                    if (!_isRecurring ||
-                        _recurrenceType != RecurrenceType.everyXDays) {
+                    textCapitalization: TextCapitalization.sentences,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.formTitleRequired;
+                      }
                       return null;
-                    }
-                    final parsed = int.tryParse(value?.trim() ?? '');
-                    if (parsed == null || parsed < 1) {
-                      return l10n.formIntervalAtLeastOne;
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ],
-            const SizedBox(height: 24),
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: InputDecoration(
+                      labelText: l10n.formDescriptionOptional,
+                    ),
+                    maxLines: 3,
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _TimeField(
+                    label: l10n.formStart,
+                    time: _startTime,
+                    onTap: () => _pickTime(isStart: true),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _TimeField(
+                    label: l10n.formEnd,
+                    time: _endTime,
+                    onTap: () => _pickTime(isStart: false),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      _isRecurring ? l10n.formRecurring : l10n.formOneTime,
+                    ),
+                    subtitle: Text(
+                      _isRecurring
+                          ? l10n.formRepeatsOnSchedule
+                          : l10n.formHappensOnSingleDate,
+                    ),
+                    value: _isRecurring,
+                    onChanged: (value) => setState(() => _isRecurring = value),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  if (!_isRecurring) ...[
+                    _DateField(
+                      label: l10n.formDate,
+                      value: _oneOffDate == null
+                          ? l10n.formSelectDate
+                          : _displayDate(_oneOffDate!),
+                      onTap: () => _pickDate(
+                        current: _oneOffDate,
+                        onPicked: (picked) =>
+                            setState(() => _oneOffDate = picked),
+                      ),
+                    ),
+                  ] else ...[
+                    DropdownButtonFormField<RecurrenceType>(
+                      value: _recurrenceType,
+                      decoration: InputDecoration(
+                        labelText: l10n.formRepeats,
+                      ),
+                      items: RecurrenceType.values
+                          .map(
+                            (type) => DropdownMenuItem(
+                              value: type,
+                              child: Text(recurrenceTypeLabel(type, l10n)),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _recurrenceType = value);
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _DateField(
+                      label: l10n.formStarts,
+                      value: _recurrenceStartDate == null
+                          ? l10n.formSelectStartDate
+                          : _displayDate(_recurrenceStartDate!),
+                      onTap: () => _pickDate(
+                        current: _recurrenceStartDate,
+                        onPicked: (picked) =>
+                            setState(() => _recurrenceStartDate = picked),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _DateField(
+                      label: l10n.formEndsOptional,
+                      value: _recurrenceEndDate == null
+                          ? l10n.formNoEndDate
+                          : _displayDate(_recurrenceEndDate!),
+                      onTap: () => _pickDate(
+                        current: _recurrenceEndDate ?? _recurrenceStartDate,
+                        onPicked: (picked) =>
+                            setState(() => _recurrenceEndDate = picked),
+                      ),
+                      trailing: _recurrenceEndDate == null
+                          ? null
+                          : IconButton(
+                              tooltip: l10n.formClearEndDate,
+                              onPressed: () =>
+                                  setState(() => _recurrenceEndDate = null),
+                              icon: const Icon(Icons.clear),
+                            ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    if (_recurrenceType == RecurrenceType.weekly) ...[
+                      Text(
+                        l10n.formDaysOfWeek,
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: List.generate(7, (index) {
+                          final selected = _daysOfWeek.contains(index);
+                          return FilterChip(
+                            label: Text(weekdays[index]),
+                            selected: selected,
+                            onSelected: (value) {
+                              setState(() {
+                                if (value) {
+                                  _daysOfWeek.add(index);
+                                } else {
+                                  _daysOfWeek.remove(index);
+                                }
+                              });
+                            },
+                          );
+                        }),
+                      ),
+                    ],
+                    if (_recurrenceType == RecurrenceType.monthly) ...[
+                      Text(
+                        l10n.formDaysOfMonth,
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: List.generate(31, (index) {
+                          final day = index + 1;
+                          final selected = _daysOfMonth.contains(day);
+                          return FilterChip(
+                            label: Text('$day'),
+                            selected: selected,
+                            visualDensity: VisualDensity.compact,
+                            onSelected: (value) {
+                              setState(() {
+                                if (value) {
+                                  _daysOfMonth.add(day);
+                                } else {
+                                  _daysOfMonth.remove(day);
+                                }
+                              });
+                            },
+                          );
+                        }),
+                      ),
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(l10n.formLastDayOfMonth),
+                        value: _isLastDayOfMonth,
+                        onChanged: (value) {
+                          setState(() => _isLastDayOfMonth = value ?? false);
+                        },
+                      ),
+                    ],
+                    if (_recurrenceType == RecurrenceType.everyXDays) ...[
+                      TextFormField(
+                        controller: _intervalController,
+                        decoration: InputDecoration(
+                          labelText: l10n.formRepeatEveryNDays,
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        validator: (value) {
+                          if (!_isRecurring ||
+                              _recurrenceType != RecurrenceType.everyXDays) {
+                            return null;
+                          }
+                          final parsed = int.tryParse(value?.trim() ?? '');
+                          if (parsed == null || parsed < 1) {
+                            return l10n.formIntervalAtLeastOne;
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
             FilledButton(
               onPressed: _saving ? null : _save,
-              child:
-                  _saving
-                      ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                      : Text(
-                        widget.isEditing
-                            ? l10n.formSaveChanges
-                            : l10n.formCreate,
-                      ),
+              child: _saving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      widget.isEditing
+                          ? l10n.formSaveChanges
+                          : l10n.formCreate,
+                    ),
             ),
           ],
         ),
@@ -565,11 +570,10 @@ class _TimeField extends StatelessWidget {
     final formatted = time.format(context);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadius.borderMd,
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
           suffixIcon: const Icon(Icons.schedule),
         ),
         child: Text(formatted),
@@ -595,11 +599,10 @@ class _DateField extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadius.borderMd,
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
           suffixIcon: trailing ?? const Icon(Icons.calendar_today),
         ),
         child: Text(value),

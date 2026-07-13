@@ -7,11 +7,15 @@ class DebugMenuShell extends StatefulWidget {
     required this.child,
     required this.localeOverride,
     required this.onLocaleChanged,
+    required this.themeMode,
+    required this.onThemeModeChanged,
   });
 
   final Widget child;
   final Locale? localeOverride;
   final ValueChanged<Locale?> onLocaleChanged;
+  final ThemeMode themeMode;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
 
   @override
   State<DebugMenuShell> createState() => _DebugMenuShellState();
@@ -31,6 +35,8 @@ class _DebugMenuShellState extends State<DebugMenuShell> {
       drawer: DebugDrawer(
         localeOverride: widget.localeOverride,
         onLocaleChanged: widget.onLocaleChanged,
+        themeMode: widget.themeMode,
+        onThemeModeChanged: widget.onThemeModeChanged,
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -64,22 +70,32 @@ class _DebugMenuShellState extends State<DebugMenuShell> {
   }
 }
 
-/// Developer drawer for forcing app behavior (locale, etc.).
+/// Developer drawer for forcing app behavior (locale, theme, etc.).
 class DebugDrawer extends StatelessWidget {
   const DebugDrawer({
     super.key,
     required this.localeOverride,
     required this.onLocaleChanged,
+    required this.themeMode,
+    required this.onThemeModeChanged,
   });
 
   final Locale? localeOverride;
   final ValueChanged<Locale?> onLocaleChanged;
+  final ThemeMode themeMode;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
 
-  String get _selectedKey {
+  String get _selectedLocaleKey {
     final code = localeOverride?.languageCode;
     if (code == 'en' || code == 'es') return code!;
     return 'system';
   }
+
+  String get _selectedThemeKey => switch (themeMode) {
+        ThemeMode.light => 'light',
+        ThemeMode.dark => 'dark',
+        ThemeMode.system => 'system',
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -114,20 +130,46 @@ class DebugDrawer extends StatelessWidget {
             RadioListTile<String>(
               title: const Text('System'),
               value: 'system',
-              groupValue: _selectedKey,
+              groupValue: _selectedLocaleKey,
               onChanged: (_) => onLocaleChanged(null),
             ),
             RadioListTile<String>(
               title: const Text('English'),
               value: 'en',
-              groupValue: _selectedKey,
+              groupValue: _selectedLocaleKey,
               onChanged: (_) => onLocaleChanged(const Locale('en')),
             ),
             RadioListTile<String>(
               title: const Text('Spanish'),
               value: 'es',
-              groupValue: _selectedKey,
+              groupValue: _selectedLocaleKey,
               onChanged: (_) => onLocaleChanged(const Locale('es')),
+            ),
+            const Divider(),
+            const ListTile(
+              title: Text(
+                'Theme',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text('Light / Dark / System (persisted)'),
+            ),
+            RadioListTile<String>(
+              title: const Text('System'),
+              value: 'system',
+              groupValue: _selectedThemeKey,
+              onChanged: (_) => onThemeModeChanged(ThemeMode.system),
+            ),
+            RadioListTile<String>(
+              title: const Text('Light'),
+              value: 'light',
+              groupValue: _selectedThemeKey,
+              onChanged: (_) => onThemeModeChanged(ThemeMode.light),
+            ),
+            RadioListTile<String>(
+              title: const Text('Dark'),
+              value: 'dark',
+              groupValue: _selectedThemeKey,
+              onChanged: (_) => onThemeModeChanged(ThemeMode.dark),
             ),
           ],
         ),

@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navCalendar => 'Calendar';
 
   @override
+  String get navOverview => 'Overview';
+
+  @override
   String get tooltipRefresh => 'Refresh';
 
   @override
@@ -28,6 +31,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tooltipAddActivityForDay => 'Add activity for this day';
+
+  @override
+  String get tooltipSettings => 'Settings';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsTheme => 'Theme';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsSignOut => 'Sign out';
+
+  @override
+  String get overviewGreeting => 'Hello';
+
+  @override
+  String overviewTodayDate(String date) {
+    return '$date';
+  }
+
+  @override
+  String get overviewStatToday => 'Today';
+
+  @override
+  String get overviewStatWeek => 'This week';
+
+  @override
+  String get overviewStatRecurring => 'Recurring';
+
+  @override
+  String get overviewTodaySchedule => 'Today\'s schedule';
+
+  @override
+  String get overviewUpcoming => 'Upcoming';
+
+  @override
+  String get overviewQuickActions => 'Quick actions';
+
+  @override
+  String get overviewAddActivity => 'Add activity';
+
+  @override
+  String get overviewOpenCalendar => 'Open calendar';
+
+  @override
+  String get overviewEmptyToday => 'Nothing scheduled today';
+
+  @override
+  String get overviewEmptyTodayHint => 'Add an activity to fill your day.';
+
+  @override
+  String get overviewEmptyUpcoming => 'No upcoming activities';
+
+  @override
+  String get overviewViewAll => 'View all activities';
+
+  @override
+  String get calendarEmptyHint => 'No events in this range. Tap + to add one.';
+
+  @override
+  String get activitiesEmptyTitle => 'No activities yet';
+
+  @override
+  String get activitiesEmptyHint => 'Tap + to add your first activity.';
+
+  @override
+  String get activitiesEmptyAction => 'Add activity';
 
   @override
   String get loginCreateAccount => 'Create an account';

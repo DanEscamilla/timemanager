@@ -5,10 +5,44 @@
 
   "navActivities": "Actividades",
   "navCalendar": "Calendario",
+  "navOverview": "Resumen",
   "tooltipRefresh": "Actualizar",
   "tooltipSignOut": "Cerrar sesión",
   "tooltipAddActivity": "Añadir actividad",
   "tooltipAddActivityForDay": "Añadir actividad para este día",
+  "tooltipSettings": "Ajustes",
+
+  "settingsTitle": "Ajustes",
+  "settingsTheme": "Tema",
+  "settingsThemeSystem": "Sistema",
+  "settingsThemeLight": "Claro",
+  "settingsThemeDark": "Oscuro",
+  "settingsSignOut": "Cerrar sesión",
+
+  "overviewGreeting": "Hola",
+  "overviewTodayDate": "{date}",
+  "@overviewTodayDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "overviewStatToday": "Hoy",
+  "overviewStatWeek": "Esta semana",
+  "overviewStatRecurring": "Recurrentes",
+  "overviewTodaySchedule": "Agenda de hoy",
+  "overviewUpcoming": "Próximas",
+  "overviewQuickActions": "Acciones rápidas",
+  "overviewAddActivity": "Añadir actividad",
+  "overviewOpenCalendar": "Abrir calendario",
+  "overviewEmptyToday": "Nada programado hoy",
+  "overviewEmptyTodayHint": "Añade una actividad para llenar tu día.",
+  "overviewEmptyUpcoming": "No hay actividades próximas",
+  "overviewViewAll": "Ver todas las actividades",
+  "calendarEmptyHint": "No hay eventos en este rango. Toca + para añadir uno.",
+
+  "activitiesEmptyTitle": "Aún no hay actividades",
+  "activitiesEmptyHint": "Toca + para añadir tu primera actividad.",
+  "activitiesEmptyAction": "Añadir actividad",
 
   "loginCreateAccount": "Crear una cuenta",
   "loginSignInContinue": "Inicia sesión para continuar",

@@ -5,8 +5,13 @@ import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
+import '../theme/tokens/app_icon_sizes.dart';
+import '../theme/tokens/app_radius.dart';
+import '../theme/tokens/app_spacing.dart';
 import '../utils/calendar_event_mapper.dart';
 import '../utils/occurrence_expander.dart';
+import '../widgets/error_state.dart';
+import '../widgets/loading_view.dart';
 import 'activity_form_screen.dart';
 
 enum CalendarViewMode { day, week, month }
@@ -15,14 +20,10 @@ class CalendarScreen extends StatefulWidget {
   const CalendarScreen({
     super.key,
     required this.repository,
-    this.embedded = false,
     this.onChanged,
   });
 
   final ActivityRepository repository;
-
-  /// When embedded in [HomeScreen], render body only (shell owns chrome).
-  final bool embedded;
 
   /// Called after a successful create/update so siblings can refresh.
   final VoidCallback? onChanged;
@@ -176,22 +177,24 @@ class CalendarScreenState extends State<CalendarScreen> {
   ) {
     final event = events.first;
     final activity = event.event;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isRecurring = activity?.isRecurring ?? false;
+    final onEvent = isRecurring ? colorScheme.onTertiary : colorScheme.onPrimary;
     final timeLabel =
         '${activity?.startTime ?? ''} – ${activity?.endTime ?? ''}';
     return RoundedEventTile(
       title: event.title,
       description: timeLabel,
       backgroundColor: event.color,
-      borderRadius: BorderRadius.circular(6),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      titleStyle: const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
+      borderRadius: AppRadius.borderSm,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
       ),
-      descriptionStyle: TextStyle(
-        fontSize: 10,
-        color: Colors.white.withValues(alpha: 0.9),
+      titleStyle: textTheme.labelMedium?.copyWith(color: onEvent),
+      descriptionStyle: textTheme.labelSmall?.copyWith(
+        color: onEvent.withValues(alpha: 0.9),
       ),
       totalEvents: events.length - 1,
     );
@@ -200,23 +203,31 @@ class CalendarScreenState extends State<CalendarScreen> {
   Widget _buildViewSwitcher() {
     final l10n = AppLocalizations.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.xs,
+      ),
       child: SegmentedButton<CalendarViewMode>(
         segments: [
           ButtonSegment(
             value: CalendarViewMode.day,
             label: Text(l10n.calendarDay),
-            icon: const Icon(Icons.view_day_outlined, size: 18),
+            icon: const Icon(Icons.view_day_outlined, size: AppIconSizes.sm),
           ),
           ButtonSegment(
             value: CalendarViewMode.week,
             label: Text(l10n.calendarWeek),
-            icon: const Icon(Icons.view_week_outlined, size: 18),
+            icon: const Icon(Icons.view_week_outlined, size: AppIconSizes.sm),
           ),
           ButtonSegment(
             value: CalendarViewMode.month,
             label: Text(l10n.calendarMonth),
-            icon: const Icon(Icons.calendar_view_month_outlined, size: 18),
+            icon: const Icon(
+              Icons.calendar_view_month_outlined,
+              size: AppIconSizes.sm,
+            ),
           ),
         ],
         selected: {_viewMode},
@@ -335,12 +346,12 @@ class CalendarScreenState extends State<CalendarScreen> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting &&
                   _activities.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
+                return const LoadingView();
               }
 
               if (snapshot.hasError && _activities.isEmpty) {
                 final l10n = AppLocalizations.of(context);
-                return _ErrorState(
+                return ErrorState(
                   message: _errorMessage(snapshot.error, l10n),
                   onRetry: reload,
                 );
@@ -358,65 +369,10 @@ class CalendarScreenState extends State<CalendarScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final body = _buildBody();
-    if (widget.embedded) return body;
-
-    final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.navCalendar)),
-      body: body,
-      floatingActionButton: FloatingActionButton(
-        onPressed: openCreateForSelectedDay,
-        tooltip: l10n.tooltipAddActivityForDay,
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => _buildBody();
 
   String _errorMessage(Object? error, AppLocalizations l10n) {
     if (error is GraphQLException) return error.localize(l10n);
     return error?.toString() ?? l10n.errorUnknown;
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.cloud_off,
-              size: 48,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.errorCouldNotLoadActivities,
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.errorRetry),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

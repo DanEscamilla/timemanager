@@ -3,12 +3,20 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
+import 'loading_view.dart';
 
 /// Routes to login or the app based on SuperTokens session presence.
 class AuthGate extends StatefulWidget {
-  const AuthGate({super.key, this.authService});
+  const AuthGate({
+    super.key,
+    this.authService,
+    this.themeMode = ThemeMode.system,
+    this.onThemeModeChanged,
+  });
 
   final AuthService? authService;
+  final ThemeMode themeMode;
+  final ValueChanged<ThemeMode>? onThemeModeChanged;
 
   @override
   State<AuthGate> createState() => _AuthGateState();
@@ -55,9 +63,7 @@ class _AuthGateState extends State<AuthGate> {
       future: _sessionFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const Scaffold(body: LoadingView());
         }
 
         final signedIn = snapshot.data == true;
@@ -71,6 +77,8 @@ class _AuthGateState extends State<AuthGate> {
         return HomeScreen(
           authService: _auth,
           onSignedOut: _onSignedOut,
+          themeMode: widget.themeMode,
+          onThemeModeChanged: widget.onThemeModeChanged,
         );
       },
     );

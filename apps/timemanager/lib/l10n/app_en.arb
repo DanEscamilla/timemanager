@@ -5,10 +5,44 @@
 
   "navActivities": "Activities",
   "navCalendar": "Calendar",
+  "navOverview": "Overview",
   "tooltipRefresh": "Refresh",
   "tooltipSignOut": "Sign out",
   "tooltipAddActivity": "Add activity",
   "tooltipAddActivityForDay": "Add activity for this day",
+  "tooltipSettings": "Settings",
+
+  "settingsTitle": "Settings",
+  "settingsTheme": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsSignOut": "Sign out",
+
+  "overviewGreeting": "Hello",
+  "overviewTodayDate": "{date}",
+  "@overviewTodayDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "overviewStatToday": "Today",
+  "overviewStatWeek": "This week",
+  "overviewStatRecurring": "Recurring",
+  "overviewTodaySchedule": "Today's schedule",
+  "overviewUpcoming": "Upcoming",
+  "overviewQuickActions": "Quick actions",
+  "overviewAddActivity": "Add activity",
+  "overviewOpenCalendar": "Open calendar",
+  "overviewEmptyToday": "Nothing scheduled today",
+  "overviewEmptyTodayHint": "Add an activity to fill your day.",
+  "overviewEmptyUpcoming": "No upcoming activities",
+  "overviewViewAll": "View all activities",
+  "calendarEmptyHint": "No events in this range. Tap + to add one.",
+
+  "activitiesEmptyTitle": "No activities yet",
+  "activitiesEmptyHint": "Tap + to add your first activity.",
+  "activitiesEmptyAction": "Add activity",
 
   "loginCreateAccount": "Create an account",
   "loginSignInContinue": "Sign in to continue",

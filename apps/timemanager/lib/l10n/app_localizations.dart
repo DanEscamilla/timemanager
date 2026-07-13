@@ -113,6 +113,12 @@ abstract class AppLocalizations {
   /// **'Calendar'**
   String get navCalendar;
 
+  /// No description provided for @navOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get navOverview;
+
   /// No description provided for @tooltipRefresh.
   ///
   /// In en, this message translates to:
@@ -136,6 +142,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add activity for this day'**
   String get tooltipAddActivityForDay;
+
+  /// No description provided for @tooltipSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get tooltipSettings;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsTheme;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get settingsSignOut;
+
+  /// No description provided for @overviewGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello'**
+  String get overviewGreeting;
+
+  /// No description provided for @overviewTodayDate.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}'**
+  String overviewTodayDate(String date);
+
+  /// No description provided for @overviewStatToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get overviewStatToday;
+
+  /// No description provided for @overviewStatWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get overviewStatWeek;
+
+  /// No description provided for @overviewStatRecurring.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring'**
+  String get overviewStatRecurring;
+
+  /// No description provided for @overviewTodaySchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s schedule'**
+  String get overviewTodaySchedule;
+
+  /// No description provided for @overviewUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get overviewUpcoming;
+
+  /// No description provided for @overviewQuickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick actions'**
+  String get overviewQuickActions;
+
+  /// No description provided for @overviewAddActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Add activity'**
+  String get overviewAddActivity;
+
+  /// No description provided for @overviewOpenCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Open calendar'**
+  String get overviewOpenCalendar;
+
+  /// No description provided for @overviewEmptyToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing scheduled today'**
+  String get overviewEmptyToday;
+
+  /// No description provided for @overviewEmptyTodayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an activity to fill your day.'**
+  String get overviewEmptyTodayHint;
+
+  /// No description provided for @overviewEmptyUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming activities'**
+  String get overviewEmptyUpcoming;
+
+  /// No description provided for @overviewViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all activities'**
+  String get overviewViewAll;
+
+  /// No description provided for @calendarEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No events in this range. Tap + to add one.'**
+  String get calendarEmptyHint;
+
+  /// No description provided for @activitiesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities yet'**
+  String get activitiesEmptyTitle;
+
+  /// No description provided for @activitiesEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to add your first activity.'**
+  String get activitiesEmptyHint;
+
+  /// No description provided for @activitiesEmptyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add activity'**
+  String get activitiesEmptyAction;
 
   /// No description provided for @loginCreateAccount.
   ///
