@@ -59,6 +59,9 @@ export interface ActivitiesTable {
   // false; null when is_recurring is true (dates live in the recurrence
   // pattern's config instead).
   date: string | null
+  // Minutes before start_time to fire a local reminder; 0 = at start.
+  // Empty array = no reminders. Max 8 unique values in [0, 10080].
+  notification_offsets: number[]
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string, string>
 }

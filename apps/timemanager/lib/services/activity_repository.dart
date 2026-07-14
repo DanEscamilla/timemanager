@@ -1,11 +1,17 @@
 import '../models/activity.dart';
+import 'activity_notification_scheduler.dart';
 import 'graphql_client.dart';
 
 class ActivityRepository {
-  ActivityRepository({GraphQLClient? client})
-      : _client = client ?? GraphQLClient();
+  ActivityRepository({
+    GraphQLClient? client,
+    ActivityNotificationScheduler? notificationScheduler,
+  })  : _client = client ?? GraphQLClient(),
+        _notifications =
+            notificationScheduler ?? ActivityNotificationScheduler.instance;
 
   final GraphQLClient _client;
+  final ActivityNotificationScheduler _notifications;
 
   static const _activityFields = '''
     id
@@ -17,6 +23,7 @@ class ActivityRepository {
     is_recurring
     date
     group_id
+    notification_offsets
     created_at
     updated_at
     group {
@@ -59,6 +66,22 @@ class ActivityRepository {
         .toList();
   }
 
+  /// Fetches activities and refreshes the local notification schedule.
+  Future<List<Activity>> fetchAndSyncNotifications() async {
+    final activities = await fetchActivities();
+    await _notifications.sync(activities);
+    return activities;
+  }
+
+  Future<void> _resyncNotifications() async {
+    try {
+      final activities = await fetchActivities();
+      await _notifications.sync(activities);
+    } catch (_) {
+      // Scheduling is best-effort; don't fail the mutation.
+    }
+  }
+
   Future<Activity> createActivity({
     required String title,
     String? description,
@@ -68,6 +91,7 @@ class ActivityRepository {
     String? date,
     RecurrencePattern? recurrencePattern,
     int? groupId,
+    List<int> notificationOffsets = const [],
   }) async {
     final data = await _client.mutate('''
       mutation CreateActivity(\$input: CreateActivityInputInput!) {
@@ -86,12 +110,18 @@ class ActivityRepository {
         if (recurrencePattern != null)
           'recurrencePattern': recurrencePattern.toInputMap(),
         'groupId': groupId,
+        'notificationOffsets': notificationOffsets,
       },
     });
 
-    return Activity.fromJson(
+    final activity = Activity.fromJson(
       data['createActivity'] as Map<String, dynamic>,
     );
+    if (notificationOffsets.isNotEmpty) {
+      await _notifications.requestPermission();
+    }
+    await _resyncNotifications();
+    return activity;
   }
 
   Future<Activity> updateActivity({
@@ -104,6 +134,7 @@ class ActivityRepository {
     String? date,
     RecurrencePattern? recurrencePattern,
     int? groupId,
+    List<int> notificationOffsets = const [],
   }) async {
     final data = await _client.mutate('''
       mutation UpdateActivity(\$id: Number!, \$input: UpdateActivityInputInput!) {
@@ -123,12 +154,18 @@ class ActivityRepository {
         if (recurrencePattern != null)
           'recurrencePattern': recurrencePattern.toInputMap(),
         'groupId': groupId,
+        'notificationOffsets': notificationOffsets,
       },
     });
 
-    return Activity.fromJson(
+    final activity = Activity.fromJson(
       data['updateActivity'] as Map<String, dynamic>,
     );
+    if (notificationOffsets.isNotEmpty) {
+      await _notifications.requestPermission();
+    }
+    await _resyncNotifications();
+    return activity;
   }
 
   Future<void> deleteActivity(int id) async {
@@ -137,5 +174,6 @@ class ActivityRepository {
         deleteActivity(args: { id: \$id })
       }
     ''', variables: {'id': id});
+    await _resyncNotifications();
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
 import '../screens/activities_screen.dart';
@@ -5,6 +7,7 @@ import '../screens/calendar_screen.dart';
 import '../screens/goals_screen.dart';
 import '../screens/overview_screen.dart';
 import '../screens/rewards_screen.dart';
+import '../services/activity_notification_scheduler.dart';
 import '../services/activity_repository.dart';
 import '../services/asset_upload_service.dart';
 import '../services/auth_service.dart';
@@ -100,6 +103,7 @@ class AuthController extends ChangeNotifier {
         _ensureSessionServices();
         _signedIn = true;
         notifyListeners();
+        unawaited(_syncNotifications());
         return;
       }
     } catch (_) {
@@ -112,12 +116,16 @@ class AuthController extends ChangeNotifier {
     }
     _signedIn = exists;
     notifyListeners();
+    if (exists) {
+      unawaited(_syncNotifications());
+    }
   }
 
   void onAuthenticated() {
     _ensureSessionServices();
     _signedIn = true;
     notifyListeners();
+    unawaited(_syncNotifications());
   }
 
   Future<void> signOut() async {
@@ -130,6 +138,7 @@ class AuthController extends ChangeNotifier {
     _assetUploadService = null;
     _signedIn = false;
     notifyListeners();
+    unawaited(ActivityNotificationScheduler.instance.cancelAll());
   }
 
   void reloadAll() {
@@ -138,6 +147,19 @@ class AuthController extends ChangeNotifier {
     calendarKey.currentState?.reload();
     goalsKey.currentState?.reload();
     rewardsKey.currentState?.reload();
+    unawaited(_syncNotifications());
+  }
+
+  Future<void> syncNotifications() => _syncNotifications();
+
+  Future<void> _syncNotifications() async {
+    final repo = _activityRepository;
+    if (repo == null) return;
+    try {
+      await repo.fetchAndSyncNotifications();
+    } catch (_) {
+      // Best-effort; screens still load activities independently.
+    }
   }
 
   void _ensureSessionServices() {

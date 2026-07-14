@@ -56,11 +56,16 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   late Set<int> _daysOfWeek;
   late Set<int> _daysOfMonth;
   late bool _isLastDayOfMonth;
+  late Set<int> _notificationOffsets;
   bool _saving = false;
 
   List<ActivityGroup> _groups = const [];
   int? _groupId;
   bool _groupsLoading = true;
+
+  static const _presetOffsets = [0, 5, 15, 30, 60, 1440];
+  static const _maxOffsets = 8;
+  static const _maxOffsetMinutes = 10080;
 
   @override
   void initState() {
@@ -83,6 +88,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
     _intervalController = TextEditingController(
       text: '${pattern?.config.intervalDays ?? 1}',
     );
+    _notificationOffsets = {...?activity?.notificationOffsets};
 
     if (activity != null && !activity.isRecurring && activity.date != null) {
       _oneOffDate = parseDateOnly(activity.date!);
@@ -293,6 +299,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
           date: date,
           recurrencePattern: pattern,
           groupId: _groupId,
+          notificationOffsets: _notificationOffsets.toList()..sort(),
         );
       } else {
         await widget.repository.createActivity(
@@ -304,6 +311,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
           date: date,
           recurrencePattern: pattern,
           groupId: _groupId,
+          notificationOffsets: _notificationOffsets.toList()..sort(),
         );
       }
 
@@ -323,6 +331,96 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   int _timeToMinutes(String time) {
     final parts = time.split(':');
     return int.parse(parts[0]) * 60 + int.parse(parts[1]);
+  }
+
+  String _presetLabel(AppLocalizations l10n, int minutes) {
+    return switch (minutes) {
+      0 => l10n.formNotifyAtStart,
+      5 => l10n.formNotify5m,
+      15 => l10n.formNotify15m,
+      30 => l10n.formNotify30m,
+      60 => l10n.formNotify1h,
+      1440 => l10n.formNotify1d,
+      _ => l10n.notificationStartsInMinutes(minutes),
+    };
+  }
+
+  void _toggleOffset(int minutes, bool selected, AppLocalizations l10n) {
+    if (selected &&
+        _notificationOffsets.length >= _maxOffsets &&
+        !_notificationOffsets.contains(minutes)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.formNotifyMaxReached)),
+      );
+      return;
+    }
+    setState(() {
+      if (selected) {
+        _notificationOffsets.add(minutes);
+      } else {
+        _notificationOffsets.remove(minutes);
+      }
+    });
+  }
+
+  Future<void> _addCustomOffset(AppLocalizations l10n) async {
+    if (_notificationOffsets.length >= _maxOffsets) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.formNotifyMaxReached)),
+      );
+      return;
+    }
+
+    final controller = TextEditingController();
+    final minutes = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.formNotifyCustomTitle),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              labelText: l10n.formNotifyCustomMinutes,
+            ),
+            onSubmitted: (value) {
+              final parsed = int.tryParse(value.trim());
+              if (parsed != null &&
+                  parsed >= 0 &&
+                  parsed <= _maxOffsetMinutes) {
+                Navigator.pop(context, parsed);
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.formNotifyCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final parsed = int.tryParse(controller.text.trim());
+                if (parsed == null ||
+                    parsed < 0 ||
+                    parsed > _maxOffsetMinutes) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.formNotifyCustomInvalid)),
+                  );
+                  return;
+                }
+                Navigator.pop(context, parsed);
+              },
+              child: Text(l10n.formNotifyAdd),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    if (minutes == null || !mounted) return;
+    _toggleOffset(minutes, true, l10n);
   }
 
   @override
@@ -596,6 +694,54 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                       ),
                     ],
                   ],
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.formNotifications,
+                    style: theme.textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    l10n.formNotificationsHint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: [
+                      for (final minutes in _presetOffsets)
+                        FilterChip(
+                          label: Text(_presetLabel(l10n, minutes)),
+                          selected: _notificationOffsets.contains(minutes),
+                          onSelected: (selected) =>
+                              _toggleOffset(minutes, selected, l10n),
+                        ),
+                      for (final minutes in _notificationOffsets
+                          .where((m) => !_presetOffsets.contains(m))
+                          .toList()
+                        ..sort())
+                        FilterChip(
+                          label: Text(l10n.notificationStartsInMinutes(minutes)),
+                          selected: true,
+                          onSelected: (selected) =>
+                              _toggleOffset(minutes, selected, l10n),
+                        ),
+                      ActionChip(
+                        avatar: const Icon(Icons.add, size: 18),
+                        label: Text(l10n.formNotifyAddCustom),
+                        onPressed: () => _addCustomOffset(l10n),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

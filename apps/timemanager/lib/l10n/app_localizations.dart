@@ -1451,6 +1451,120 @@ abstract class AppLocalizations {
   /// **'Interval must be an integer of at least 1'**
   String get formIntervalInvalid;
 
+  /// No description provided for @formNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get formNotifications;
+
+  /// No description provided for @formNotificationsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional reminders before the activity starts'**
+  String get formNotificationsHint;
+
+  /// No description provided for @formNotifyAtStart.
+  ///
+  /// In en, this message translates to:
+  /// **'At start'**
+  String get formNotifyAtStart;
+
+  /// No description provided for @formNotify5m.
+  ///
+  /// In en, this message translates to:
+  /// **'5 min'**
+  String get formNotify5m;
+
+  /// No description provided for @formNotify15m.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min'**
+  String get formNotify15m;
+
+  /// No description provided for @formNotify30m.
+  ///
+  /// In en, this message translates to:
+  /// **'30 min'**
+  String get formNotify30m;
+
+  /// No description provided for @formNotify1h.
+  ///
+  /// In en, this message translates to:
+  /// **'1 hour'**
+  String get formNotify1h;
+
+  /// No description provided for @formNotify1d.
+  ///
+  /// In en, this message translates to:
+  /// **'1 day'**
+  String get formNotify1d;
+
+  /// No description provided for @formNotifyAddCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom…'**
+  String get formNotifyAddCustom;
+
+  /// No description provided for @formNotifyCustomTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom reminder'**
+  String get formNotifyCustomTitle;
+
+  /// No description provided for @formNotifyCustomMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes before start'**
+  String get formNotifyCustomMinutes;
+
+  /// No description provided for @formNotifyCustomInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number from 0 to 10080'**
+  String get formNotifyCustomInvalid;
+
+  /// No description provided for @formNotifyMaxReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add at most 8 reminders'**
+  String get formNotifyMaxReached;
+
+  /// No description provided for @formNotifyAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get formNotifyAdd;
+
+  /// No description provided for @formNotifyCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get formNotifyCancel;
+
+  /// No description provided for @notificationStartsNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting now'**
+  String get notificationStartsNow;
+
+  /// No description provided for @notificationStartsInMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts in {minutes} min'**
+  String notificationStartsInMinutes(int minutes);
+
+  /// No description provided for @notificationStartsInHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts in {hours} h'**
+  String notificationStartsInHours(int hours);
+
+  /// No description provided for @notificationStartsInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts in {days} d'**
+  String notificationStartsInDays(int days);
+
   /// No description provided for @weekdaySun.
   ///
   /// In en, this message translates to:

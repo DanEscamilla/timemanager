@@ -318,6 +318,40 @@
   "formSelectWeekday": "Selecciona al menos un día de la semana",
   "formSelectMonthDay": "Selecciona al menos un día del mes, o el último día",
   "formIntervalInvalid": "El intervalo debe ser un entero de al menos 1",
+  "formNotifications": "Notificaciones",
+  "formNotificationsHint": "Recordatorios opcionales antes de que empiece la actividad",
+  "formNotifyAtStart": "Al empezar",
+  "formNotify5m": "5 min",
+  "formNotify15m": "15 min",
+  "formNotify30m": "30 min",
+  "formNotify1h": "1 hora",
+  "formNotify1d": "1 día",
+  "formNotifyAddCustom": "Personalizado…",
+  "formNotifyCustomTitle": "Recordatorio personalizado",
+  "formNotifyCustomMinutes": "Minutos antes del inicio",
+  "formNotifyCustomInvalid": "Introduce un entero de 0 a 10080",
+  "formNotifyMaxReached": "Puedes añadir como máximo 8 recordatorios",
+  "formNotifyAdd": "Añadir",
+  "formNotifyCancel": "Cancelar",
+  "notificationStartsNow": "Empieza ahora",
+  "notificationStartsInMinutes": "Empieza en {minutes} min",
+  "@notificationStartsInMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "notificationStartsInHours": "Empieza en {hours} h",
+  "@notificationStartsInHours": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "notificationStartsInDays": "Empieza en {days} d",
+  "@notificationStartsInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
 
   "weekdaySun": "Dom",
   "weekdayMon": "Lun",

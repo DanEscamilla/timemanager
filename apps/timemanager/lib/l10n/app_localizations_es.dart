@@ -717,6 +717,69 @@ class AppLocalizationsEs extends AppLocalizations {
   String get formIntervalInvalid => 'El intervalo debe ser un entero de al menos 1';
 
   @override
+  String get formNotifications => 'Notificaciones';
+
+  @override
+  String get formNotificationsHint => 'Recordatorios opcionales antes de que empiece la actividad';
+
+  @override
+  String get formNotifyAtStart => 'Al empezar';
+
+  @override
+  String get formNotify5m => '5 min';
+
+  @override
+  String get formNotify15m => '15 min';
+
+  @override
+  String get formNotify30m => '30 min';
+
+  @override
+  String get formNotify1h => '1 hora';
+
+  @override
+  String get formNotify1d => '1 día';
+
+  @override
+  String get formNotifyAddCustom => 'Personalizado…';
+
+  @override
+  String get formNotifyCustomTitle => 'Recordatorio personalizado';
+
+  @override
+  String get formNotifyCustomMinutes => 'Minutos antes del inicio';
+
+  @override
+  String get formNotifyCustomInvalid => 'Introduce un entero de 0 a 10080';
+
+  @override
+  String get formNotifyMaxReached => 'Puedes añadir como máximo 8 recordatorios';
+
+  @override
+  String get formNotifyAdd => 'Añadir';
+
+  @override
+  String get formNotifyCancel => 'Cancelar';
+
+  @override
+  String get notificationStartsNow => 'Empieza ahora';
+
+  @override
+  String notificationStartsInMinutes(int minutes) {
+    return 'Empieza en $minutes min';
+  }
+
+  @override
+  String notificationStartsInHours(int hours) {
+    return 'Empieza en $hours h';
+  }
+
+  @override
+  String notificationStartsInDays(int days) {
+    return 'Empieza en $days d';
+  }
+
+  @override
   String get weekdaySun => 'Dom';
 
   @override

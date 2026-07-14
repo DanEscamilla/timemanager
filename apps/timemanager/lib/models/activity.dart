@@ -130,6 +130,7 @@ class Activity {
     this.groupId,
     this.group,
     this.recurrencePattern,
+    this.notificationOffsets = const [],
     required this.createdAt,
     required this.updatedAt,
   });
@@ -145,6 +146,8 @@ class Activity {
   final int? groupId;
   final ActivityGroup? group;
   final RecurrencePattern? recurrencePattern;
+  /// Minutes before [startTime]; 0 = at start. Empty = no reminders.
+  final List<int> notificationOffsets;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -164,9 +167,16 @@ class Activity {
       group: groupJson != null ? ActivityGroup.fromJson(groupJson) : null,
       recurrencePattern:
           patternJson != null ? RecurrencePattern.fromJson(patternJson) : null,
+      notificationOffsets: _asIntList(json['notification_offsets']),
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
     );
+  }
+
+  static List<int> _asIntList(dynamic value) {
+    if (value == null) return const [];
+    if (value is! List) return const [];
+    return value.map(_asInt).toList();
   }
 
   static int _asInt(dynamic value) {

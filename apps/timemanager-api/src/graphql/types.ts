@@ -42,6 +42,8 @@ export interface CreateActivityInput {
   recurrencePattern?: RecurrencePatternInput | null
   // Optional group assignment (must belong to the same user).
   groupId?: number | null
+  // Minutes before start; 0 = at start. Empty/omitted = no reminders.
+  notificationOffsets?: number[] | null
 }
 
 export interface UpdateActivityInput {
@@ -54,6 +56,8 @@ export interface UpdateActivityInput {
   recurrencePattern?: RecurrencePatternInput | null
   // Pass null to clear the group assignment.
   groupId?: number | null
+  // Minutes before start; 0 = at start. Pass [] to clear reminders.
+  notificationOffsets?: number[] | null
 }
 
 export interface CompleteActivityInput {

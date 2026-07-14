@@ -37,6 +37,9 @@ class _FakeAuthService extends AuthService {
 class _FakeActivityRepository extends ActivityRepository {
   @override
   Future<List<Activity>> fetchActivities() async => const [];
+
+  @override
+  Future<List<Activity>> fetchAndSyncNotifications() async => const [];
 }
 
 class _FakeGroupRepository extends GroupRepository {

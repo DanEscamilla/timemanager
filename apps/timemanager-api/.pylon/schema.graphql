@@ -258,6 +258,7 @@ input CreateActivityInputInput {
 	date: String
 	recurrencePattern: RecurrencePatternInputInput
 	groupId: Number
+	notificationOffsets: [Number!]
 }
 input RecurrencePatternInputInput {
 	recurrenceType: RecurrenceTypeInput!
@@ -284,6 +285,7 @@ input UpdateActivityInputInput {
 	date: String
 	recurrencePattern: RecurrencePatternInputInput
 	groupId: Number
+	notificationOffsets: [Number!]
 }
 input ArgsInput_34 {
 	id: Number!
@@ -516,6 +518,7 @@ start_time: String!
 end_time: String!
 is_recurring: Boolean!
 date: String
+notification_offsets: [Number!]!
 }
 type Groups {
 user_id: Number!
@@ -615,6 +618,7 @@ start_time: String!
 end_time: String!
 is_recurring: Boolean!
 date: String
+notification_offsets: [Number!]!
 }
 type ParsedRecurrencePattern {
 config: RecurrenceConfig!

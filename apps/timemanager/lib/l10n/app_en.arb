@@ -318,6 +318,40 @@
   "formSelectWeekday": "Select at least one day of the week",
   "formSelectMonthDay": "Select at least one day of the month, or last day",
   "formIntervalInvalid": "Interval must be an integer of at least 1",
+  "formNotifications": "Notifications",
+  "formNotificationsHint": "Optional reminders before the activity starts",
+  "formNotifyAtStart": "At start",
+  "formNotify5m": "5 min",
+  "formNotify15m": "15 min",
+  "formNotify30m": "30 min",
+  "formNotify1h": "1 hour",
+  "formNotify1d": "1 day",
+  "formNotifyAddCustom": "Add custom…",
+  "formNotifyCustomTitle": "Custom reminder",
+  "formNotifyCustomMinutes": "Minutes before start",
+  "formNotifyCustomInvalid": "Enter a whole number from 0 to 10080",
+  "formNotifyMaxReached": "You can add at most 8 reminders",
+  "formNotifyAdd": "Add",
+  "formNotifyCancel": "Cancel",
+  "notificationStartsNow": "Starting now",
+  "notificationStartsInMinutes": "Starts in {minutes} min",
+  "@notificationStartsInMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "notificationStartsInHours": "Starts in {hours} h",
+  "@notificationStartsInHours": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "notificationStartsInDays": "Starts in {days} d",
+  "@notificationStartsInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
 
   "weekdaySun": "Sun",
   "weekdayMon": "Mon",

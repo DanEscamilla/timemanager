@@ -44,6 +44,10 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   image_picker: ^1.1.2
+  flutter_local_notifications: ^19.0.0
+  timezone: ^0.10.0
+  flutter_timezone: ^4.1.0
+  web: ^1.1.0
 
 dev_dependencies:
   flutter_test:

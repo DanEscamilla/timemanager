@@ -33,6 +33,7 @@ import {
   validateOccurrenceDate,
   validatePositiveDuration,
 } from "../validation.ts";
+import { normalizeNotificationOffsets } from "../notification_offsets.ts";
 import { asNumber } from "../numeric.ts";
 import { GoalMutation, GoalQuery } from "./goals_resolvers.ts";
 import { RewardMutation, RewardQuery } from "./rewards_resolvers.ts";
@@ -283,6 +284,9 @@ export const Mutation = {
       recurrencePattern: input.recurrencePattern,
     });
 
+    const notificationOffsets = normalizeNotificationOffsets(
+      input.notificationOffsets,
+    );
     const groupId = await resolveGroupId(input.groupId ?? null, userId);
 
     const activity = await db.transaction().execute(async (trx: Transaction<Database>) => {
@@ -297,6 +301,7 @@ export const Mutation = {
           is_recurring: input.isRecurring,
           date: input.isRecurring ? null : (input.date ?? null),
           group_id: groupId ?? null,
+          notification_offsets: notificationOffsets,
         } as NewActivity)
         .returningAll()
         .executeTakeFirstOrThrow();
@@ -356,6 +361,10 @@ export const Mutation = {
       ? await resolveGroupId(input.groupId, userId)
       : undefined;
 
+    const notificationOffsets = input.notificationOffsets !== undefined
+      ? normalizeNotificationOffsets(input.notificationOffsets)
+      : undefined;
+
     const activity = await db.transaction().execute(async (trx: Transaction<Database>) => {
       const activity = await trx
         .updateTable("activities")
@@ -367,6 +376,9 @@ export const Mutation = {
           is_recurring: isRecurring,
           date: isRecurring ? null : (date ?? null),
           ...(resolvedGroupId !== undefined ? { group_id: resolvedGroupId } : {}),
+          ...(notificationOffsets !== undefined
+            ? { notification_offsets: notificationOffsets }
+            : {}),
           updated_at: new Date().toISOString(),
         })
         .where("id", "=", id)

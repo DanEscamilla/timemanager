@@ -33,6 +33,7 @@ export const typeDefs = gql`
     groupId: ID
     group: Group
     recurrencePattern: RecurrencePattern
+    notificationOffsets: [Int!]!
     createdAt: String!
     updatedAt: String!
   }
@@ -291,6 +292,7 @@ export const typeDefs = gql`
     date: String
     recurrencePattern: CreateRecurrencePatternInput
     groupId: ID
+    notificationOffsets: [Int!]
   }
 
   input CreateRecurrencePatternInput {
@@ -307,6 +309,7 @@ export const typeDefs = gql`
     date: String
     recurrencePattern: UpdateRecurrencePatternInput
     groupId: ID
+    notificationOffsets: [Int!]
   }
 
   input UpdateRecurrencePatternInput {

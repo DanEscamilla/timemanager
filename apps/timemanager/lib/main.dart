@@ -6,13 +6,16 @@ import 'package:go_router/go_router.dart';
 import 'l10n/app_localizations.dart';
 import 'router/app_router.dart';
 import 'router/auth_controller.dart';
+import 'services/activity_notification_scheduler.dart';
 import 'services/locale_preference_service.dart';
 import 'services/theme_mode_preference_service.dart';
 import 'theme/app_theme.dart';
 import 'widgets/debug_menu.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
+  await ActivityNotificationScheduler.instance.ensureInitialized();
   runApp(const TimeManagerApp());
 }
 
@@ -32,7 +35,8 @@ class TimeManagerApp extends StatefulWidget {
   State<TimeManagerApp> createState() => _TimeManagerAppState();
 }
 
-class _TimeManagerAppState extends State<TimeManagerApp> {
+class _TimeManagerAppState extends State<TimeManagerApp>
+    with WidgetsBindingObserver {
   late final LocalePreferenceService _localePrefs =
       widget.localePreferenceService ?? LocalePreferenceService();
   late final ThemeModePreferenceService _themePrefs =
@@ -50,6 +54,7 @@ class _TimeManagerAppState extends State<TimeManagerApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _router = createAppRouter(
       auth: _auth,
       rootNavigatorKey: _rootNavigatorKey,
@@ -62,10 +67,18 @@ class _TimeManagerAppState extends State<TimeManagerApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _themeMode.dispose();
     _router.dispose();
     _auth.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _auth.isSignedIn) {
+      _auth.syncNotifications();
+    }
   }
 
   Future<void> _loadPreferences() async {
