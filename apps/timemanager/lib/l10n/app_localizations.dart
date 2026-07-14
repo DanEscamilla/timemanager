@@ -125,6 +125,12 @@ abstract class AppLocalizations {
   /// **'Goals'**
   String get navGoals;
 
+  /// No description provided for @navRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewards'**
+  String get navRewards;
+
   /// No description provided for @tooltipRefresh.
   ///
   /// In en, this message translates to:
@@ -154,6 +160,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add goal'**
   String get tooltipAddGoal;
+
+  /// No description provided for @tooltipAddReward.
+  ///
+  /// In en, this message translates to:
+  /// **'Add reward'**
+  String get tooltipAddReward;
 
   /// No description provided for @tooltipSettings.
   ///
@@ -941,6 +953,18 @@ abstract class AppLocalizations {
   /// **'View all activities'**
   String get overviewViewAll;
 
+  /// No description provided for @overviewAvailableRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Available rewards'**
+  String get overviewAvailableRewards;
+
+  /// No description provided for @overviewViewRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get overviewViewRewards;
+
   /// No description provided for @calendarEmptyHint.
   ///
   /// In en, this message translates to:
@@ -1534,6 +1558,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{summary} · {start} – {end}'**
   String scheduleSummaryTimeRange(String summary, String start, String end);
+
+  /// No description provided for @rewardsSegmentInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get rewardsSegmentInventory;
+
+  /// No description provided for @rewardsSegmentCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Catalog'**
+  String get rewardsSegmentCatalog;
+
+  /// No description provided for @rewardsSegmentHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get rewardsSegmentHistory;
+
+  /// No description provided for @rewardsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search rewards'**
+  String get rewardsSearchHint;
+
+  /// No description provided for @rewardsEmptyInventoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No rewards yet'**
+  String get rewardsEmptyInventoryTitle;
+
+  /// No description provided for @rewardsEmptyInventoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn rewards by completing activities and goals, or create a catalog entry.'**
+  String get rewardsEmptyInventoryHint;
+
+  /// No description provided for @rewardsEmptyCatalogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No reward definitions'**
+  String get rewardsEmptyCatalogTitle;
+
+  /// No description provided for @rewardsEmptyCatalogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Create rewards you can earn and spend.'**
+  String get rewardsEmptyCatalogHint;
+
+  /// No description provided for @rewardsEmptyCatalogAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add reward'**
+  String get rewardsEmptyCatalogAction;
+
+  /// No description provided for @rewardsEmptyHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No history yet'**
+  String get rewardsEmptyHistoryTitle;
+
+  /// No description provided for @rewardsEmptyHistoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn and consume rewards to see them here.'**
+  String get rewardsEmptyHistoryHint;
+
+  /// No description provided for @rewardsFormNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New reward'**
+  String get rewardsFormNew;
+
+  /// No description provided for @rewardsFormEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit reward'**
+  String get rewardsFormEdit;
+
+  /// No description provided for @rewardsFormName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get rewardsFormName;
+
+  /// No description provided for @rewardsFormNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required'**
+  String get rewardsFormNameRequired;
+
+  /// No description provided for @rewardsFormDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get rewardsFormDescription;
+
+  /// No description provided for @rewardsFormNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get rewardsFormNotes;
+
+  /// No description provided for @rewardsFormCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get rewardsFormCategory;
+
+  /// No description provided for @rewardsFormTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get rewardsFormTags;
+
+  /// No description provided for @rewardsFormTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Comma-separated'**
+  String get rewardsFormTagsHint;
+
+  /// No description provided for @rewardsFormIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get rewardsFormIcon;
+
+  /// No description provided for @rewardsFormIconHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Emoji or short text'**
+  String get rewardsFormIconHint;
+
+  /// No description provided for @rewardsFormStackable.
+  ///
+  /// In en, this message translates to:
+  /// **'Stackable'**
+  String get rewardsFormStackable;
+
+  /// No description provided for @rewardsFormStackableHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow multiple copies in inventory'**
+  String get rewardsFormStackableHint;
+
+  /// No description provided for @rewardsFormImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get rewardsFormImage;
+
+  /// No description provided for @rewardsFormPickImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image'**
+  String get rewardsFormPickImage;
+
+  /// No description provided for @rewardsFormClearImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get rewardsFormClearImage;
+
+  /// No description provided for @rewardsFormRecentImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent uploads'**
+  String get rewardsFormRecentImages;
+
+  /// No description provided for @rewardsFormImageSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected asset #{id}'**
+  String rewardsFormImageSelected(int id);
+
+  /// No description provided for @rewardsDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward'**
+  String get rewardsDetailTitle;
+
+  /// No description provided for @rewardsNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward not found'**
+  String get rewardsNotFound;
+
+  /// No description provided for @rewardsConsumeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use reward'**
+  String get rewardsConsumeTitle;
+
+  /// No description provided for @rewardsConsumeQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get rewardsConsumeQuantity;
+
+  /// No description provided for @rewardsConsumeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get rewardsConsumeNote;
+
+  /// No description provided for @rewardsConsumeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Use'**
+  String get rewardsConsumeAction;
+
+  /// No description provided for @rewardsDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard reward?'**
+  String get rewardsDiscardTitle;
+
+  /// No description provided for @rewardsDiscardConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all copies of \"{name}\" from inventory?'**
+  String rewardsDiscardConfirm(String name);
+
+  /// No description provided for @rewardsDiscardAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get rewardsDiscardAction;
+
+  /// No description provided for @rewardsDetailHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent history'**
+  String get rewardsDetailHistory;
+
+  /// No description provided for @rewardsTxEarn.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned'**
+  String get rewardsTxEarn;
+
+  /// No description provided for @rewardsTxConsume.
+  ///
+  /// In en, this message translates to:
+  /// **'Used'**
+  String get rewardsTxConsume;
+
+  /// No description provided for @rewardsTxDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discarded'**
+  String get rewardsTxDiscard;
+
+  /// No description provided for @rewardsTxRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored'**
+  String get rewardsTxRestore;
+
+  /// No description provided for @rewardsTxAdjust.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjusted'**
+  String get rewardsTxAdjust;
+
+  /// No description provided for @rewardsRulesSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewards'**
+  String get rewardsRulesSectionTitle;
+
+  /// No description provided for @rewardsRulesAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get rewardsRulesAdd;
+
+  /// No description provided for @rewardsRulesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No rewards attached yet.'**
+  String get rewardsRulesEmpty;
+
+  /// No description provided for @rewardsRulesAttachTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach reward'**
+  String get rewardsRulesAttachTitle;
+
+  /// No description provided for @rewardsRulesDefinition.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward'**
+  String get rewardsRulesDefinition;
+
+  /// No description provided for @rewardsRulesQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get rewardsRulesQuantity;
+
+  /// No description provided for @rewardsRulesAttachAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach'**
+  String get rewardsRulesAttachAction;
+
+  /// No description provided for @rewardsRulesDetach.
+  ///
+  /// In en, this message translates to:
+  /// **'Detach'**
+  String get rewardsRulesDetach;
+
+  /// No description provided for @rewardsRulesNoDefinitions.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a reward in the catalog first.'**
+  String get rewardsRulesNoDefinitions;
+
+  /// No description provided for @rewardsRulesQtyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'×{quantity}'**
+  String rewardsRulesQtyLabel(int quantity);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

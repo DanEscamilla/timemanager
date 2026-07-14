@@ -7,11 +7,13 @@
   "navCalendar": "Calendar",
   "navOverview": "Overview",
   "navGoals": "Goals",
+  "navRewards": "Rewards",
   "tooltipRefresh": "Refresh",
   "tooltipSignOut": "Sign out",
   "tooltipAddActivity": "Add activity",
   "tooltipAddActivityForDay": "Add activity for this day",
   "tooltipAddGoal": "Add goal",
+  "tooltipAddReward": "Add reward",
   "tooltipSettings": "Settings",
   "tooltipGroups": "Groups",
   "tooltipAddGroup": "Add group",
@@ -193,6 +195,8 @@
   "overviewEmptyTodayHint": "Add an activity to fill your day.",
   "overviewEmptyUpcoming": "No upcoming activities",
   "overviewViewAll": "View all activities",
+  "overviewAvailableRewards": "Available rewards",
+  "overviewViewRewards": "View all",
   "calendarEmptyHint": "No events in this range. Tap + to add one.",
 
   "activitiesEmptyTitle": "No activities yet",
@@ -367,6 +371,76 @@
       "summary": { "type": "String" },
       "start": { "type": "String" },
       "end": { "type": "String" }
+    }
+  },
+
+  "rewardsSegmentInventory": "Inventory",
+  "rewardsSegmentCatalog": "Catalog",
+  "rewardsSegmentHistory": "History",
+  "rewardsSearchHint": "Search rewards",
+  "rewardsEmptyInventoryTitle": "No rewards yet",
+  "rewardsEmptyInventoryHint": "Earn rewards by completing activities and goals, or create a catalog entry.",
+  "rewardsEmptyCatalogTitle": "No reward definitions",
+  "rewardsEmptyCatalogHint": "Create rewards you can earn and spend.",
+  "rewardsEmptyCatalogAction": "Add reward",
+  "rewardsEmptyHistoryTitle": "No history yet",
+  "rewardsEmptyHistoryHint": "Earn and consume rewards to see them here.",
+  "rewardsFormNew": "New reward",
+  "rewardsFormEdit": "Edit reward",
+  "rewardsFormName": "Name",
+  "rewardsFormNameRequired": "Name is required",
+  "rewardsFormDescription": "Description",
+  "rewardsFormNotes": "Notes",
+  "rewardsFormCategory": "Category",
+  "rewardsFormTags": "Tags",
+  "rewardsFormTagsHint": "Comma-separated",
+  "rewardsFormIcon": "Icon",
+  "rewardsFormIconHint": "Emoji or short text",
+  "rewardsFormStackable": "Stackable",
+  "rewardsFormStackableHint": "Allow multiple copies in inventory",
+  "rewardsFormImage": "Image",
+  "rewardsFormPickImage": "Choose image",
+  "rewardsFormClearImage": "Remove",
+  "rewardsFormRecentImages": "Recent uploads",
+  "rewardsFormImageSelected": "Selected asset #{id}",
+  "@rewardsFormImageSelected": {
+    "placeholders": {
+      "id": { "type": "int" }
+    }
+  },
+  "rewardsDetailTitle": "Reward",
+  "rewardsNotFound": "Reward not found",
+  "rewardsConsumeTitle": "Use reward",
+  "rewardsConsumeQuantity": "Quantity",
+  "rewardsConsumeNote": "Note (optional)",
+  "rewardsConsumeAction": "Use",
+  "rewardsDiscardTitle": "Discard reward?",
+  "rewardsDiscardConfirm": "Remove all copies of \"{name}\" from inventory?",
+  "@rewardsDiscardConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "rewardsDiscardAction": "Discard",
+  "rewardsDetailHistory": "Recent history",
+  "rewardsTxEarn": "Earned",
+  "rewardsTxConsume": "Used",
+  "rewardsTxDiscard": "Discarded",
+  "rewardsTxRestore": "Restored",
+  "rewardsTxAdjust": "Adjusted",
+  "rewardsRulesSectionTitle": "Rewards",
+  "rewardsRulesAdd": "Add",
+  "rewardsRulesEmpty": "No rewards attached yet.",
+  "rewardsRulesAttachTitle": "Attach reward",
+  "rewardsRulesDefinition": "Reward",
+  "rewardsRulesQuantity": "Quantity",
+  "rewardsRulesAttachAction": "Attach",
+  "rewardsRulesDetach": "Detach",
+  "rewardsRulesNoDefinitions": "Create a reward in the catalog first.",
+  "rewardsRulesQtyLabel": "×{quantity}",
+  "@rewardsRulesQtyLabel": {
+    "placeholders": {
+      "quantity": { "type": "int" }
     }
   }
 }

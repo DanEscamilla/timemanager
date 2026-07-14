@@ -5,6 +5,7 @@ import '../models/activity.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
+import '../services/reward_repository.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../widgets/activity_list_tile.dart';
 import '../widgets/empty_state.dart';
@@ -17,11 +18,13 @@ class ActivitiesScreen extends StatefulWidget {
     super.key,
     required this.repository,
     required this.groupRepository,
+    this.rewardRepository,
     this.onChanged,
   });
 
   final ActivityRepository repository;
   final GroupRepository groupRepository;
+  final RewardRepository? rewardRepository;
 
   /// Called after a successful create/update/delete so siblings can refresh.
   final VoidCallback? onChanged;
@@ -53,6 +56,7 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
         builder: (_) => ActivityFormScreen(
           repository: widget.repository,
           groupRepository: widget.groupRepository,
+          rewardRepository: widget.rewardRepository,
           activity: activity,
         ),
       ),

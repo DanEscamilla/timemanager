@@ -4,11 +4,14 @@ import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
 import '../models/goal.dart';
+import '../models/reward.dart';
 import '../services/activity_repository.dart';
 import '../services/goal_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
+import '../services/reward_repository.dart';
 import '../theme/tokens/app_breakpoints.dart';
+import '../theme/tokens/app_radius.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../utils/overview_stats.dart';
 import '../widgets/activity_list_tile.dart';
@@ -28,6 +31,7 @@ class _OverviewData {
     required this.daily,
     required this.nudges,
     required this.completionsByActivity,
+    required this.rewards,
   });
 
   final List<Activity> activities;
@@ -36,6 +40,7 @@ class _OverviewData {
   final DailyProgress daily;
   final List<GoalNudge> nudges;
   final Map<int, ActivityCompletion> completionsByActivity;
+  final List<RewardInventoryItem> rewards;
 }
 
 /// Dashboard tab: greeting, daily progress, goals, today's schedule, upcoming.
@@ -46,9 +51,11 @@ class OverviewScreen extends StatefulWidget {
     required this.groupRepository,
     required this.goalRepository,
     required this.completionRepository,
+    this.rewardRepository,
     this.onOpenCalendar,
     this.onOpenActivities,
     this.onOpenGoals,
+    this.onOpenRewards,
     this.onChanged,
   });
 
@@ -56,9 +63,11 @@ class OverviewScreen extends StatefulWidget {
   final GroupRepository groupRepository;
   final GoalRepository goalRepository;
   final CompletionRepository completionRepository;
+  final RewardRepository? rewardRepository;
   final VoidCallback? onOpenCalendar;
   final VoidCallback? onOpenActivities;
   final VoidCallback? onOpenGoals;
+  final VoidCallback? onOpenRewards;
   final VoidCallback? onChanged;
 
   @override
@@ -95,6 +104,9 @@ class OverviewScreenState extends State<OverviewScreen> {
     for (final c in completions) {
       byActivity[c.activityId] = c;
     }
+    final rewards = widget.rewardRepository == null
+        ? const <RewardInventoryItem>[]
+        : await widget.rewardRepository!.fetchInventory(limit: 8);
     return _OverviewData(
       activities: activities,
       goals: goals
@@ -106,6 +118,7 @@ class OverviewScreenState extends State<OverviewScreen> {
       daily: daily,
       nudges: nudges,
       completionsByActivity: byActivity,
+      rewards: rewards.where((r) => r.quantity > 0).toList(),
     );
   }
 
@@ -121,6 +134,7 @@ class OverviewScreenState extends State<OverviewScreen> {
         builder: (_) => ActivityFormScreen(
           repository: widget.repository,
           groupRepository: widget.groupRepository,
+          rewardRepository: widget.rewardRepository,
           initialDate: DateTime.now(),
         ),
       ),
@@ -137,6 +151,7 @@ class OverviewScreenState extends State<OverviewScreen> {
         builder: (_) => ActivityFormScreen(
           repository: widget.repository,
           groupRepository: widget.groupRepository,
+          rewardRepository: widget.rewardRepository,
           activity: activity,
         ),
       ),
@@ -279,6 +294,13 @@ class OverviewScreenState extends State<OverviewScreen> {
                     _StartingSoonStrip(
                       goals: data.scheduledGoals.take(3).toList(),
                       onOpenGoals: widget.onOpenGoals,
+                    ),
+                  ],
+                  if (data.rewards.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    _AvailableRewardsStrip(
+                      rewards: data.rewards.take(6).toList(),
+                      onOpenRewards: widget.onOpenRewards,
                     ),
                   ],
                   const SizedBox(height: AppSpacing.md),
@@ -516,6 +538,68 @@ class _StartingSoonStrip extends StatelessWidget {
           (g) => Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: GoalProgressCard(goal: g, compact: true),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AvailableRewardsStrip extends StatelessWidget {
+  const _AvailableRewardsStrip({
+    required this.rewards,
+    this.onOpenRewards,
+  });
+
+  final List<RewardInventoryItem> rewards;
+  final VoidCallback? onOpenRewards;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.overviewAvailableRewards,
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+            if (onOpenRewards != null)
+              TextButton(
+                onPressed: onOpenRewards,
+                child: Text(l10n.overviewViewRewards),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          height: 44,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: rewards.length,
+            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+            itemBuilder: (context, index) {
+              final item = rewards[index];
+              return ActionChip(
+                avatar: CircleAvatar(
+                  backgroundColor: item.colorValue.withValues(alpha: 0.25),
+                  child: item.icon != null && item.icon!.isNotEmpty
+                      ? Text(item.icon!, style: const TextStyle(fontSize: 12))
+                      : Icon(Icons.card_giftcard, size: 14, color: item.colorValue),
+                ),
+                label: Text('${item.name} ×${item.quantity}'),
+                onPressed: onOpenRewards,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppRadius.borderPill,
+                ),
+              );
+            },
           ),
         ),
       ],

@@ -4,11 +4,14 @@ import '../screens/activities_screen.dart';
 import '../screens/calendar_screen.dart';
 import '../screens/goals_screen.dart';
 import '../screens/overview_screen.dart';
+import '../screens/rewards_screen.dart';
 import '../services/activity_repository.dart';
+import '../services/asset_upload_service.dart';
 import '../services/auth_service.dart';
 import '../services/goal_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
+import '../services/reward_repository.dart';
 
 /// Session + GraphQL services for the signed-in shell.
 ///
@@ -20,11 +23,15 @@ class AuthController extends ChangeNotifier {
     GroupRepository? groupRepository,
     GoalRepository? goalRepository,
     CompletionRepository? completionRepository,
+    RewardRepository? rewardRepository,
+    AssetUploadService? assetUploadService,
   })  : _auth = authService ?? AuthService(),
         _activityRepository = activityRepository,
         _groupRepository = groupRepository,
         _goalRepository = goalRepository,
-        _completionRepository = completionRepository;
+        _completionRepository = completionRepository,
+        _rewardRepository = rewardRepository,
+        _assetUploadService = assetUploadService;
 
   final AuthService _auth;
 
@@ -35,11 +42,14 @@ class AuthController extends ChangeNotifier {
   GroupRepository? _groupRepository;
   GoalRepository? _goalRepository;
   CompletionRepository? _completionRepository;
+  RewardRepository? _rewardRepository;
+  AssetUploadService? _assetUploadService;
 
   final overviewKey = GlobalKey<OverviewScreenState>();
   final activitiesKey = GlobalKey<ActivitiesScreenState>();
   final calendarKey = GlobalKey<CalendarScreenState>();
   final goalsKey = GlobalKey<GoalsScreenState>();
+  final rewardsKey = GlobalKey<RewardsScreenState>();
 
   AuthService get authService => _auth;
 
@@ -69,6 +79,18 @@ class AuthController extends ChangeNotifier {
     final repo = _completionRepository;
     assert(repo != null, 'Session services require a signed-in user');
     return repo!;
+  }
+
+  RewardRepository get rewardRepository {
+    final repo = _rewardRepository;
+    assert(repo != null, 'Session services require a signed-in user');
+    return repo!;
+  }
+
+  AssetUploadService get assetUploadService {
+    final service = _assetUploadService;
+    assert(service != null, 'Session services require a signed-in user');
+    return service!;
   }
 
   Future<void> bootstrap() async {
@@ -104,6 +126,8 @@ class AuthController extends ChangeNotifier {
     _groupRepository = null;
     _goalRepository = null;
     _completionRepository = null;
+    _rewardRepository = null;
+    _assetUploadService = null;
     _signedIn = false;
     notifyListeners();
   }
@@ -113,6 +137,7 @@ class AuthController extends ChangeNotifier {
     activitiesKey.currentState?.reload();
     calendarKey.currentState?.reload();
     goalsKey.currentState?.reload();
+    rewardsKey.currentState?.reload();
   }
 
   void _ensureSessionServices() {
@@ -128,5 +153,12 @@ class AuthController extends ChangeNotifier {
     _groupRepository = GroupRepository(client: client);
     _goalRepository = GoalRepository(client: client);
     _completionRepository = CompletionRepository(client: client);
+    _rewardRepository = RewardRepository(client: client);
+    _assetUploadService = AssetUploadService(
+      authService: _auth,
+      onUnauthorized: () async {
+        await signOut();
+      },
+    );
   }
 }

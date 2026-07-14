@@ -6,6 +6,7 @@ import '../services/activity_repository.dart';
 import '../services/goal_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
+import '../services/reward_repository.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../widgets/app_card.dart';
 import '../widgets/error_state.dart';
@@ -20,12 +21,14 @@ class GoalDetailScreen extends StatefulWidget {
     required this.goalRepository,
     required this.activityRepository,
     required this.groupRepository,
+    this.rewardRepository,
   });
 
   final int goalId;
   final GoalRepository goalRepository;
   final ActivityRepository activityRepository;
   final GroupRepository groupRepository;
+  final RewardRepository? rewardRepository;
 
   @override
   State<GoalDetailScreen> createState() => _GoalDetailScreenState();
@@ -54,6 +57,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           goalRepository: widget.goalRepository,
           activityRepository: widget.activityRepository,
           groupRepository: widget.groupRepository,
+          rewardRepository: widget.rewardRepository,
           goal: goal,
         ),
       ),

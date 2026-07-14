@@ -13,6 +13,11 @@ export interface Database {
   goal_cycles: GoalCyclesTable
   goal_dependencies: GoalDependenciesTable
   goal_progress_snapshots: GoalProgressSnapshotsTable
+  assets: AssetsTable
+  reward_definitions: RewardDefinitionsTable
+  reward_rules: RewardRulesTable
+  reward_inventory: RewardInventoryTable
+  reward_transactions: RewardTransactionsTable
 }
 
 // Users table interface
@@ -270,3 +275,136 @@ export type GoalDependencyUpdate = Updateable<GoalDependenciesTable>
 export type GoalProgressSnapshot = Selectable<GoalProgressSnapshotsTable>
 export type NewGoalProgressSnapshot = Insertable<GoalProgressSnapshotsTable>
 export type GoalProgressSnapshotUpdate = Updateable<GoalProgressSnapshotsTable>
+
+// ---------------------------------------------------------------------------
+// Assets & Rewards
+// ---------------------------------------------------------------------------
+
+export interface AssetsTable {
+  id: Generated<number>
+  user_id: number
+  sha256: string
+  content_type: string
+  byte_size: number
+  storage_key: string
+  ref_count: number
+  created_at: ColumnType<Date, string | undefined, never>
+  orphaned_at: ColumnType<Date | null, string | null, string | null>
+}
+
+export interface RewardDefinitionsTable {
+  id: Generated<number>
+  user_id: number
+  name: string
+  description: string | null
+  notes: string | null
+  category: string | null
+  tags: ColumnType<string[], string | string[], string | string[]>
+  color: string
+  icon: string | null
+  image_asset_id: number | null
+  stackable: boolean
+  default_quantity: number
+  sort_order: number
+  archived_at: ColumnType<Date | null, string | null, string | null>
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string, string>
+}
+
+export type RewardRuleMode = 'fixed' | 'probability' | 'random_pool'
+
+export interface RewardRuleConfig {
+  once?: boolean
+  cooldown_hours?: number
+  max_grants_total?: number
+  max_grants_per_period?: number
+  period_hours?: number
+  probability?: number
+  /** Pool of definition ids for random_pool mode. */
+  pool?: Array<{ definition_id: number; weight?: number; quantity?: number }>
+  [key: string]: unknown
+}
+
+export interface RewardRulesTable {
+  id: Generated<number>
+  user_id: number
+  source_type: string
+  source_id: number
+  reward_definition_id: number
+  quantity: number
+  mode: RewardRuleMode
+  config: ColumnType<
+    RewardRuleConfig,
+    string | RewardRuleConfig,
+    string | RewardRuleConfig
+  >
+  enabled: boolean
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string, string>
+}
+
+export interface RewardInventoryTable {
+  id: Generated<number>
+  user_id: number
+  reward_definition_id: number
+  quantity: number
+  stack_key: string | null
+  first_earned_at: ColumnType<Date, string, string>
+  last_earned_at: ColumnType<Date, string, string>
+  updated_at: ColumnType<Date, string, string>
+}
+
+export type RewardTransactionType =
+  | 'earn'
+  | 'consume'
+  | 'delete'
+  | 'restore'
+  | 'adjust'
+
+export interface RewardTransactionsTable {
+  id: Generated<number>
+  user_id: number
+  type: RewardTransactionType
+  reward_definition_id: number | null
+  inventory_id: number | null
+  quantity: number
+  definition_name: string
+  definition_color: string
+  definition_icon: string | null
+  image_asset_id: number | null
+  source_type: string | null
+  source_id: number | null
+  trigger_key: string | null
+  rule_id: number | null
+  activity_id: number | null
+  goal_id: number | null
+  completion_id: number | null
+  cycle_id: number | null
+  note: string | null
+  metadata: ColumnType<
+    Record<string, unknown> | null,
+    string | null,
+    string | null
+  >
+  created_at: ColumnType<Date, string | undefined, never>
+}
+
+export type Asset = Selectable<AssetsTable>
+export type NewAsset = Insertable<AssetsTable>
+export type AssetUpdate = Updateable<AssetsTable>
+
+export type RewardDefinition = Selectable<RewardDefinitionsTable>
+export type NewRewardDefinition = Insertable<RewardDefinitionsTable>
+export type RewardDefinitionUpdate = Updateable<RewardDefinitionsTable>
+
+export type RewardRule = Selectable<RewardRulesTable>
+export type NewRewardRule = Insertable<RewardRulesTable>
+export type RewardRuleUpdate = Updateable<RewardRulesTable>
+
+export type RewardInventory = Selectable<RewardInventoryTable>
+export type NewRewardInventory = Insertable<RewardInventoryTable>
+export type RewardInventoryUpdate = Updateable<RewardInventoryTable>
+
+export type RewardTransaction = Selectable<RewardTransactionsTable>
+export type NewRewardTransaction = Insertable<RewardTransactionsTable>
+export type RewardTransactionUpdate = Updateable<RewardTransactionsTable>

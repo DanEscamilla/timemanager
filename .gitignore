@@ -40,6 +40,7 @@ infra/**/data/
 infra/authentik/media/
 infra/authentik/certs/
 infra/authentik/custom-templates/
+apps/timemanager-api/data/
 
 # Logs & coverage
 logs

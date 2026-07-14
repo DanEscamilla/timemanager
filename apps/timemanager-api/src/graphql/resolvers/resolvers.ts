@@ -35,6 +35,13 @@ import {
 } from "../validation.ts";
 import { asNumber } from "../numeric.ts";
 import { GoalMutation, GoalQuery } from "./goals_resolvers.ts";
+import { RewardMutation, RewardQuery } from "./rewards_resolvers.ts";
+import {
+  grantRewardsForActivityCompletion,
+} from "../../rewards/hooks.ts";
+import {
+  DbInventoryManager,
+} from "../../rewards/inventory.ts";
 
 interface ParsedRecurrencePattern extends Omit<RecurrencePatternRow, "config"> {
   config: RecurrenceConfig;
@@ -196,6 +203,7 @@ export const Query = {
   },
 
   ...GoalQuery,
+  ...RewardQuery,
 };
 
 export const Mutation = {
@@ -519,7 +527,20 @@ export const Mutation = {
       groupId: activity.group_id,
     });
 
-    return completion;
+    const granted = await db.transaction().execute(async (trx) => {
+      return await grantRewardsForActivityCompletion(trx, {
+        userId,
+        activityId: activity.id,
+        completionId: completion.id,
+      });
+    });
+
+    return {
+      ...completion,
+      grantedRewards: granted
+        .filter((g) => !g.skipped && g.transaction)
+        .map((g) => g.transaction),
+    };
   },
 
   undoCompletion: async (args: { id: number }) => {
@@ -535,6 +556,8 @@ export const Mutation = {
     const activity = await fetchOwnedActivity(existing.activity_id, userId);
 
     await db.transaction().execute(async (trx) => {
+      const manager = new DbInventoryManager();
+      await manager.revokeUnconsumedForCompletion(trx, userId, existing.id);
       await trx
         .deleteFrom("goal_events")
         .where("completion_id", "=", existing.id)
@@ -599,6 +622,7 @@ export const Mutation = {
   },
 
   ...GoalMutation,
+  ...RewardMutation,
 };
 
 export const resolvers = {

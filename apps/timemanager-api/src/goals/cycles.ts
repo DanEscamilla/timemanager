@@ -269,6 +269,19 @@ export async function rollOverIfNeeded(
     .executeTakeFirstOrThrow()
   await writeSnapshot(db, closed, cursorEnd)
 
+  // Grant rewards when a recurring cycle closes as succeeded (edge-trigger).
+  // One-time success is already granted inside recomputeCycle.
+  if (closeStatus === 'succeeded' && cycle.status !== 'succeeded') {
+    const { grantRewardsForGoalCycleSuccess } = await import(
+      '../rewards/hooks.ts'
+    )
+    await grantRewardsForGoalCycleSuccess(db, {
+      userId: goal.user_id,
+      goalId: goal.id,
+      cycleId: closed.id,
+    })
+  }
+
   // Fill gaps until we reach a cycle that contains `now`.
   while (cursorEnd <= now) {
     const nextStart = cursorEnd

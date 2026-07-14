@@ -24,6 +24,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navGoals => 'Metas';
 
   @override
+  String get navRewards => 'Recompensas';
+
+  @override
   String get tooltipRefresh => 'Actualizar';
 
   @override
@@ -37,6 +40,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tooltipAddGoal => 'Añadir meta';
+
+  @override
+  String get tooltipAddReward => 'Añadir recompensa';
 
   @override
   String get tooltipSettings => 'Ajustes';
@@ -450,6 +456,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get overviewViewAll => 'Ver todas las actividades';
 
   @override
+  String get overviewAvailableRewards => 'Recompensas disponibles';
+
+  @override
+  String get overviewViewRewards => 'Ver todas';
+
+  @override
   String get calendarEmptyHint => 'No hay eventos en este rango. Toca + para añadir uno.';
 
   @override
@@ -768,5 +780,173 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String scheduleSummaryTimeRange(String summary, String start, String end) {
     return '$summary · $start – $end';
+  }
+
+  @override
+  String get rewardsSegmentInventory => 'Inventario';
+
+  @override
+  String get rewardsSegmentCatalog => 'Catálogo';
+
+  @override
+  String get rewardsSegmentHistory => 'Historial';
+
+  @override
+  String get rewardsSearchHint => 'Buscar recompensas';
+
+  @override
+  String get rewardsEmptyInventoryTitle => 'Aún no hay recompensas';
+
+  @override
+  String get rewardsEmptyInventoryHint => 'Gana recompensas completando actividades y metas, o crea una en el catálogo.';
+
+  @override
+  String get rewardsEmptyCatalogTitle => 'Sin definiciones de recompensa';
+
+  @override
+  String get rewardsEmptyCatalogHint => 'Crea recompensas que puedas ganar y usar.';
+
+  @override
+  String get rewardsEmptyCatalogAction => 'Añadir recompensa';
+
+  @override
+  String get rewardsEmptyHistoryTitle => 'Aún no hay historial';
+
+  @override
+  String get rewardsEmptyHistoryHint => 'Gana y usa recompensas para verlas aquí.';
+
+  @override
+  String get rewardsFormNew => 'Nueva recompensa';
+
+  @override
+  String get rewardsFormEdit => 'Editar recompensa';
+
+  @override
+  String get rewardsFormName => 'Nombre';
+
+  @override
+  String get rewardsFormNameRequired => 'El nombre es obligatorio';
+
+  @override
+  String get rewardsFormDescription => 'Descripción';
+
+  @override
+  String get rewardsFormNotes => 'Notas';
+
+  @override
+  String get rewardsFormCategory => 'Categoría';
+
+  @override
+  String get rewardsFormTags => 'Etiquetas';
+
+  @override
+  String get rewardsFormTagsHint => 'Separadas por comas';
+
+  @override
+  String get rewardsFormIcon => 'Icono';
+
+  @override
+  String get rewardsFormIconHint => 'Emoji o texto corto';
+
+  @override
+  String get rewardsFormStackable => 'Apilable';
+
+  @override
+  String get rewardsFormStackableHint => 'Permitir varias copias en el inventario';
+
+  @override
+  String get rewardsFormImage => 'Imagen';
+
+  @override
+  String get rewardsFormPickImage => 'Elegir imagen';
+
+  @override
+  String get rewardsFormClearImage => 'Quitar';
+
+  @override
+  String get rewardsFormRecentImages => 'Subidas recientes';
+
+  @override
+  String rewardsFormImageSelected(int id) {
+    return 'Recurso seleccionado #$id';
+  }
+
+  @override
+  String get rewardsDetailTitle => 'Recompensa';
+
+  @override
+  String get rewardsNotFound => 'Recompensa no encontrada';
+
+  @override
+  String get rewardsConsumeTitle => 'Usar recompensa';
+
+  @override
+  String get rewardsConsumeQuantity => 'Cantidad';
+
+  @override
+  String get rewardsConsumeNote => 'Nota (opcional)';
+
+  @override
+  String get rewardsConsumeAction => 'Usar';
+
+  @override
+  String get rewardsDiscardTitle => '¿Descartar recompensa?';
+
+  @override
+  String rewardsDiscardConfirm(String name) {
+    return '¿Quitar todas las copias de \"$name\" del inventario?';
+  }
+
+  @override
+  String get rewardsDiscardAction => 'Descartar';
+
+  @override
+  String get rewardsDetailHistory => 'Historial reciente';
+
+  @override
+  String get rewardsTxEarn => 'Ganada';
+
+  @override
+  String get rewardsTxConsume => 'Usada';
+
+  @override
+  String get rewardsTxDiscard => 'Descartada';
+
+  @override
+  String get rewardsTxRestore => 'Restaurada';
+
+  @override
+  String get rewardsTxAdjust => 'Ajustada';
+
+  @override
+  String get rewardsRulesSectionTitle => 'Recompensas';
+
+  @override
+  String get rewardsRulesAdd => 'Añadir';
+
+  @override
+  String get rewardsRulesEmpty => 'Aún no hay recompensas asociadas.';
+
+  @override
+  String get rewardsRulesAttachTitle => 'Asociar recompensa';
+
+  @override
+  String get rewardsRulesDefinition => 'Recompensa';
+
+  @override
+  String get rewardsRulesQuantity => 'Cantidad';
+
+  @override
+  String get rewardsRulesAttachAction => 'Asociar';
+
+  @override
+  String get rewardsRulesDetach => 'Quitar';
+
+  @override
+  String get rewardsRulesNoDefinitions => 'Crea primero una recompensa en el catálogo.';
+
+  @override
+  String rewardsRulesQtyLabel(int quantity) {
+    return '×$quantity';
   }
 }

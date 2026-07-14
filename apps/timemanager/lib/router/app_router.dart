@@ -8,6 +8,7 @@ import '../screens/groups_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/overview_screen.dart';
+import '../screens/rewards_screen.dart';
 import '../screens/settings_screen.dart';
 import '../widgets/loading_view.dart';
 import 'app_routes.dart';
@@ -76,9 +77,11 @@ GoRouter createAppRouter({
                   groupRepository: auth.groupRepository,
                   goalRepository: auth.goalRepository,
                   completionRepository: auth.completionRepository,
+                  rewardRepository: auth.rewardRepository,
                   onOpenCalendar: () => context.go(AppRoutes.calendar),
                   onOpenActivities: () => context.go(AppRoutes.activities),
                   onOpenGoals: () => context.go(AppRoutes.goals),
+                  onOpenRewards: () => context.go(AppRoutes.rewards),
                   onChanged: auth.reloadAll,
                 ),
               ),
@@ -92,10 +95,12 @@ GoRouter createAppRouter({
                   key: auth.activitiesKey,
                   repository: auth.activityRepository,
                   groupRepository: auth.groupRepository,
+                  rewardRepository: auth.rewardRepository,
                   onChanged: () {
                     auth.calendarKey.currentState?.reload();
                     auth.overviewKey.currentState?.reload();
                     auth.goalsKey.currentState?.reload();
+                    auth.rewardsKey.currentState?.reload();
                   },
                 ),
               ),
@@ -110,10 +115,12 @@ GoRouter createAppRouter({
                   repository: auth.activityRepository,
                   groupRepository: auth.groupRepository,
                   completionRepository: auth.completionRepository,
+                  rewardRepository: auth.rewardRepository,
                   onChanged: () {
                     auth.activitiesKey.currentState?.reload();
                     auth.overviewKey.currentState?.reload();
                     auth.goalsKey.currentState?.reload();
+                    auth.rewardsKey.currentState?.reload();
                   },
                 ),
               ),
@@ -128,6 +135,20 @@ GoRouter createAppRouter({
                   goalRepository: auth.goalRepository,
                   activityRepository: auth.activityRepository,
                   groupRepository: auth.groupRepository,
+                  rewardRepository: auth.rewardRepository,
+                  onChanged: auth.reloadAll,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.rewards,
+                builder: (context, state) => RewardsScreen(
+                  key: auth.rewardsKey,
+                  rewardRepository: auth.rewardRepository,
+                  assetUploadService: auth.assetUploadService,
                   onChanged: auth.reloadAll,
                 ),
               ),

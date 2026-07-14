@@ -7,9 +7,11 @@ import '../models/group.dart';
 import '../services/activity_repository.dart';
 import '../services/goal_repository.dart';
 import '../services/group_repository.dart';
+import '../services/reward_repository.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../theme/tokens/group_palette.dart';
 import '../widgets/loading_view.dart';
+import '../widgets/reward_rules_section.dart';
 
 /// Create / edit goal form covering MVP + advanced rule types.
 class GoalFormScreen extends StatefulWidget {
@@ -18,12 +20,14 @@ class GoalFormScreen extends StatefulWidget {
     required this.goalRepository,
     required this.activityRepository,
     required this.groupRepository,
+    this.rewardRepository,
     this.goal,
   });
 
   final GoalRepository goalRepository;
   final ActivityRepository activityRepository;
   final GroupRepository groupRepository;
+  final RewardRepository? rewardRepository;
   final Goal? goal;
 
   @override
@@ -657,6 +661,14 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
                         final n = int.tryParse(v);
                         if (n != null && n >= 0) _relativeDeadlineDays = n;
                       },
+                    ),
+                  ],
+                  if (editing && widget.rewardRepository != null) ...[
+                    const SizedBox(height: AppSpacing.lg),
+                    RewardRulesSection(
+                      repository: widget.rewardRepository!,
+                      sourceType: 'goal',
+                      sourceId: widget.goal!.id,
                     ),
                   ],
                   const SizedBox(height: AppSpacing.xl),

@@ -79,4 +79,8 @@ export async function corsMiddleware(ctx: Context, next: () => Promise<void>) {
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization, st-auth-mode',
   )
+  ctx.res.headers.set(
+    'Access-Control-Allow-Methods',
+    'GET, POST, OPTIONS',
+  )
 }

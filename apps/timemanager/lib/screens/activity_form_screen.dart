@@ -8,23 +8,27 @@ import '../models/group.dart';
 import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
+import '../services/reward_repository.dart';
 import '../theme/tokens/app_radius.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../utils/date_only.dart';
 import '../utils/recurrence_summary.dart';
 import '../widgets/app_card.dart';
+import '../widgets/reward_rules_section.dart';
 
 class ActivityFormScreen extends StatefulWidget {
   const ActivityFormScreen({
     super.key,
     required this.repository,
     required this.groupRepository,
+    this.rewardRepository,
     this.activity,
     this.initialDate,
   });
 
   final ActivityRepository repository;
   final GroupRepository groupRepository;
+  final RewardRepository? rewardRepository;
   final Activity? activity;
 
   /// Prefills one-time date when creating from the calendar.
@@ -595,6 +599,14 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                 ],
               ),
             ),
+            if (widget.isEditing && widget.rewardRepository != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              RewardRulesSection(
+                repository: widget.rewardRepository!,
+                sourceType: 'activity',
+                sourceId: widget.activity!.id,
+              ),
+            ],
             const SizedBox(height: AppSpacing.lg),
             FilledButton(
               onPressed: _saving ? null : _save,

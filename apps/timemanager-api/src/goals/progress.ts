@@ -231,6 +231,18 @@ export async function recomputeCycle(
       .execute();
   }
 
+  // Edge-trigger reward grants when a cycle newly succeeds.
+  if (status === 'succeeded' && cycle.status !== 'succeeded') {
+    const { grantRewardsForGoalCycleSuccess } = await import(
+      '../rewards/hooks.ts'
+    );
+    await grantRewardsForGoalCycleSuccess(db, {
+      userId: goal.user_id,
+      goalId: goal.id,
+      cycleId: updated.id,
+    });
+  }
+
   return updated;
 }
 

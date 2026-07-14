@@ -6,6 +6,7 @@ import '../services/activity_repository.dart';
 import '../services/goal_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
+import '../services/reward_repository.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
@@ -21,12 +22,14 @@ class GoalsScreen extends StatefulWidget {
     required this.goalRepository,
     required this.activityRepository,
     required this.groupRepository,
+    this.rewardRepository,
     this.onChanged,
   });
 
   final GoalRepository goalRepository;
   final ActivityRepository activityRepository;
   final GroupRepository groupRepository;
+  final RewardRepository? rewardRepository;
   final VoidCallback? onChanged;
 
   @override
@@ -56,6 +59,7 @@ class GoalsScreenState extends State<GoalsScreen> {
           goalRepository: widget.goalRepository,
           activityRepository: widget.activityRepository,
           groupRepository: widget.groupRepository,
+          rewardRepository: widget.rewardRepository,
         ),
       ),
     );
@@ -73,6 +77,7 @@ class GoalsScreenState extends State<GoalsScreen> {
           goalRepository: widget.goalRepository,
           activityRepository: widget.activityRepository,
           groupRepository: widget.groupRepository,
+          rewardRepository: widget.rewardRepository,
         ),
       ),
     );

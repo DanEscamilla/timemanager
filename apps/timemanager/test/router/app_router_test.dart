@@ -7,6 +7,7 @@ import 'package:timemanager/l10n/app_localizations.dart';
 import 'package:timemanager/models/activity.dart';
 import 'package:timemanager/models/goal.dart';
 import 'package:timemanager/models/group.dart';
+import 'package:timemanager/models/reward.dart';
 import 'package:timemanager/router/app_router.dart';
 import 'package:timemanager/router/app_routes.dart';
 import 'package:timemanager/router/auth_controller.dart';
@@ -15,6 +16,7 @@ import 'package:timemanager/services/activity_repository.dart';
 import 'package:timemanager/services/auth_service.dart';
 import 'package:timemanager/services/goal_repository.dart';
 import 'package:timemanager/services/group_repository.dart';
+import 'package:timemanager/services/reward_repository.dart';
 import 'package:timemanager/widgets/loading_view.dart';
 
 class _FakeAuthService extends AuthService {
@@ -69,6 +71,37 @@ class _FakeCompletionRepository extends CompletionRepository {
       const [];
 }
 
+class _FakeRewardRepository extends RewardRepository {
+  @override
+  Future<List<RewardInventoryItem>> fetchInventory({
+    String? search,
+    bool? stackableOnly,
+    String? sort,
+    int? limit,
+    int? offset,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<RewardDefinition>> fetchDefinitions({
+    bool includeArchived = false,
+    String? search,
+    String? category,
+    int? limit,
+    int? offset,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<RewardTransaction>> fetchHistory({
+    int? definitionId,
+    String? type,
+    int? limit,
+    int? offset,
+  }) async =>
+      const [];
+}
+
 Widget _app(GoRouter router) {
   return MaterialApp.router(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -114,6 +147,7 @@ void main() {
       groupRepository: _FakeGroupRepository(),
       goalRepository: _FakeGoalRepository(),
       completionRepository: _FakeCompletionRepository(),
+      rewardRepository: _FakeRewardRepository(),
     );
     final themeMode = ValueNotifier(ThemeMode.system);
     final rootKey = GlobalKey<NavigatorState>();

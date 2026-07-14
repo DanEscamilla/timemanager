@@ -7,11 +7,13 @@
   "navCalendar": "Calendario",
   "navOverview": "Resumen",
   "navGoals": "Metas",
+  "navRewards": "Recompensas",
   "tooltipRefresh": "Actualizar",
   "tooltipSignOut": "Cerrar sesión",
   "tooltipAddActivity": "Añadir actividad",
   "tooltipAddActivityForDay": "Añadir actividad para este día",
   "tooltipAddGoal": "Añadir meta",
+  "tooltipAddReward": "Añadir recompensa",
   "tooltipSettings": "Ajustes",
   "tooltipGroups": "Grupos",
   "tooltipAddGroup": "Añadir grupo",
@@ -193,6 +195,8 @@
   "overviewEmptyTodayHint": "Añade una actividad para llenar tu día.",
   "overviewEmptyUpcoming": "No hay actividades próximas",
   "overviewViewAll": "Ver todas las actividades",
+  "overviewAvailableRewards": "Recompensas disponibles",
+  "overviewViewRewards": "Ver todas",
   "calendarEmptyHint": "No hay eventos en este rango. Toca + para añadir uno.",
 
   "activitiesEmptyTitle": "Aún no hay actividades",
@@ -367,6 +371,76 @@
       "summary": { "type": "String" },
       "start": { "type": "String" },
       "end": { "type": "String" }
+    }
+  },
+
+  "rewardsSegmentInventory": "Inventario",
+  "rewardsSegmentCatalog": "Catálogo",
+  "rewardsSegmentHistory": "Historial",
+  "rewardsSearchHint": "Buscar recompensas",
+  "rewardsEmptyInventoryTitle": "Aún no hay recompensas",
+  "rewardsEmptyInventoryHint": "Gana recompensas completando actividades y metas, o crea una en el catálogo.",
+  "rewardsEmptyCatalogTitle": "Sin definiciones de recompensa",
+  "rewardsEmptyCatalogHint": "Crea recompensas que puedas ganar y usar.",
+  "rewardsEmptyCatalogAction": "Añadir recompensa",
+  "rewardsEmptyHistoryTitle": "Aún no hay historial",
+  "rewardsEmptyHistoryHint": "Gana y usa recompensas para verlas aquí.",
+  "rewardsFormNew": "Nueva recompensa",
+  "rewardsFormEdit": "Editar recompensa",
+  "rewardsFormName": "Nombre",
+  "rewardsFormNameRequired": "El nombre es obligatorio",
+  "rewardsFormDescription": "Descripción",
+  "rewardsFormNotes": "Notas",
+  "rewardsFormCategory": "Categoría",
+  "rewardsFormTags": "Etiquetas",
+  "rewardsFormTagsHint": "Separadas por comas",
+  "rewardsFormIcon": "Icono",
+  "rewardsFormIconHint": "Emoji o texto corto",
+  "rewardsFormStackable": "Apilable",
+  "rewardsFormStackableHint": "Permitir varias copias en el inventario",
+  "rewardsFormImage": "Imagen",
+  "rewardsFormPickImage": "Elegir imagen",
+  "rewardsFormClearImage": "Quitar",
+  "rewardsFormRecentImages": "Subidas recientes",
+  "rewardsFormImageSelected": "Recurso seleccionado #{id}",
+  "@rewardsFormImageSelected": {
+    "placeholders": {
+      "id": { "type": "int" }
+    }
+  },
+  "rewardsDetailTitle": "Recompensa",
+  "rewardsNotFound": "Recompensa no encontrada",
+  "rewardsConsumeTitle": "Usar recompensa",
+  "rewardsConsumeQuantity": "Cantidad",
+  "rewardsConsumeNote": "Nota (opcional)",
+  "rewardsConsumeAction": "Usar",
+  "rewardsDiscardTitle": "¿Descartar recompensa?",
+  "rewardsDiscardConfirm": "¿Quitar todas las copias de \"{name}\" del inventario?",
+  "@rewardsDiscardConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "rewardsDiscardAction": "Descartar",
+  "rewardsDetailHistory": "Historial reciente",
+  "rewardsTxEarn": "Ganada",
+  "rewardsTxConsume": "Usada",
+  "rewardsTxDiscard": "Descartada",
+  "rewardsTxRestore": "Restaurada",
+  "rewardsTxAdjust": "Ajustada",
+  "rewardsRulesSectionTitle": "Recompensas",
+  "rewardsRulesAdd": "Añadir",
+  "rewardsRulesEmpty": "Aún no hay recompensas asociadas.",
+  "rewardsRulesAttachTitle": "Asociar recompensa",
+  "rewardsRulesDefinition": "Recompensa",
+  "rewardsRulesQuantity": "Cantidad",
+  "rewardsRulesAttachAction": "Asociar",
+  "rewardsRulesDetach": "Quitar",
+  "rewardsRulesNoDefinitions": "Crea primero una recompensa en el catálogo.",
+  "rewardsRulesQtyLabel": "×{quantity}",
+  "@rewardsRulesQtyLabel": {
+    "placeholders": {
+      "quantity": { "type": "int" }
     }
   }
 }

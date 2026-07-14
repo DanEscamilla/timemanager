@@ -20,6 +20,9 @@ class ApiConfig {
 
   static String get graphqlEndpoint => 'http://$_host:$_apiPort/graphql';
 
+  /// REST base for the GraphQL API host (e.g. asset upload at `/assets`).
+  static String get apiBaseUrl => 'http://$_host:$_apiPort';
+
   /// OAuth redirect target after the provider callback (Flutter web / deep link).
   static String get oauthRedirectUri =>
       kIsWeb ? Uri.base.origin : 'timemanager://auth/callback';

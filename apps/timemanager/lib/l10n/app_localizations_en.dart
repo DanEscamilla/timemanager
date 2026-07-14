@@ -24,6 +24,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navGoals => 'Goals';
 
   @override
+  String get navRewards => 'Rewards';
+
+  @override
   String get tooltipRefresh => 'Refresh';
 
   @override
@@ -37,6 +40,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tooltipAddGoal => 'Add goal';
+
+  @override
+  String get tooltipAddReward => 'Add reward';
 
   @override
   String get tooltipSettings => 'Settings';
@@ -450,6 +456,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get overviewViewAll => 'View all activities';
 
   @override
+  String get overviewAvailableRewards => 'Available rewards';
+
+  @override
+  String get overviewViewRewards => 'View all';
+
+  @override
   String get calendarEmptyHint => 'No events in this range. Tap + to add one.';
 
   @override
@@ -768,5 +780,173 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String scheduleSummaryTimeRange(String summary, String start, String end) {
     return '$summary · $start – $end';
+  }
+
+  @override
+  String get rewardsSegmentInventory => 'Inventory';
+
+  @override
+  String get rewardsSegmentCatalog => 'Catalog';
+
+  @override
+  String get rewardsSegmentHistory => 'History';
+
+  @override
+  String get rewardsSearchHint => 'Search rewards';
+
+  @override
+  String get rewardsEmptyInventoryTitle => 'No rewards yet';
+
+  @override
+  String get rewardsEmptyInventoryHint => 'Earn rewards by completing activities and goals, or create a catalog entry.';
+
+  @override
+  String get rewardsEmptyCatalogTitle => 'No reward definitions';
+
+  @override
+  String get rewardsEmptyCatalogHint => 'Create rewards you can earn and spend.';
+
+  @override
+  String get rewardsEmptyCatalogAction => 'Add reward';
+
+  @override
+  String get rewardsEmptyHistoryTitle => 'No history yet';
+
+  @override
+  String get rewardsEmptyHistoryHint => 'Earn and consume rewards to see them here.';
+
+  @override
+  String get rewardsFormNew => 'New reward';
+
+  @override
+  String get rewardsFormEdit => 'Edit reward';
+
+  @override
+  String get rewardsFormName => 'Name';
+
+  @override
+  String get rewardsFormNameRequired => 'Name is required';
+
+  @override
+  String get rewardsFormDescription => 'Description';
+
+  @override
+  String get rewardsFormNotes => 'Notes';
+
+  @override
+  String get rewardsFormCategory => 'Category';
+
+  @override
+  String get rewardsFormTags => 'Tags';
+
+  @override
+  String get rewardsFormTagsHint => 'Comma-separated';
+
+  @override
+  String get rewardsFormIcon => 'Icon';
+
+  @override
+  String get rewardsFormIconHint => 'Emoji or short text';
+
+  @override
+  String get rewardsFormStackable => 'Stackable';
+
+  @override
+  String get rewardsFormStackableHint => 'Allow multiple copies in inventory';
+
+  @override
+  String get rewardsFormImage => 'Image';
+
+  @override
+  String get rewardsFormPickImage => 'Choose image';
+
+  @override
+  String get rewardsFormClearImage => 'Remove';
+
+  @override
+  String get rewardsFormRecentImages => 'Recent uploads';
+
+  @override
+  String rewardsFormImageSelected(int id) {
+    return 'Selected asset #$id';
+  }
+
+  @override
+  String get rewardsDetailTitle => 'Reward';
+
+  @override
+  String get rewardsNotFound => 'Reward not found';
+
+  @override
+  String get rewardsConsumeTitle => 'Use reward';
+
+  @override
+  String get rewardsConsumeQuantity => 'Quantity';
+
+  @override
+  String get rewardsConsumeNote => 'Note (optional)';
+
+  @override
+  String get rewardsConsumeAction => 'Use';
+
+  @override
+  String get rewardsDiscardTitle => 'Discard reward?';
+
+  @override
+  String rewardsDiscardConfirm(String name) {
+    return 'Remove all copies of \"$name\" from inventory?';
+  }
+
+  @override
+  String get rewardsDiscardAction => 'Discard';
+
+  @override
+  String get rewardsDetailHistory => 'Recent history';
+
+  @override
+  String get rewardsTxEarn => 'Earned';
+
+  @override
+  String get rewardsTxConsume => 'Used';
+
+  @override
+  String get rewardsTxDiscard => 'Discarded';
+
+  @override
+  String get rewardsTxRestore => 'Restored';
+
+  @override
+  String get rewardsTxAdjust => 'Adjusted';
+
+  @override
+  String get rewardsRulesSectionTitle => 'Rewards';
+
+  @override
+  String get rewardsRulesAdd => 'Add';
+
+  @override
+  String get rewardsRulesEmpty => 'No rewards attached yet.';
+
+  @override
+  String get rewardsRulesAttachTitle => 'Attach reward';
+
+  @override
+  String get rewardsRulesDefinition => 'Reward';
+
+  @override
+  String get rewardsRulesQuantity => 'Quantity';
+
+  @override
+  String get rewardsRulesAttachAction => 'Attach';
+
+  @override
+  String get rewardsRulesDetach => 'Detach';
+
+  @override
+  String get rewardsRulesNoDefinitions => 'Create a reward in the catalog first.';
+
+  @override
+  String rewardsRulesQtyLabel(int quantity) {
+    return '×$quantity';
   }
 }

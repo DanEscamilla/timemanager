@@ -5,6 +5,7 @@ abstract final class AppRoutes {
   static const activities = '/activities';
   static const calendar = '/calendar';
   static const goals = '/goals';
+  static const rewards = '/rewards';
   static const groups = '/groups';
   static const settings = '/settings';
 }

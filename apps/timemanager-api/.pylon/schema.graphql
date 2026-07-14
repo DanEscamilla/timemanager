@@ -1,24 +1,146 @@
 input ArgsInput {
-	status: String
+	filter: RewardDefinitionsFilterInput
+}
+input RewardDefinitionsFilterInput {
+	includeArchived: Boolean
+	search: String
+	category: String
+	limit: Number
+	offset: Number
 }
 input ArgsInput_1 {
 	id: Number!
 }
 input ArgsInput_2 {
-	date: String
+	filter: RewardInventoryFilterInput
+}
+input RewardInventoryFilterInput {
+	search: String
+	stackableOnly: Boolean
+	sort: NAME_QUANTITY_RECENTInput
+	limit: Number
+	offset: Number
 }
 input ArgsInput_3 {
-	id: Number!
+	filter: RewardHistoryFilterInput
+}
+input RewardHistoryFilterInput {
+	definitionId: Number
+	type: String
+	limit: Number
+	offset: Number
 }
 input ArgsInput_4 {
-	id: Number!
+	sourceType: String!
+	sourceId: Number!
 }
 input ArgsInput_5 {
+	limit: Number
+}
+input ArgsInput_6 {
+	status: String
+}
+input ArgsInput_7 {
+	id: Number!
+}
+input ArgsInput_8 {
+	date: String
+}
+input ArgsInput_9 {
+	id: Number!
+}
+input ArgsInput_10 {
+	id: Number!
+}
+input ArgsInput_11 {
 	activityId: Number
 	fromDate: String
 	toDate: String
 }
-input ArgsInput_6 {
+input ArgsInput_12 {
+	input: CreateRewardDefinitionInputInput!
+}
+input CreateRewardDefinitionInputInput {
+	name: String!
+	description: String
+	notes: String
+	category: String
+	tags: [String!]
+	color: String!
+	icon: String
+	imageAssetId: Number
+	stackable: Boolean
+	defaultQuantity: Number
+	sortOrder: Number
+}
+input ArgsInput_13 {
+	id: Number!
+	input: UpdateRewardDefinitionInputInput!
+}
+input UpdateRewardDefinitionInputInput {
+	name: String
+	description: String
+	notes: String
+	category: String
+	tags: [String!]
+	color: String
+	icon: String
+	imageAssetId: Number
+	stackable: Boolean
+	defaultQuantity: Number
+	sortOrder: Number
+}
+input ArgsInput_14 {
+	id: Number!
+}
+input ArgsInput_15 {
+	id: Number!
+}
+input ArgsInput_16 {
+	id: Number!
+}
+input ArgsInput_17 {
+	input: AttachRewardRuleInputInput!
+}
+input AttachRewardRuleInputInput {
+	sourceType: String!
+	sourceId: Number!
+	rewardDefinitionId: Number!
+	quantity: Number
+	mode: FIXED_PROBABILITY_RANDOM_POOLInput
+	configJson: String
+	enabled: Boolean
+}
+input ArgsInput_18 {
+	id: Number!
+}
+input ArgsInput_19 {
+	input: ConsumeRewardInputInput!
+}
+input ConsumeRewardInputInput {
+	inventoryId: Number!
+	quantity: Number
+	note: String
+}
+input ArgsInput_20 {
+	input: DiscardRewardInputInput!
+}
+input DiscardRewardInputInput {
+	inventoryId: Number!
+	quantity: Number
+}
+input ArgsInput_21 {
+	transactionId: Number!
+}
+input ArgsInput_22 {
+	input: ManualGrantRewardInputInput!
+}
+input ManualGrantRewardInputInput {
+	rewardDefinitionId: Number!
+	quantity: Number
+	note: String
+}
+input ArgsInput_23 {
 	input: CreateGoalInputInput!
 }
 input CreateGoalInputInput {
@@ -71,7 +193,7 @@ input GoalDeadlineInputInput {
 	graceDays: Number
 	warnDays: Number
 }
-input ArgsInput_7 {
+input ArgsInput_24 {
 	id: Number!
 	input: UpdateGoalInputInput!
 }
@@ -94,26 +216,26 @@ input UpdateGoalInputInput {
 	priority: Number
 	sortOrder: Number
 }
-input ArgsInput_8 {
+input ArgsInput_25 {
 	id: Number!
 }
-input ArgsInput_9 {
+input ArgsInput_26 {
 	id: Number!
 }
-input ArgsInput_10 {
+input ArgsInput_27 {
 	id: Number!
 }
-input ArgsInput_11 {
+input ArgsInput_28 {
 	id: Number!
 }
-input ArgsInput_12 {
+input ArgsInput_29 {
 	input: CreateGroupInputInput!
 }
 input CreateGroupInputInput {
 	name: String!
 	color: String!
 }
-input ArgsInput_13 {
+input ArgsInput_30 {
 	id: Number!
 	input: UpdateGroupInputInput!
 }
@@ -121,10 +243,10 @@ input UpdateGroupInputInput {
 	name: String
 	color: String
 }
-input ArgsInput_14 {
+input ArgsInput_31 {
 	id: Number!
 }
-input ArgsInput_15 {
+input ArgsInput_32 {
 	input: CreateActivityInputInput!
 }
 input CreateActivityInputInput {
@@ -149,7 +271,7 @@ input RecurrenceConfigInput {
 	start_date: String!
 	end_date: String
 }
-input ArgsInput_16 {
+input ArgsInput_33 {
 	id: Number!
 	input: UpdateActivityInputInput!
 }
@@ -163,10 +285,10 @@ input UpdateActivityInputInput {
 	recurrencePattern: RecurrencePatternInputInput
 	groupId: Number
 }
-input ArgsInput_17 {
+input ArgsInput_34 {
 	id: Number!
 }
-input ArgsInput_18 {
+input ArgsInput_35 {
 	input: CompleteActivityInputInput!
 }
 input CompleteActivityInputInput {
@@ -175,10 +297,10 @@ input CompleteActivityInputInput {
 	durationMinutes: Number
 	notes: String
 }
-input ArgsInput_19 {
+input ArgsInput_36 {
 	id: Number!
 }
-input ArgsInput_20 {
+input ArgsInput_37 {
 	input: LogTimeInputInput!
 }
 input LogTimeInputInput {
@@ -188,15 +310,139 @@ input LogTimeInputInput {
 	notes: String
 }
 type Query {
-goals(args: ArgsInput): [Goals!]!
-goal(args: ArgsInput_1!): Goals
+rewardDefinitions(args: ArgsInput!): [RewardDefinitions!]!
+rewardDefinition(args: ArgsInput_1!): RewardDefinitions
+rewardInventory(args: ArgsInput_2!): [RewardInventory!]!
+rewardHistory(args: ArgsInput_3!): [RewardHistory!]!
+rewardRules(args: ArgsInput_4!): [RewardRules!]!
+recentAssets(args: ArgsInput_5!): [RecentAssets!]!
+rewardNudges(_args: Object): [RewardNudge!]!
+goals(args: ArgsInput_6): [Goals!]!
+goal(args: ArgsInput_7!): Goals
 goalNudges(args: Object): [GoalNudge!]!
-dailyProgress(args: ArgsInput_2): DailyProgress!
+dailyProgress(args: ArgsInput_8): DailyProgress!
 groups(args: Object): [Groups!]!
-group(args: ArgsInput_3!): Groups
+group(args: ArgsInput_9!): Groups
 activities(args: Object): [Activities!]!
-activity(args: ArgsInput_4!): Activities
-activityCompletions(args: ArgsInput_5): [ActivityCompletions!]!
+activity(args: ArgsInput_10!): Activities
+activityCompletions(args: ArgsInput_11): [ActivityCompletions!]!
+}
+type RewardDefinitions {
+tags: [String!]!
+image_url: String
+image: Image
+user_id: Number!
+id: Number!
+name: String!
+description: String
+notes: String
+category: String
+color: String!
+icon: String
+image_asset_id: Number
+stackable: Boolean!
+default_quantity: Number!
+sort_order: Number!
+archived_at: Date
+created_at: Date!
+updated_at: Date!
+}
+type Image {
+url: String!
+user_id: Number!
+id: Number!
+created_at: Date!
+sha256: String!
+content_type: String!
+byte_size: Number!
+storage_key: String!
+ref_count: Number!
+orphaned_at: Date
+}
+type RewardInventory {
+definition: RewardDefinitions
+user_id: Number!
+id: Number!
+updated_at: Date!
+reward_definition_id: Number!
+quantity: Number!
+stack_key: String
+first_earned_at: Date!
+last_earned_at: Date!
+}
+type RewardHistory {
+metadata: Any!
+user_id: Number!
+id: Number!
+image_asset_id: Number
+created_at: Date!
+activity_id: Number
+reward_definition_id: Number
+quantity: Number!
+type: RewardTransactionType!
+inventory_id: Number
+definition_name: String!
+definition_color: String!
+definition_icon: String
+source_type: String
+source_id: Number
+trigger_key: String
+rule_id: Number
+goal_id: Number
+completion_id: Number
+cycle_id: Number
+note: String
+}
+type RewardRules {
+config: RewardRuleConfig!
+definition: RewardDefinitions
+user_id: Number!
+id: Number!
+created_at: Date!
+updated_at: Date!
+reward_definition_id: Number!
+quantity: Number!
+source_type: String!
+source_id: Number!
+mode: RewardRuleMode!
+enabled: Boolean!
+}
+type RewardRuleConfig {
+once: Boolean
+cooldown_hours: Number
+max_grants_total: Number
+max_grants_per_period: Number
+period_hours: Number
+probability: Number
+"""
+Pool of definition ids for random_pool mode.
+"""
+pool: [Pool!]
+}
+type Pool {
+definition_id: Number!
+weight: Number
+quantity: Number
+}
+type RecentAssets {
+url: String!
+user_id: Number!
+id: Number!
+created_at: Date!
+sha256: String!
+content_type: String!
+byte_size: Number!
+storage_key: String!
+ref_count: Number!
+orphaned_at: Date
+}
+type RewardNudge {
+kind: RewardNudgeKind!
+title: String!
+message: String!
+severity: INFO_SUCCESS!
+definitionId: Number
+inventoryId: Number
 }
 type Goals {
 target_value: Number!
@@ -213,18 +459,18 @@ snapshots: [Snapshots!]!
 isLocked: Boolean!
 user_id: Number!
 id: Number!
-title: String!
 description: String
 color: String!
 icon: String
+sort_order: Number!
+created_at: Date!
+updated_at: Date!
+title: String!
 rule_type: String!
 metric: GoalMetric!
 status: GoalStatus!
 priority: Number!
-sort_order: Number!
 starts_at: Date!
-created_at: Date!
-updated_at: Date!
 }
 type GoalConfig {
 composite_mode: ALL_ANY_WEIGHTED
@@ -261,10 +507,10 @@ group_id: Number
 type Activity {
 user_id: Number!
 id: Number!
-title: String!
 description: String
 created_at: Date!
 updated_at: Date!
+title: String!
 group_id: Number
 start_time: String!
 end_time: String!
@@ -274,22 +520,22 @@ date: String
 type Groups {
 user_id: Number!
 id: Number!
+name: String!
 color: String!
 created_at: Date!
 updated_at: Date!
-name: String!
 }
 type ActiveCycle {
 deadlineState: DeadlineState!
 percentComplete: Number!
 remaining: Number!
 id: Number!
-target_value: Number!
-status: GoalCycleStatus!
-starts_at: Date!
 created_at: Date!
 updated_at: Date!
 goal_id: Number!
+target_value: Number!
+status: GoalCycleStatus!
+starts_at: Date!
 cycle_index: Number!
 ends_at: Date
 deadline_at: Date
@@ -298,12 +544,12 @@ carry_over: Number!
 }
 type CyclesAndCycles_1 {
 id: Number!
-target_value: Number!
-status: GoalCycleStatus!
-starts_at: Date!
 created_at: Date!
 updated_at: Date!
 goal_id: Number!
+target_value: Number!
+status: GoalCycleStatus!
+starts_at: Date!
 cycle_index: Number!
 ends_at: Date
 deadline_at: Date
@@ -332,7 +578,7 @@ kind: GoalNudgeKind!
 goalId: Number!
 title: String!
 message: String!
-severity: INFO_WARNING_SUCCESS!
+severity: INFO_SUCCESS_WARNING!
 }
 type DailyProgress {
 date: String!
@@ -360,10 +606,10 @@ recurrencePattern: ParsedRecurrencePattern
 group: Group
 user_id: Number!
 id: Number!
-title: String!
 description: String
 created_at: Date!
 updated_at: Date!
+title: String!
 group_id: Number
 start_time: String!
 end_time: String!
@@ -389,28 +635,52 @@ end_date: String
 type Group {
 user_id: Number!
 id: Number!
+name: String!
 color: String!
 created_at: Date!
 updated_at: Date!
-name: String!
 }
 type Mutation {
-createGoal(args: ArgsInput_6!): Goals!
-updateGoal(args: ArgsInput_7!): Goals!
-pauseGoal(args: ArgsInput_8!): Goals!
-resumeGoal(args: ArgsInput_9!): Goals!
-archiveGoal(args: ArgsInput_10!): Goals!
-deleteGoal(args: ArgsInput_11!): Boolean!
+createRewardDefinition(args: ArgsInput_12!): RewardDefinitions!
+updateRewardDefinition(args: ArgsInput_13!): RewardDefinitions!
+archiveRewardDefinition(args: ArgsInput_14!): RewardDefinitions!
+unarchiveRewardDefinition(args: ArgsInput_15!): RewardDefinitions!
+deleteRewardDefinition(args: ArgsInput_16!): Boolean!
+attachRewardRule(args: ArgsInput_17!): RewardRules!
+detachRewardRule(args: ArgsInput_18!): Boolean!
+consumeReward(args: ArgsInput_19!): ConsumeReward!
+discardReward(args: ArgsInput_20!): DiscardReward!
+restoreReward(args: ArgsInput_21!): RestoreReward!
+manualGrantReward(args: ArgsInput_22!): RewardHistory
+recomputeRewardInventory: Boolean!
+createGoal(args: ArgsInput_23!): Goals!
+updateGoal(args: ArgsInput_24!): Goals!
+pauseGoal(args: ArgsInput_25!): Goals!
+resumeGoal(args: ArgsInput_26!): Goals!
+archiveGoal(args: ArgsInput_27!): Goals!
+deleteGoal(args: ArgsInput_28!): Boolean!
 recomputeGoalProgress(args: Object): RecomputeGoalProgress!
-createGroup(args: ArgsInput_12!): CreateGroup!
-updateGroup(args: ArgsInput_13!): CreateGroup!
-deleteGroup(args: ArgsInput_14!): Boolean!
-createActivity(args: ArgsInput_15!): Activities!
-updateActivity(args: ArgsInput_16!): Activities!
-deleteActivity(args: ArgsInput_17!): Boolean!
-completeActivity(args: ArgsInput_18!): CompleteActivity!
-undoCompletion(args: ArgsInput_19!): Boolean!
-logTime(args: ArgsInput_20!): LogTime!
+createGroup(args: ArgsInput_29!): CreateGroup!
+updateGroup(args: ArgsInput_30!): CreateGroup!
+deleteGroup(args: ArgsInput_31!): Boolean!
+createActivity(args: ArgsInput_32!): Activities!
+updateActivity(args: ArgsInput_33!): Activities!
+deleteActivity(args: ArgsInput_34!): Boolean!
+completeActivity(args: ArgsInput_35!): CompleteActivity!
+undoCompletion(args: ArgsInput_36!): Boolean!
+logTime(args: ArgsInput_37!): LogTime!
+}
+type ConsumeReward {
+inventory: RewardInventory
+transaction: RewardHistory!
+}
+type DiscardReward {
+inventory: RewardInventory
+transaction: RewardHistory!
+}
+type RestoreReward {
+inventory: RewardInventory!
+transaction: RewardHistory!
 }
 type RecomputeGoalProgress {
 recomputed: Number!
@@ -418,12 +688,13 @@ recomputed: Number!
 type CreateGroup {
 user_id: Number!
 id: Number!
+name: String!
 color: String!
 created_at: Date!
 updated_at: Date!
-name: String!
 }
 type CompleteActivity {
+grantedRewards: [GrantedRewards]!
 user_id: Number!
 id: Number!
 activity_id: Number!
@@ -432,18 +703,41 @@ duration_minutes: Number
 completed_at: Date!
 metadata: Metadata
 }
+type GrantedRewards {
+user_id: Number!
+id: Number!
+image_asset_id: Number
+created_at: Date!
+activity_id: Number
+metadata: Object
+reward_definition_id: Number
+quantity: Number!
+type: RewardTransactionType!
+inventory_id: Number
+definition_name: String!
+definition_color: String!
+definition_icon: String
+source_type: String
+source_id: Number
+trigger_key: String
+rule_id: Number
+goal_id: Number
+completion_id: Number
+cycle_id: Number
+note: String
+}
 type LogTime {
 amount: Number!
 user_id: Number!
 id: Number!
-metric: GoalEventMetric!
 created_at: Date!
 activity_id: Number
 occurrence_date: String
 metadata: Object
-group_id: Number
 source_type: GoalEventSourceType!
 completion_id: Number
+metric: GoalEventMetric!
+group_id: Number
 occurred_at: Date!
 }
 scalar ID
@@ -458,6 +752,27 @@ scalar Date
 scalar JSON
 scalar String
 scalar Boolean
+enum RewardTransactionType {
+	earn
+	consume
+	delete
+	restore
+	adjust
+}
+enum RewardRuleMode {
+	fixed
+	probability
+	random_pool
+}
+enum RewardNudgeKind {
+	inventory_available
+	recently_earned
+	unconsumed_stack
+}
+enum INFO_SUCCESS {
+	info
+	success
+}
 enum GoalLifecyclePhase {
 	active
 	paused
@@ -524,24 +839,34 @@ enum GoalNudgeKind {
 	dependency_unlocked
 	goal_starting_soon
 }
-enum INFO_WARNING_SUCCESS {
+enum INFO_SUCCESS_WARNING {
 	info
-	warning
 	success
+	warning
 }
 enum WEEKLY_MONTHLY_EVERY_X_DAYS {
 	weekly
 	monthly
 	every_x_days
 }
-enum GoalEventMetric {
-	count
-	duration
-}
 enum GoalEventSourceType {
 	completion
 	time_log
 	manual
+}
+enum GoalEventMetric {
+	count
+	duration
+}
+enum NAME_QUANTITY_RECENTInput {
+	name
+	quantity
+	recent
+}
+enum FIXED_PROBABILITY_RANDOM_POOLInput {
+	fixed
+	probability
+	random_pool
 }
 enum COUNT_DURATIONInput {
 	count

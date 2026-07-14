@@ -151,3 +151,86 @@ export interface UpdateGoalInput {
   priority?: number
   sortOrder?: number
 }
+
+// ---------------------------------------------------------------------------
+// Rewards
+// ---------------------------------------------------------------------------
+
+export interface CreateRewardDefinitionInput {
+  name: string
+  description?: string | null
+  notes?: string | null
+  category?: string | null
+  tags?: string[] | null
+  color: string
+  icon?: string | null
+  imageAssetId?: number | null
+  stackable?: boolean | null
+  defaultQuantity?: number | null
+  sortOrder?: number | null
+}
+
+export interface UpdateRewardDefinitionInput {
+  name?: string
+  description?: string | null
+  notes?: string | null
+  category?: string | null
+  tags?: string[] | null
+  color?: string
+  icon?: string | null
+  imageAssetId?: number | null
+  stackable?: boolean | null
+  defaultQuantity?: number | null
+  sortOrder?: number | null
+}
+
+export interface AttachRewardRuleInput {
+  sourceType: string
+  sourceId: number
+  rewardDefinitionId: number
+  quantity?: number | null
+  mode?: 'fixed' | 'probability' | 'random_pool' | null
+  /** JSON-serializable rule config (once, cooldown_hours, probability, pool, …). */
+  configJson?: string | null
+  enabled?: boolean | null
+}
+
+export interface ConsumeRewardInput {
+  inventoryId: number
+  quantity?: number | null
+  note?: string | null
+}
+
+export interface DiscardRewardInput {
+  inventoryId: number
+  quantity?: number | null
+}
+
+export interface ManualGrantRewardInput {
+  rewardDefinitionId: number
+  quantity?: number | null
+  note?: string | null
+}
+
+export interface RewardDefinitionsFilter {
+  includeArchived?: boolean | null
+  search?: string | null
+  category?: string | null
+  limit?: number | null
+  offset?: number | null
+}
+
+export interface RewardInventoryFilter {
+  search?: string | null
+  stackableOnly?: boolean | null
+  sort?: 'recent' | 'name' | 'quantity' | null
+  limit?: number | null
+  offset?: number | null
+}
+
+export interface RewardHistoryFilter {
+  definitionId?: number | null
+  type?: string | null
+  limit?: number | null
+  offset?: number | null
+}
