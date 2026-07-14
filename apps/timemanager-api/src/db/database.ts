@@ -1,6 +1,11 @@
 import { Database } from './types/schema.ts'
-import { Pool } from 'pg'
+import { Pool, types } from 'pg'
 import { Kysely, PostgresDialect } from 'kysely'
+
+// Keep Postgres `date` as `YYYY-MM-DD` strings. The default pg parser turns
+// them into JS Date objects, which GraphQL then stringifies as full timestamps
+// (or Date.toString()) and breaks Flutter's date-only parsing.
+types.setTypeParser(types.builtins.DATE, (value: string) => value)
 
 const dialect = new PostgresDialect({
   pool: new Pool({

@@ -1,4 +1,5 @@
 import '../models/activity.dart';
+import 'date_only.dart';
 
 /// Expands activities into concrete dated occurrences within an inclusive range.
 List<ActivityOccurrence> expandOccurrences({
@@ -16,7 +17,7 @@ List<ActivityOccurrence> expandOccurrences({
     if (!activity.isRecurring) {
       final dateStr = activity.date;
       if (dateStr == null) continue;
-      final date = _parseDateOnly(dateStr);
+      final date = parseDateOnly(dateStr);
       if (_isInRange(date, rangeStart, rangeEnd)) {
         results.add(ActivityOccurrence(activity: activity, date: date));
       }
@@ -27,8 +28,8 @@ List<ActivityOccurrence> expandOccurrences({
     if (pattern == null) continue;
 
     final config = pattern.config;
-    final start = _parseDateOnly(config.startDate);
-    final end = config.endDate != null ? _parseDateOnly(config.endDate!) : null;
+    final start = parseDateOnly(config.startDate);
+    final end = config.endDate != null ? parseDateOnly(config.endDate!) : null;
 
     final windowStart =
         start.isAfter(rangeStart) ? start : rangeStart;
@@ -143,15 +144,6 @@ Iterable<ActivityOccurrence> _expandEveryXDays({
 
 DateTime _dateOnly(DateTime value) =>
     DateTime(value.year, value.month, value.day);
-
-DateTime _parseDateOnly(String value) {
-  final parts = value.split('-');
-  return DateTime(
-    int.parse(parts[0]),
-    int.parse(parts[1]),
-    int.parse(parts[2]),
-  );
-}
 
 bool _isInRange(DateTime date, DateTime from, DateTime to) =>
     !date.isBefore(from) && !date.isAfter(to);

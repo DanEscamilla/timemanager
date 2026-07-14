@@ -1,4 +1,5 @@
 import 'group.dart';
+import '../utils/date_only.dart';
 
 enum RecurrenceType {
   weekly,
@@ -158,7 +159,7 @@ class Activity {
       startTime: _formatTime(json['start_time']),
       endTime: _formatTime(json['end_time']),
       isRecurring: json['is_recurring'] as bool? ?? false,
-      date: json['date'] as String?,
+      date: asDateOnlyString(json['date']),
       groupId: json['group_id'] != null ? _asInt(json['group_id']) : null,
       group: groupJson != null ? ActivityGroup.fromJson(groupJson) : null,
       recurrencePattern:

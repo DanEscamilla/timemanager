@@ -10,6 +10,7 @@ import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
 import '../theme/tokens/app_radius.dart';
 import '../theme/tokens/app_spacing.dart';
+import '../utils/date_only.dart';
 import '../utils/recurrence_summary.dart';
 import '../widgets/app_card.dart';
 
@@ -80,7 +81,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
     );
 
     if (activity != null && !activity.isRecurring && activity.date != null) {
-      _oneOffDate = _parseDateOnly(activity.date!);
+      _oneOffDate = parseDateOnly(activity.date!);
     } else if (!_isRecurring) {
       _oneOffDate =
           widget.initialDate != null
@@ -89,9 +90,9 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
     }
 
     if (pattern != null) {
-      _recurrenceStartDate = _parseDateOnly(pattern.config.startDate);
+      _recurrenceStartDate = parseDateOnly(pattern.config.startDate);
       if (pattern.config.endDate != null) {
-        _recurrenceEndDate = _parseDateOnly(pattern.config.endDate!);
+        _recurrenceEndDate = parseDateOnly(pattern.config.endDate!);
       }
     } else {
       _recurrenceStartDate = _dateOnly(DateTime.now());
@@ -141,19 +142,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   DateTime _dateOnly(DateTime value) =>
       DateTime(value.year, value.month, value.day);
 
-  DateTime _parseDateOnly(String value) {
-    final parts = value.split('-');
-    return DateTime(
-      int.parse(parts[0]),
-      int.parse(parts[1]),
-      int.parse(parts[2]),
-    );
-  }
-
-  String _formatDate(DateTime date) =>
-      '${date.year.toString().padLeft(4, '0')}-'
-      '${date.month.toString().padLeft(2, '0')}-'
-      '${date.day.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime date) => dateToIso(date);
 
   String _displayDate(DateTime date) {
     final locale = Localizations.localeOf(context).toString();

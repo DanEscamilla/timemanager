@@ -45,6 +45,23 @@ void main() {
       expect(result, isEmpty);
     });
 
+    test('includes one-off activity when date is an ISO timestamp', () {
+      final activities = [
+        _activity(
+          id: 1,
+          isRecurring: false,
+          date: '2026-07-12T00:00:00.000Z',
+        ),
+      ];
+      final result = expandOccurrences(
+        activities: activities,
+        from: DateTime(2026, 7, 1),
+        to: DateTime(2026, 7, 31),
+      );
+      expect(result, hasLength(1));
+      expect(result.single.date, DateTime(2026, 7, 12));
+    });
+
     test('includes one-off activity whose date is in range', () {
       final activities = [
         _activity(id: 1, isRecurring: false, date: '2026-07-12'),

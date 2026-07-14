@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import '../theme/tokens/group_palette.dart';
+import '../utils/date_only.dart';
 
 enum GoalMetric { count, duration }
 
@@ -571,7 +572,7 @@ class ActivityCompletion {
       id: json['id'] as int,
       activityId: json['activity_id'] as int,
       userId: json['user_id'] as int? ?? 0,
-      occurrenceDate: json['occurrence_date'] as String,
+      occurrenceDate: asDateOnlyString(json['occurrence_date']) ?? '',
       durationMinutes: json['duration_minutes'] as int?,
       completedAt: DateTime.parse(json['completed_at'] as String),
     );

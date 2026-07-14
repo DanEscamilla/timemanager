@@ -109,6 +109,7 @@ GoRouter createAppRouter({
                   key: auth.calendarKey,
                   repository: auth.activityRepository,
                   groupRepository: auth.groupRepository,
+                  completionRepository: auth.completionRepository,
                   onChanged: () {
                     auth.activitiesKey.currentState?.reload();
                     auth.overviewKey.currentState?.reload();
