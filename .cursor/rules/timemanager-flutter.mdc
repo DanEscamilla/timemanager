@@ -19,4 +19,6 @@ Auth: email/password + OAuth against `user-manager-api`. Tokens are stored via `
 
 Dev workflow: `pnpm timemanager` starts the API stack only; launch the Flutter client from the IDE (**Run and Debug → timemanager**, Chrome `:4444`, hot reload on save). CLI alternatives: `nx serve timemanager` (`flutter run -d chrome --web-port=4444`; also starts `user-manager-api`), `nx test timemanager`, `nx run timemanager:analyze`, `nx run timemanager:pub-get`.
 
+Cloud APIs: `DOMAIN=… nx run timemanager:build-web` / `serve-cloud`, or IDE **timemanager (cloud)** with `config/cloud.dart-defines.json` (see `.ai/workflows.md`).
+
 Do not edit generated/platform output: `build/`, `.dart_tool/`, `android/`, `ios/`, `linux/`, `macos/`, `windows/` (unless a change genuinely requires touching a platform folder). Generated l10n Dart under `lib/l10n/app_localizations*.dart` is produced by `flutter gen-l10n` — edit `app_en.arb` / `l10n.yaml`, not the generated files by hand.

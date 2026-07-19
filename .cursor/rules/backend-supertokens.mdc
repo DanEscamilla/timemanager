@@ -10,7 +10,7 @@ This is the **shared SSO hub** for the monorepo (Flutter timemanager, React user
 Key files:
 
 - `index.ts` — entrypoint: initializes SuperTokens, CORS (React `:3000` + Flutter localhost origins), mounts SuperTokens middleware. Endpoints: `/hello` (public), `/sessioninfo` (session-protected), `/tenants` (multitenant list), `/auth/*` (SuperTokens).
-- `config.ts` — SuperTokens backend config (`connectionURI`, `appInfo`, `recipeList`). Session recipe accepts cookie (React) and header (Flutter) via `st-auth-mode`; access-token payload includes `email` for GraphQL user mapping. JWKS at `/auth/jwt/jwks.json`.
+- `config.ts` — SuperTokens backend config (`connectionURI`, `appInfo`, `recipeList`). Domains and Core URI come from env: `API_DOMAIN`, `WEBSITE_DOMAIN`, `ALLOWED_ORIGINS`, `SUPERTOKENS_CONNECTION_URI`, `PORT`. Session recipe accepts cookie (React) and header (Flutter) via `st-auth-mode`; access-token payload includes `email` for GraphQL user mapping. JWKS at `/auth/jwt/jwks.json`.
 
 Auth flow: clients never call the SuperTokens Core directly — they call this backend, which calls the Core. SuperTokens auto-handles requests under `${apiDomain}/auth`.
 

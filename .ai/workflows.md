@@ -49,6 +49,26 @@ nx build user-manager-api   # tsc
 nx run timemanager:analyze  # flutter analyze
 ```
 
+### Flutter against cloud (staging/production APIs)
+
+`ApiConfig` defaults to localhost. Override with `--dart-define` (or a defines file) so builds point at `auth.<domain>` / `api.<domain>`.
+
+```bash
+# one-time: copy and edit (or rely on DOMAIN below)
+cp apps/timemanager/config/cloud.dart-defines.json.example \
+   apps/timemanager/config/cloud.dart-defines.json
+
+# release web build baked with cloud URLs
+DOMAIN=example.com nx run timemanager:build-web
+
+# run Chrome against cloud APIs (no local API stack needed)
+DOMAIN=example.com nx run timemanager:serve-cloud
+```
+
+Resolution order for `with-cloud-apis.sh` / those targets: `AUTH_API_BASE_URL`+`API_BASE_URL` env → `config/cloud.dart-defines.json` → `DOMAIN`.
+
+IDE: **Run and Debug → timemanager (cloud)** (requires `config/cloud.dart-defines.json`). Local Chrome against cloud also needs `http://localhost:4444` in the auth API `ALLOWED_ORIGINS` (Terraform currently allows `app.` / `account.` only); macOS/iOS/Android clients are not subject to browser CORS.
+
 ## Smoke checks (after structural changes)
 
 Adapted from the migration plan's verification phase:
@@ -70,3 +90,15 @@ nx run authentik:up         # optional, independent stack
 2. GraphQL without `Authorization` → `401`.
 3. With a valid Bearer access token → activities scoped to the mapped local user.
 4. Sign out clears tokens and returns to the login screen.
+
+## AWS cloud deploy
+
+See [`.ai/deploy-aws.md`](deploy-aws.md) for Terraform bootstrap, API/web deploy scripts, auth hostnames, OAuth callbacks, smoke checks, and the CI/CD job mapping.
+
+Quick path (after `infra/aws` is configured):
+
+```bash
+cd infra/aws && terraform apply
+./infra/aws/scripts/deploy-apis.sh
+DOMAIN=example.com ./infra/aws/scripts/deploy-web.sh
+```

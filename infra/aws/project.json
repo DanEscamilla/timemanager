@@ -1,0 +1,43 @@
+{
+  "name": "timemanager-aws",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": ["scope:timemanager", "type:infra"],
+  "targets": {
+    "init": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "terraform init",
+        "cwd": "infra/aws"
+      }
+    },
+    "plan": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "terraform plan",
+        "cwd": "infra/aws"
+      }
+    },
+    "apply": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "terraform apply",
+        "cwd": "infra/aws"
+      }
+    },
+    "deploy-apis": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./infra/aws/scripts/deploy-apis.sh",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "deploy-web": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./infra/aws/scripts/deploy-web.sh",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}

@@ -20,15 +20,11 @@ import Session from "supertokens-auth-react/recipe/session";
 import { useState, useEffect } from "react";
 
 export function getApiDomain() {
-    const apiPort = 3001;
-    const apiUrl = `http://localhost:${apiPort}`;
-    return apiUrl;
+    return import.meta.env.VITE_API_DOMAIN ?? "http://localhost:3001";
 }
 
 export function getWebsiteDomain() {
-    const websitePort = 3000;
-    const websiteUrl = `http://localhost:${websitePort}`;
-    return websiteUrl;
+    return import.meta.env.VITE_WEBSITE_DOMAIN ?? "http://localhost:3000";
 }
 
 export const styleOverride = `

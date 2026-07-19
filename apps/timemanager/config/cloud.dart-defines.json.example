@@ -1,0 +1,4 @@
+{
+  "AUTH_API_BASE_URL": "https://auth.example.com",
+  "API_BASE_URL": "https://api.example.com"
+}

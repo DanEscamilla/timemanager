@@ -34,6 +34,21 @@
         "command": "flutter pub get",
         "cwd": "apps/timemanager"
       }
+    },
+    "build-web": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh build web --release",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "serve-cloud": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh run -d chrome --web-port=4444",
+        "cwd": "apps/timemanager"
+      }
     }
   }
 }

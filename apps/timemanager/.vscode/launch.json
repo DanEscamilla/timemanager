@@ -11,12 +11,35 @@
       "toolArgs": ["--web-port=4444"]
     },
     {
+      "name": "timemanager (cloud)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "chrome",
+      "toolArgs": [
+        "--web-port=4444",
+        "--dart-define-from-file=config/cloud.dart-defines.json"
+      ]
+    },
+    {
       "name": "timemanager (macos)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
       "flutterMode": "debug",
       "deviceId": "macos"
+    },
+    {
+      "name": "timemanager (macos, cloud)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "macos",
+      "toolArgs": [
+        "--dart-define-from-file=config/cloud.dart-defines.json"
+      ]
     },
     {
       "name": "timemanager (profile)",
@@ -35,6 +58,18 @@
       "flutterMode": "release",
       "deviceId": "chrome",
       "toolArgs": ["--web-port=4444"]
+    },
+    {
+      "name": "timemanager (release, cloud)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "release",
+      "deviceId": "chrome",
+      "toolArgs": [
+        "--web-port=4444",
+        "--dart-define-from-file=config/cloud.dart-defines.json"
+      ]
     }
   ]
 }

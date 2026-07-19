@@ -45,4 +45,7 @@ pnpm db:down          # stop the DB stack
 - [`.ai/architecture.md`](.ai/architecture.md) — system + data-flow diagram, how the apps relate
 - [`.ai/conventions.md`](.ai/conventions.md) — package managers, Nx tags, code style, testing, migrations
 - [`.ai/workflows.md`](.ai/workflows.md) — run/build/seed/migrate + smoke checks
+- [`.ai/deploy-aws.md`](.ai/deploy-aws.md) — AWS Terraform, deploy scripts, CI/CD contract
+- [`.ai/aws-architecture.md`](.ai/aws-architecture.md) — full vs simplified AWS layouts, comparison, cost notes
+- [`.ai/aws-concepts.md`](.ai/aws-concepts.md) — Route 53, ALB, ECS/Fargate, IAM vs SuperTokens, and related glossary
 - [`.ai/decisions.md`](.ai/decisions.md) — origin, locked-in decisions, out-of-scope/future work

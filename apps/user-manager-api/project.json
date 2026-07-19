@@ -26,6 +26,13 @@
         "command": "pnpm exec eslint .",
         "cwd": "apps/user-manager-api"
       }
+    },
+    "docker-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker build -f apps/user-manager-api/Dockerfile -t user-manager-api:local .",
+        "cwd": "{workspaceRoot}"
+      }
     }
   }
 }

@@ -15,6 +15,20 @@ import { MAX_ASSET_BYTES } from './assets/storage/types.ts'
 
 app.use(corsMiddleware)
 
+app.use(async (ctx, next) => {
+  const path = new URL(ctx.req.url).pathname
+  if (path === '/health' && ctx.req.method === 'GET') {
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    })
+  }
+  await next()
+})
+
 async function resolveUserIdFromRequest(
   authorization: string | undefined,
 ): Promise<number | null> {
@@ -130,7 +144,7 @@ app.use(async (ctx, next) => {
     })
   }
 
-  if (path !== '/graphql' && !path.endsWith('/graphql')) {
+  if (path === '/health' || (path !== '/graphql' && !path.endsWith('/graphql'))) {
     await next()
     return
   }

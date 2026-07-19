@@ -1,0 +1,75 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:timemanager/l10n/app_localizations.dart';
+import 'package:timemanager/screens/login_screen.dart';
+import 'package:timemanager/services/auth_service.dart';
+import 'package:timemanager/theme/app_theme.dart';
+import 'package:timemanager/widgets/app_card.dart';
+
+class _FakeAuthService extends AuthService {
+  @override
+  Future<bool> doesSessionExist() async => false;
+
+  @override
+  Future<bool> completeOAuthFromCurrentUri() async => false;
+
+  @override
+  Future<void> signOut() async {}
+}
+
+void main() {
+  Future<void> pumpLogin(
+    WidgetTester tester, {
+    Size size = const Size(390, 844),
+    double viewInsetBottom = 0,
+  }) async {
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1;
+    tester.view.viewInsets = FakeViewPadding(bottom: viewInsetBottom);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildLightTheme(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: LoginScreen(
+          authService: _FakeAuthService(),
+          onAuthenticated: () {},
+        ),
+      ),
+    );
+    await tester.pump();
+  }
+
+  testWidgets('login form sits on scaffold without a card surface', (
+    WidgetTester tester,
+  ) async {
+    await pumpLogin(tester);
+
+    expect(find.byType(AppCard), findsNothing);
+    expect(find.byType(Card), findsNothing);
+
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+    final theme = Theme.of(tester.element(find.byType(LoginScreen)));
+    expect(scaffold.backgroundColor ?? theme.scaffoldBackgroundColor,
+        theme.colorScheme.surface);
+  });
+
+  testWidgets('does not overflow when virtual keyboard is open', (
+    WidgetTester tester,
+  ) async {
+    // Short viewport with a tall keyboard inset (typical phone + keyboard).
+    await pumpLogin(
+      tester,
+      size: const Size(390, 400),
+      viewInsetBottom: 300,
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    expect(find.byType(TextFormField), findsNWidgets(2));
+  });
+}

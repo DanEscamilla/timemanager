@@ -25,6 +25,13 @@
         "command": "pnpm exec eslint .",
         "cwd": "apps/user-manager-web"
       }
+    },
+    "deploy-web": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./infra/aws/scripts/deploy-web.sh",
+        "cwd": "{workspaceRoot}"
+      }
     }
   }
 }

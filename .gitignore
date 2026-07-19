@@ -34,6 +34,21 @@ build/
 .env
 .env.*
 !.env.example
+!**/.env.example
+
+# Local Flutter cloud API overrides (copy from *.example)
+apps/timemanager/config/cloud.dart-defines.json
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+*_override.tf
+*.tfvars
+!*.tfvars.example
+!**/*.tfvars.example
 
 # Docker volumes / local data
 infra/**/data/

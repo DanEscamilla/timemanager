@@ -2,7 +2,6 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import EmailPassword from "supertokens-node/recipe/emailpassword";
 import ThirdParty from "supertokens-node/recipe/thirdparty";
-import type { ProviderInput } from "supertokens-node/recipe/thirdparty/types";
 import Passwordless from "supertokens-node/recipe/passwordless";
 import Session from "supertokens-node/recipe/session";
 import Dashboard from "supertokens-node/recipe/dashboard";
@@ -22,22 +21,37 @@ if (existsSync(envPath)) {
     process.loadEnvFile(envPath);
 }
 
+export function getPort(): number {
+    const raw = process.env.PORT;
+    if (raw) {
+        const parsed = Number(raw);
+        if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+    }
+    return 3001;
+}
+
 export function getApiDomain() {
-    const apiPort = 3001;
-    const apiUrl = `http://localhost:${apiPort}`;
-    return apiUrl;
+    return process.env.API_DOMAIN ?? `http://localhost:${getPort()}`;
 }
 
 export function getWebsiteDomain() {
-    const websitePort = 3000;
-    const websiteUrl = `http://localhost:${websitePort}`;
-    return websiteUrl;
+    return process.env.WEBSITE_DOMAIN ?? "http://localhost:3000";
 }
 
-/** Allow React (:3000) and Flutter web (dynamic localhost ports) in local dev. */
+function parseAllowedOrigins(): string[] {
+    const raw = process.env.ALLOWED_ORIGINS;
+    if (!raw?.trim()) return [];
+    return raw
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+}
+
+/** Allow React website domain, Flutter web, and explicit ALLOWED_ORIGINS. */
 export function isAllowedOrigin(origin: string | undefined): boolean {
     if (!origin) return false;
     if (origin === getWebsiteDomain()) return true;
+    if (parseAllowedOrigins().includes(origin)) return true;
     try {
         const url = new URL(origin);
         return url.hostname === "localhost" || url.hostname === "127.0.0.1";
@@ -48,7 +62,9 @@ export function isAllowedOrigin(origin: string | undefined): boolean {
 
 export const SuperTokensConfig: TypeInput = {
     supertokens: {
-        connectionURI: "https://try.supertokens.com",
+        connectionURI:
+            process.env.SUPERTOKENS_CONNECTION_URI ??
+            "https://try.supertokens.com",
     },
     appInfo: {
         appName: "Time Management",
@@ -134,11 +150,11 @@ export const SuperTokensConfig: TypeInput = {
 }),
         AccountLinking.init({
             shouldDoAutomaticAccountLinking: async (
-                newAccountInfo: AccountInfoWithRecipeId,
-                user: User | undefined,
-                session: any,
-                tenantId: string,
-                userContext: any
+                _newAccountInfo: AccountInfoWithRecipeId,
+                _user: User | undefined,
+                _session: any,
+                _tenantId: string,
+                _userContext: any
             ) => {
                 return {
                     shouldAutomaticallyLink: true,

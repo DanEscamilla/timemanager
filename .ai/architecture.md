@@ -51,3 +51,9 @@ flowchart TB
 | pgAdmin | `:8080` |
 
 > Note: `timemanager-api` and `user-manager-web` both default to `:3000`. They belong to different product areas and are not normally run together, but be aware of the clash if you do.
+
+## Cloud (AWS)
+
+Staging/production packaging is documented in [`.ai/deploy-aws.md`](deploy-aws.md): ECS Fargate for the two APIs, RDS for Postgres, S3 + CloudFront for Flutter web and `user-manager-web`, with hostnames `auth.` / `api.` / `app.` / `account.` under one apex domain.
+
+Full vs simplified (API-only) layouts, networking tradeoffs, and cost comparison: [`aws-architecture.md`](aws-architecture.md).

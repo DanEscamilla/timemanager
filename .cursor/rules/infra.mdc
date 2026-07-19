@@ -1,14 +1,16 @@
 ---
-description: Dockerized infrastructure conventions for infra/ (Postgres, pgAdmin, Authentik).
+description: Dockerized infrastructure conventions for infra/ (Postgres, pgAdmin, Authentik, AWS).
 globs: infra/**
 ---
 
-`infra/` holds docker-compose stacks, driven via Nx `up`/`down`/`logs` targets (`nx:run-commands` wrapping `docker compose`).
+`infra/` holds docker-compose stacks and AWS Terraform, driven via Nx targets (`nx:run-commands`).
 
 - `infra/timemanager-db` — Postgres 15 (`:5432`, db `timemanager`, user `postgres`) + pgAdmin (`:8080`). Volumes live under `./data/` (gitignored). Start with `pnpm db:up` (also runs migrations) or `nx run timemanager-db:up` (containers only).
 - `infra/authentik` — Authentik auth stack; independent from the DB stack. Keep `.env` gitignored and `.env.example` in sync (`PG_PASS`, `AUTHENTIK_SECRET_KEY`). Compose expects `media/`, `certs/`, `custom-templates/` dirs.
+- `infra/aws` — Terraform for ECS Fargate, RDS, ECR, ALB, S3/CloudFront, Secrets Manager. Deploy scripts in `infra/aws/scripts/`. See [`.ai/deploy-aws.md`](mdc:.ai/deploy-aws.md). Do not commit `terraform.tfvars` or state files.
 
 Rules:
 
 - Never commit `.env` files or `data/` volume contents.
 - Do not migrate existing volume data between machines; a fresh local DB re-seeded via `nx run timemanager-api:seed` is the expected workflow.
+- Keep AWS secrets in Secrets Manager / local `terraform.tfvars` (gitignored); use `terraform.tfvars.example` as the template.

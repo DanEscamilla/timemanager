@@ -1,0 +1,11 @@
+# Ignore everything by default when building from monorepo root; Dockerfiles
+# explicitly COPY what they need. Keep this file empty of broad excludes that
+# would hide lockfiles — each app Dockerfile lists its own COPY paths.
+.git
+.nx
+**/node_modules
+**/dist
+**/build
+**/.dart_tool
+**/data
+**/.env

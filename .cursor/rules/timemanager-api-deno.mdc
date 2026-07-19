@@ -14,7 +14,7 @@ Source layout (`src/`):
 - `graphql/` — `types.ts`, `resolvers/resolvers.ts` (user id from `getContext()`, not client input).
 - `db/` — `database.ts`, `users.ts` (upsert by `auth_user_id`), `types/schema.ts`, `migrations/`, `seed.ts`.
 
-Auth: every `/graphql` request requires `Authorization: Bearer <SuperTokens access token>`. JWKS is loaded from `AUTH_API_DOMAIN` (default `http://localhost:3001`) at `/auth/jwt/jwks.json`. Local users are linked via `users.auth_user_id`.
+Auth: every `/graphql` request requires `Authorization: Bearer <SuperTokens access token>`. JWKS is loaded from `AUTH_API_DOMAIN` (default `http://localhost:3001`) at `/auth/jwt/jwks.json`. Local users are linked via `users.auth_user_id`. Postgres comes from `DATABASE_URL` or `PG*` env vars (defaults match local docker-compose). Public `GET /health` is unauthenticated for ALB checks.
 
 Commands (via `deno task`, or the Nx wrappers `nx serve|build|run timemanager-api`):
 
