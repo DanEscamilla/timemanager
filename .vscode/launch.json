@@ -1,0 +1,43 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "timemanager",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/timemanager",
+      "program": "${workspaceFolder}/apps/timemanager/lib/main.dart",
+      "flutterMode": "debug",
+      "toolArgs": ["--web-port=4444"]
+    },
+    {
+      "name": "timemanager (macos)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/timemanager",
+      "program": "${workspaceFolder}/apps/timemanager/lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "macos"
+    },
+    {
+      "name": "timemanager (profile)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/timemanager",
+      "program": "${workspaceFolder}/apps/timemanager/lib/main.dart",
+      "flutterMode": "profile",
+      "deviceId": "chrome",
+      "toolArgs": ["--web-port=4444"]
+    },
+    {
+      "name": "timemanager (release)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/timemanager",
+      "program": "${workspaceFolder}/apps/timemanager/lib/main.dart",
+      "flutterMode": "release",
+      "deviceId": "chrome",
+      "toolArgs": ["--web-port=4444"]
+    }
+  ]
+}
