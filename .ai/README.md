@@ -18,9 +18,10 @@ AGENTS.md                      # root entrypoint: map, golden rules, links
 
 - [`architecture.md`](architecture.md) — system + data-flow diagram, how apps relate and their ports.
 - [`conventions.md`](conventions.md) — package managers per runtime, Nx tag taxonomy, code style, testing, migrations.
+- [`local-setup.md`](local-setup.md) — new-machine setup scripts, tool inventory, first run, script maintenance.
 - [`workflows.md`](workflows.md) — run/build/seed/migrate each app + smoke checks.
 - [`decisions.md`](decisions.md) — origin/history, locked-in decisions, out-of-scope/future work.
 
 ## Maintaining this handbook
 
-When project structure, ports, runtimes, or conventions change, update the relevant `.ai/` doc and any affected `.cursor/rules/*.mdc`. Prefer editing existing docs over adding new ones.
+When project structure, ports, runtimes, or conventions change, update the relevant `.ai/` doc and any affected `.cursor/rules/*.mdc`. Prefer editing existing docs over adding new ones. If a **new local-dev tool** is required on developer machines, also update [`local-setup.md`](local-setup.md) and `scripts/setup-*.sh`.

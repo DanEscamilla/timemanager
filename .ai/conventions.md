@@ -14,6 +14,7 @@ Each app owns its runtime and package manager. **Do not mix them.**
 - pnpm is configured at the root (`pnpm-workspace.yaml`) for **Node apps only**. Node version is pinned in `.nvmrc` (20).
 - `timemanager-api` is Deno: declare deps in `deno.json` `imports`; never introduce npm/pnpm/Bun tooling there.
 - Run tasks through Nx from the repo root rather than invoking package managers directly where possible.
+- **Machine-level tools** (runtimes, Docker, Android SDK, Xcode, etc.) are installed by `scripts/setup-*.sh`. If you add or change a required local-dev tool, update [local-setup.md](local-setup.md) and those scripts in the same change — see the maintenance checklist in that doc.
 
 ## Nx tag taxonomy
 

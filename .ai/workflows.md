@@ -2,6 +2,16 @@
 
 All commands run from the repo root unless noted. Prefer Nx targets and the root `package.json` convenience scripts.
 
+## New machine
+
+Install local-dev tools (Node 20, pnpm, Deno, Flutter, Docker, Android; plus Xcode/CocoaPods on macOS) with:
+
+```bash
+./scripts/setup-macos.sh    # or ./scripts/setup-linux.sh
+```
+
+Full inventory, manual steps, and how to keep the scripts in sync: [local-setup.md](local-setup.md).
+
 ## Run the apps
 
 ```bash

@@ -21,3 +21,4 @@ Golden rules:
 - Node apps use **pnpm**; `timemanager-api` uses **Deno**; `timemanager` uses **Flutter**.
 - Do not hand-edit generated output (`dist/`, `.nx/cache/`, Flutter `build/`, `.dart_tool/`, `node_modules/`, docker `data/`).
 - Check settled choices/scope in [.ai/decisions.md](mdc:.ai/decisions.md) before structural changes.
+- New local runtime/CLI → update `scripts/setup-*.sh` and [.ai/local-setup.md](mdc:.ai/local-setup.md) together.

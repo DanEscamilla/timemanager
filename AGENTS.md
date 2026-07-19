@@ -28,6 +28,16 @@ Data flow: Flutter authenticates via SuperTokens (`user-manager-api` `:3001`), t
 - **Never hand-edit generated/vendored output**: `dist/`, `.nx/cache/`, Flutter `build/`, `.dart_tool/`, `node_modules/`, docker `data/` volumes.
 - **Secrets stay out of git**: `.env` files are gitignored; keep `.env.example` current.
 - **Respect settled decisions and scope** — see [`.ai/decisions.md`](.ai/decisions.md) before proposing structural changes.
+- **New local runtime/CLI → update setup scripts** — keep [`.ai/local-setup.md`](.ai/local-setup.md) and `scripts/setup-*.sh` in sync (see that doc’s maintenance checklist).
+
+## New machine
+
+```bash
+./scripts/setup-macos.sh    # macOS: APIs + Flutter web/iOS/Android tooling
+./scripts/setup-linux.sh    # Linux: APIs + Flutter web/Android tooling
+```
+
+Details: [`.ai/local-setup.md`](.ai/local-setup.md).
 
 ## Common commands
 
@@ -44,6 +54,7 @@ pnpm db:down          # stop the DB stack
 
 - [`.ai/architecture.md`](.ai/architecture.md) — system + data-flow diagram, how the apps relate
 - [`.ai/conventions.md`](.ai/conventions.md) — package managers, Nx tags, code style, testing, migrations
+- [`.ai/local-setup.md`](.ai/local-setup.md) — new-machine scripts, tool inventory, first run
 - [`.ai/workflows.md`](.ai/workflows.md) — run/build/seed/migrate + smoke checks
 - [`.ai/deploy-aws.md`](.ai/deploy-aws.md) — AWS Terraform, deploy scripts, CI/CD contract
 - [`.ai/aws-architecture.md`](.ai/aws-architecture.md) — full vs simplified AWS layouts, comparison, cost notes
