@@ -42,6 +42,28 @@
       ]
     },
     {
+      "name": "timemanager (ios, cloud)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "iphone",
+      "toolArgs": [
+        "--dart-define-from-file=config/cloud.dart-defines.json"
+      ]
+    },
+    {
+      "name": "timemanager (android, cloud)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "android",
+      "toolArgs": [
+        "--dart-define-from-file=config/cloud.dart-defines.json"
+      ]
+    },
+    {
       "name": "timemanager (profile)",
       "request": "launch",
       "type": "dart",

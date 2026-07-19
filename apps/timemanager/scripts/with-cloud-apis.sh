@@ -8,7 +8,9 @@
 #
 # Usage (from apps/timemanager or via Nx):
 #   DOMAIN=example.com ./scripts/with-cloud-apis.sh build web --release
-#   DOMAIN=example.com ./scripts/with-cloud-apis.sh run -d chrome --web-port=4444
+#   DOMAIN=example.com ./scripts/with-cloud-apis.sh build macos --release
+#   DOMAIN=example.com ./scripts/with-cloud-apis.sh build apk --release
+#   DOMAIN=example.com ./scripts/with-cloud-apis.sh run -d macos
 set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"

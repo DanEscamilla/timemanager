@@ -42,11 +42,68 @@
         "cwd": "apps/timemanager"
       }
     },
+    "build-macos": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh build macos --release",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "build-ios": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh build ios --release",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "build-ipa": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh build ipa --release",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "build-apk": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh build apk --release",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "build-appbundle": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh build appbundle --release",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "build-linux": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh build linux --release",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "build-windows": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh build windows --release",
+        "cwd": "apps/timemanager"
+      }
+    },
     "serve-cloud": {
       "executor": "nx:run-commands",
       "continuous": true,
       "options": {
         "command": "./scripts/with-cloud-apis.sh run -d chrome --web-port=4444",
+        "cwd": "apps/timemanager"
+      }
+    },
+    "serve-cloud-macos": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "./scripts/with-cloud-apis.sh run -d macos",
         "cwd": "apps/timemanager"
       }
     }

@@ -58,16 +58,24 @@ nx run timemanager:analyze  # flutter analyze
 cp apps/timemanager/config/cloud.dart-defines.json.example \
    apps/timemanager/config/cloud.dart-defines.json
 
-# release web build baked with cloud URLs
+# release builds baked with cloud URLs
 DOMAIN=example.com nx run timemanager:build-web
+DOMAIN=example.com nx run timemanager:build-macos
+DOMAIN=example.com nx run timemanager:build-ios        # .app (needs Xcode signing for device)
+DOMAIN=example.com nx run timemanager:build-ipa        # App Store / TestFlight archive
+DOMAIN=example.com nx run timemanager:build-apk        # Android sideload
+DOMAIN=example.com nx run timemanager:build-appbundle  # Play Store
+DOMAIN=example.com nx run timemanager:build-linux
+DOMAIN=example.com nx run timemanager:build-windows
 
-# run Chrome against cloud APIs (no local API stack needed)
+# run against cloud APIs (no local API stack needed)
 DOMAIN=example.com nx run timemanager:serve-cloud
+DOMAIN=example.com nx run timemanager:serve-cloud-macos
 ```
 
 Resolution order for `with-cloud-apis.sh` / those targets: `AUTH_API_BASE_URL`+`API_BASE_URL` env → `config/cloud.dart-defines.json` → `DOMAIN`.
 
-IDE: **Run and Debug → timemanager (cloud)** (requires `config/cloud.dart-defines.json`). Local Chrome against cloud also needs `http://localhost:4444` in the auth API `ALLOWED_ORIGINS` (Terraform currently allows `app.` / `account.` only); macOS/iOS/Android clients are not subject to browser CORS.
+IDE: **Run and Debug → timemanager (cloud)** / **(macos, cloud)** / **(ios, cloud)** / **(android, cloud)** (requires `config/cloud.dart-defines.json`). Auth CORS already allows `localhost` / `127.0.0.1`; native clients are not subject to browser CORS.
 
 ## Smoke checks (after structural changes)
 

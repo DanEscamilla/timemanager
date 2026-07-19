@@ -138,4 +138,4 @@ Map future pipeline jobs 1:1 to this sequence:
 | `user-manager-web` | `VITE_API_DOMAIN`, `VITE_WEBSITE_DOMAIN` |
 | Flutter | `--dart-define=AUTH_API_BASE_URL=...` `--dart-define=API_BASE_URL=...` (via `DOMAIN=… nx run timemanager:build-web` or `config/cloud.dart-defines.json`) |
 
-Nx targets: `timemanager:build-web`, `timemanager:serve-cloud`, `user-manager-api:docker-build`, `timemanager-api:docker-build`, `timemanager-aws:plan|apply`.
+Nx targets: `timemanager:build-web|build-macos|build-ios|build-ipa|build-apk|build-appbundle|…`, `timemanager:serve-cloud`, `user-manager-api:docker-build`, `timemanager-api:docker-build`, `timemanager-aws:plan|apply`.

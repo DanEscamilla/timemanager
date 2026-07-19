@@ -8,8 +8,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 /// `--dart-define=AUTH_API_BASE_URL=https://auth.example.com`
 /// `--dart-define=API_BASE_URL=https://api.example.com`
 ///
-/// Convenience: `DOMAIN=example.com nx run timemanager:build-web`,
-/// `config/cloud.dart-defines.json`, or IDE launch **timemanager (cloud)**.
+/// Convenience: `DOMAIN=example.com nx run timemanager:build-macos` (etc.),
+/// `config/cloud.dart-defines.json`, or IDE **timemanager (cloud)**.
 class ApiConfig {
   static const int _authPort = 3001;
   static const int _apiPort = 3000;
