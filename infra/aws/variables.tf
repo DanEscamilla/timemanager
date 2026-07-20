@@ -101,3 +101,13 @@ variable "oauth_secrets" {
   default     = {}
   sensitive   = true
 }
+
+variable "monthly_budget_amount" {
+  description = "Monthly AWS cost budget in USD. At 100% actual spend, email + kill-switch Lambda hibernate the stack."
+  type        = number
+}
+
+variable "budget_alert_email" {
+  description = "Email for budget notifications (must confirm the SNS subscription once)."
+  type        = string
+}

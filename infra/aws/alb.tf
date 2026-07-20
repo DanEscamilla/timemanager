@@ -1,4 +1,5 @@
 resource "aws_lb" "main" {
+  count              = local.edge_enabled ? 1 : 0
   name               = "${local.name_prefix}-alb"
   internal           = false
   load_balancer_type = "application"
@@ -8,6 +9,7 @@ resource "aws_lb" "main" {
   tags = local.common_tags
 }
 
+# Target groups stay while hibernating so ECS services can keep load_balancer blocks.
 resource "aws_lb_target_group" "auth" {
   name        = "${local.name_prefix}-auth"
   port        = 3001
@@ -47,7 +49,8 @@ resource "aws_lb_target_group" "api" {
 }
 
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.main.arn
+  count             = local.edge_enabled ? 1 : 0
+  load_balancer_arn = aws_lb.main[0].arn
   port              = 80
   protocol          = "HTTP"
 
@@ -62,7 +65,8 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_lb_listener" "https" {
-  load_balancer_arn = aws_lb.main.arn
+  count             = local.edge_enabled ? 1 : 0
+  load_balancer_arn = aws_lb.main[0].arn
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
@@ -79,7 +83,8 @@ resource "aws_lb_listener" "https" {
 }
 
 resource "aws_lb_listener_rule" "auth" {
-  listener_arn = aws_lb_listener.https.arn
+  count        = local.edge_enabled ? 1 : 0
+  listener_arn = aws_lb_listener.https[0].arn
   priority     = 10
 
   action {
@@ -95,7 +100,8 @@ resource "aws_lb_listener_rule" "auth" {
 }
 
 resource "aws_lb_listener_rule" "api" {
-  listener_arn = aws_lb_listener.https.arn
+  count        = local.edge_enabled ? 1 : 0
+  listener_arn = aws_lb_listener.https[0].arn
   priority     = 20
 
   action {

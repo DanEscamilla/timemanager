@@ -217,7 +217,7 @@ resource "aws_ecs_service" "auth" {
   name                   = "user-manager-api"
   cluster                = aws_ecs_cluster.main.id
   task_definition        = aws_ecs_task_definition.auth.arn
-  desired_count          = var.desired_count
+  desired_count          = local.ecs_desired_count
   launch_type            = "FARGATE"
   enable_execute_command = true
 
@@ -233,7 +233,8 @@ resource "aws_ecs_service" "auth" {
     container_port   = 3001
   }
 
-  depends_on = [aws_lb_listener.https]
+  # Target groups persist while hibernating (ALB/listeners are destroyed).
+  depends_on = [aws_lb_target_group.auth]
 
   tags = local.common_tags
 
@@ -246,7 +247,7 @@ resource "aws_ecs_service" "api" {
   name                   = "timemanager-api"
   cluster                = aws_ecs_cluster.main.id
   task_definition        = aws_ecs_task_definition.api.arn
-  desired_count          = var.desired_count
+  desired_count          = local.ecs_desired_count
   launch_type            = "FARGATE"
   enable_execute_command = true
 
@@ -265,7 +266,7 @@ resource "aws_ecs_service" "api" {
     container_port   = 3000
   }
 
-  depends_on = [aws_lb_listener.https, aws_db_instance.main]
+  depends_on = [aws_lb_target_group.api, aws_db_instance.main]
 
   tags = local.common_tags
 

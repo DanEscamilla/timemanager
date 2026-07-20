@@ -33,6 +33,7 @@ resource "aws_cloudfront_origin_access_control" "web" {
 }
 
 resource "aws_cloudfront_distribution" "flutter_web" {
+  count               = local.edge_enabled ? 1 : 0
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "${local.name_prefix} Flutter web"
@@ -90,6 +91,7 @@ resource "aws_cloudfront_distribution" "flutter_web" {
 }
 
 resource "aws_cloudfront_distribution" "user_manager_web" {
+  count               = local.edge_enabled ? 1 : 0
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "${local.name_prefix} user-manager-web"
@@ -146,6 +148,8 @@ resource "aws_cloudfront_distribution" "user_manager_web" {
 }
 
 data "aws_iam_policy_document" "flutter_web_oac" {
+  count = local.edge_enabled ? 1 : 0
+
   statement {
     principals {
       type        = "Service"
@@ -156,12 +160,14 @@ data "aws_iam_policy_document" "flutter_web_oac" {
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.flutter_web.arn]
+      values   = [aws_cloudfront_distribution.flutter_web[0].arn]
     }
   }
 }
 
 data "aws_iam_policy_document" "user_manager_web_oac" {
+  count = local.edge_enabled ? 1 : 0
+
   statement {
     principals {
       type        = "Service"
@@ -172,17 +178,19 @@ data "aws_iam_policy_document" "user_manager_web_oac" {
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.user_manager_web.arn]
+      values   = [aws_cloudfront_distribution.user_manager_web[0].arn]
     }
   }
 }
 
 resource "aws_s3_bucket_policy" "flutter_web" {
+  count  = local.edge_enabled ? 1 : 0
   bucket = aws_s3_bucket.flutter_web.id
-  policy = data.aws_iam_policy_document.flutter_web_oac.json
+  policy = data.aws_iam_policy_document.flutter_web_oac[0].json
 }
 
 resource "aws_s3_bucket_policy" "user_manager_web" {
+  count  = local.edge_enabled ? 1 : 0
   bucket = aws_s3_bucket.user_manager_web.id
-  policy = data.aws_iam_policy_document.user_manager_web_oac.json
+  policy = data.aws_iam_policy_document.user_manager_web_oac[0].json
 }

@@ -1,5 +1,21 @@
+data "aws_caller_identity" "current" {}
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+# Created by infra/aws/bootstrap; updated by infra-down/up scripts and the budget kill switch.
+data "aws_ssm_parameter" "hibernating" {
+  name = "/${var.project}-${var.environment}/hibernating"
+}
+
 locals {
   name_prefix = "${var.project}-${var.environment}"
+
+  # SSM String params are sensitive by default; this flag is not a secret.
+  hibernating       = nonsensitive(data.aws_ssm_parameter.hibernating.value) == "true"
+  create_nat        = var.create_nat_gateway && !local.hibernating
+  edge_enabled      = !local.hibernating
+  ecs_desired_count = local.hibernating ? 0 : var.desired_count
 
   auth_hostname    = "auth.${var.domain_name}"
   api_hostname     = "api.${var.domain_name}"
@@ -18,9 +34,4 @@ locals {
     Environment = var.environment
     ManagedBy   = "terraform"
   }
-}
-
-data "aws_caller_identity" "current" {}
-data "aws_availability_zones" "available" {
-  state = "available"
 }

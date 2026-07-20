@@ -27,8 +27,10 @@ Infra lives in [`infra/aws/`](../infra/aws/). Local Docker Postgres (`infra/time
 ```bash
 cd infra/aws/bootstrap
 terraform init
-terraform apply -var='project=timemanager' -var='aws_region=us-east-1'
+terraform apply -var='project=timemanager' -var='environment=staging' -var='aws_region=us-east-1'
 ```
+
+Bootstrap creates the S3 state bucket, optional DynamoDB lock table, and the SSM parameter `/timemanager-staging/hibernating` (default `false`). The main stack **reads** that parameter; `up`/`down` scripts and the budget kill-switch Lambda update it.
 
 Set the `backend "s3"` bucket in [`infra/aws/versions.tf`](../infra/aws/versions.tf) to the bootstrap `state_bucket` output (locking uses `use_lockfile`; the bootstrap DynamoDB table is optional/legacy), then:
 
@@ -37,17 +39,40 @@ cd infra/aws
 terraform init -migrate-state
 ```
 
+If you bootstrapped before hibernation existed, re-apply bootstrap so the SSM parameter is created before the next main-stack plan.
+
+### Existing stack: Terraform state moves
+
+Hibernation wraps ALB / listeners / CloudFront / bucket policies in `count`. Before the first plan after pulling these changes, move addresses so Terraform does not destroy/recreate them:
+
+```bash
+cd infra/aws
+terraform state mv 'aws_lb.main' 'aws_lb.main[0]'
+terraform state mv 'aws_lb_listener.http' 'aws_lb_listener.http[0]'
+terraform state mv 'aws_lb_listener.https' 'aws_lb_listener.https[0]'
+terraform state mv 'aws_lb_listener_rule.auth' 'aws_lb_listener_rule.auth[0]'
+terraform state mv 'aws_lb_listener_rule.api' 'aws_lb_listener_rule.api[0]'
+terraform state mv 'aws_cloudfront_distribution.flutter_web' 'aws_cloudfront_distribution.flutter_web[0]'
+terraform state mv 'aws_cloudfront_distribution.user_manager_web' 'aws_cloudfront_distribution.user_manager_web[0]'
+terraform state mv 'aws_s3_bucket_policy.flutter_web' 'aws_s3_bucket_policy.flutter_web[0]'
+terraform state mv 'aws_s3_bucket_policy.user_manager_web' 'aws_s3_bucket_policy.user_manager_web[0]'
+```
+
+Then set `monthly_budget_amount` / `budget_alert_email` in `terraform.tfvars` and `terraform apply`.
+
 ## Configure and apply infrastructure
 
 ```bash
 cd infra/aws
 cp terraform.tfvars.example terraform.tfvars
-# edit domain_name, hosted_zone_id, oauth_secrets, etc.
+# edit domain_name, hosted_zone_id, monthly_budget_amount, budget_alert_email, oauth_secrets, etc.
 terraform plan
 terraform apply
 ```
 
-First apply creates networking, RDS, ECR, ALB, CloudFront, Secrets Manager, and ECS services with **`desired_count = 0`** until images exist.
+First apply creates networking, RDS, ECR, ALB, CloudFront, Secrets Manager, a monthly cost budget + kill-switch Lambda, and ECS services with **`desired_count = 0`** until images exist.
+
+After apply, confirm the SNS email subscription for budget alerts (inbox subject like **AWS Notification - Subscription Confirmation**).
 
 ### Auth / CORS / OAuth (cloud)
 
@@ -69,7 +94,39 @@ Pass provider client IDs/secrets via `oauth_secrets` in `terraform.tfvars` (merg
 
 ## Local env for scripts
 
-Copy [`infra/aws/.local.env.example`](../infra/aws/.local.env.example) → `infra/aws/.local.env` (gitignored). `deploy-apis.sh`, `deploy-web.sh`, `check-health.sh`, and `ecs-shell.sh` load it automatically. Already-exported shell vars win over the file. Override path with `LOCAL_ENV_FILE=/path/to/file`.
+Copy [`infra/aws/.local.env.example`](../infra/aws/.local.env.example) → `infra/aws/.local.env` (gitignored). `deploy-apis.sh`, `deploy-web.sh`, `check-health.sh`, `ecs-shell.sh`, `infra-down.sh`, and `infra-up.sh` load it automatically. Already-exported shell vars win over the file. Override path with `LOCAL_ENV_FILE=/path/to/file`.
+
+## Hibernate / wake (cost control)
+
+Like docker-compose down/up for the staging stack. Hibernation keeps VPC, ECS services, RDS data, ECR, S3, secrets, and ACM; sleeps ECS (`desired_count = 0`); **stops** RDS; and destroys NAT, ALB, CloudFront, and Route 53 aliases. Residual cost is mostly RDS storage + small fixed items (not NAT/ALB/Fargate).
+
+```bash
+# from repo root
+nx run timemanager-aws:down   # or ./infra/aws/scripts/infra-down.sh
+nx run timemanager-aws:up     # or ./infra/aws/scripts/infra-up.sh
+```
+
+`down` sets SSM `hibernating=true`, runs `terraform apply`, then stops RDS. `up` starts RDS, clears the flag, applies Terraform (recreates edge), then runs `deploy-apis.sh` and `deploy-web.sh`.
+
+**RDS caveat:** AWS may auto-restart a stopped instance after ~7 days. Re-run `down` if that happens while you still want the stack asleep.
+
+### Monthly budget + kill switch
+
+Configure in `terraform.tfvars` (see `terraform.tfvars.example`):
+
+- `monthly_budget_amount` — USD limit for the calendar month
+- `budget_alert_email` — notified via the budget SNS topic
+
+At **100% actual** spend, SNS emails you and invokes a Lambda that sets hibernating, scales ECS to 0, stops RDS, deletes NAT/ALB, and disables CloudFront (same intent as `down`). Run `nx run timemanager-aws:down` afterward if you want Terraform state fully reconciled.
+
+Test the kill switch without waiting for spend:
+
+```bash
+aws sns publish \
+  --topic-arn "$(cd infra/aws && terraform output -raw budget_sns_topic_arn)" \
+  --subject "Test budget kill switch" \
+  --message "manual test"
+```
 
 ## Deploy APIs (images + migrate + ECS)
 
@@ -166,4 +223,4 @@ Map future pipeline jobs 1:1 to this sequence:
 | `user-manager-web` | `VITE_API_DOMAIN`, `VITE_WEBSITE_DOMAIN` |
 | Flutter | `--dart-define=AUTH_API_BASE_URL=...` `--dart-define=API_BASE_URL=...` (via `DOMAIN=… nx run timemanager:build-web` or `config/cloud.dart-defines.json`) |
 
-Nx targets: `timemanager:build-web|build-macos|build-ios|build-ipa|build-apk|build-appbundle|…`, `timemanager:serve-cloud`, `user-manager-api:docker-build`, `timemanager-api:docker-build`, `timemanager-aws:plan|apply`.
+Nx targets: `timemanager:build-web|build-macos|build-ios|build-ipa|build-apk|build-appbundle|…`, `timemanager:serve-cloud`, `user-manager-api:docker-build`, `timemanager-api:docker-build`, `timemanager-aws:plan|apply|up|down|health|deploy-apis|deploy-web`.

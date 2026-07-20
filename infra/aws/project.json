@@ -52,6 +52,20 @@
         "command": "./infra/aws/scripts/ecs-shell.sh",
         "cwd": "{workspaceRoot}"
       }
+    },
+    "down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./infra/aws/scripts/infra-down.sh",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "up": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./infra/aws/scripts/infra-up.sh",
+        "cwd": "{workspaceRoot}"
+      }
     }
   }
 }

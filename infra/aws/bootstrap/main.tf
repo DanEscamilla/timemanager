@@ -23,6 +23,11 @@ variable "project" {
   default = "timemanager"
 }
 
+variable "environment" {
+  type    = string
+  default = "staging"
+}
+
 variable "aws_region" {
   type    = string
   default = "us-east-1"
@@ -33,6 +38,27 @@ provider "aws" {
 }
 
 data "aws_caller_identity" "current" {}
+
+locals {
+  name_prefix = "${var.project}-${var.environment}"
+}
+
+# Hibernation flag for the main stack. Scripts and the budget kill-switch Lambda
+# update this value; Terraform in infra/aws only reads it (never overwrites).
+resource "aws_ssm_parameter" "hibernating" {
+  name  = "/${local.name_prefix}/hibernating"
+  type  = "String"
+  value = "false"
+
+  tags = {
+    Name      = "${local.name_prefix}-hibernating"
+    ManagedBy = "terraform"
+  }
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
 
 resource "aws_s3_bucket" "tfstate" {
   bucket = "${var.project}-tfstate-${data.aws_caller_identity.current.account_id}"
@@ -89,4 +115,8 @@ output "state_bucket" {
 
 output "lock_table" {
   value = aws_dynamodb_table.tf_locks.name
+}
+
+output "hibernating_parameter_name" {
+  value = aws_ssm_parameter.hibernating.name
 }

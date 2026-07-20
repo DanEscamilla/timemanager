@@ -3,7 +3,7 @@ output "vpc_id" {
 }
 
 output "alb_dns_name" {
-  value = aws_lb.main.dns_name
+  value = local.edge_enabled ? aws_lb.main[0].dns_name : null
 }
 
 output "ecr_auth_repository_url" {
@@ -39,11 +39,11 @@ output "user_manager_web_bucket" {
 }
 
 output "flutter_web_distribution_id" {
-  value = aws_cloudfront_distribution.flutter_web.id
+  value = local.edge_enabled ? aws_cloudfront_distribution.flutter_web[0].id : null
 }
 
 output "user_manager_web_distribution_id" {
-  value = aws_cloudfront_distribution.user_manager_web.id
+  value = local.edge_enabled ? aws_cloudfront_distribution.user_manager_web[0].id : null
 }
 
 output "hostnames" {
@@ -61,4 +61,20 @@ output "secrets_arn" {
 
 output "rds_endpoint" {
   value = aws_db_instance.main.address
+}
+
+output "rds_identifier" {
+  value = aws_db_instance.main.identifier
+}
+
+output "hibernating" {
+  value = local.hibernating
+}
+
+output "hibernating_parameter_name" {
+  value = data.aws_ssm_parameter.hibernating.name
+}
+
+output "budget_sns_topic_arn" {
+  value = aws_sns_topic.budget_alerts.arn
 }

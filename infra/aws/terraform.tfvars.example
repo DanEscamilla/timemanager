@@ -18,3 +18,8 @@ supertokens_connection_uri = "https://try.supertokens.com"
 db_instance_class          = "db.t4g.micro"
 # Keep 0 until ECR images exist; then set to 1 and re-apply (or use deploy-apis.sh).
 desired_count = 0
+
+# Monthly cost budget (USD). At 100% actual spend, SNS emails you and the
+# kill-switch Lambda hibernates the stack (same path as `nx run timemanager-aws:down`).
+monthly_budget_amount = 50
+budget_alert_email    = "you@example.com"
