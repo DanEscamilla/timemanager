@@ -1,0 +1,48 @@
+{
+  "name": "spendmanager-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/spendmanager-api/src",
+  "tags": ["scope:spendmanager", "type:api", "runtime:deno"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": ["migrate", "user-manager-api:serve"],
+      "options": {
+        "command": "deno task dev",
+        "cwd": "apps/spendmanager-api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "deno task build",
+        "cwd": "apps/spendmanager-api"
+      }
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["timemanager-db:up"],
+      "options": {
+        "command": "deno task migrate",
+        "cwd": "apps/spendmanager-api"
+      }
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["migrate"],
+      "options": {
+        "command": "deno task seed",
+        "cwd": "apps/spendmanager-api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "deno test --allow-env --allow-read src",
+        "cwd": "apps/spendmanager-api"
+      }
+    }
+  }
+}

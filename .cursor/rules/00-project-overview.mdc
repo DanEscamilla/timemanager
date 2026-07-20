@@ -9,9 +9,11 @@ Apps and infra:
 
 - `apps/timemanager` — Flutter (Dart) client. Runtime: flutter (`pubspec.yaml`).
 - `apps/timemanager-api` — Pylon GraphQL + Kysely + Postgres, on `:3000`. Runtime: **Deno** (`deno.json`).
+- `apps/spendmanager` — Flutter spending tracker. Runtime: flutter (`pubspec.yaml`).
+- `apps/spendmanager-api` — Pylon GraphQL + Kysely + Postgres (`spendmanager` DB), on `:3002`. Runtime: **Deno** (`deno.json`).
 - `apps/user-manager-web` — React + Vite + SuperTokens. Runtime: node (pnpm).
 - `apps/user-manager-api` — Express + SuperTokens, on `:3001`. Runtime: node (pnpm).
-- `infra/timemanager-db` — Postgres `:5432` + pgAdmin `:8080` (docker-compose).
+- `infra/timemanager-db` — Postgres `:5432` + pgAdmin `:8080` (docker-compose); hosts `timemanager` and `spendmanager` databases.
 - `infra/authentik` — Authentik auth (docker-compose).
 - `libs/design_system` — Shared Flutter Material 3 design system (`scope:shared`, `type:lib`).
 - `libs/` — reserved for additional shared packages.

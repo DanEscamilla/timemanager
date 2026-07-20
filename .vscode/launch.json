@@ -38,6 +38,24 @@
       "flutterMode": "release",
       "deviceId": "chrome",
       "toolArgs": ["--web-port=4444"]
+    },
+    {
+      "name": "spendmanager",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/spendmanager",
+      "program": "${workspaceFolder}/apps/spendmanager/lib/main.dart",
+      "flutterMode": "debug",
+      "toolArgs": ["--web-port=4445"]
+    },
+    {
+      "name": "spendmanager (macos)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/spendmanager",
+      "program": "${workspaceFolder}/apps/spendmanager/lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "macos"
     }
   ]
 }

@@ -10,6 +10,8 @@ Entrypoint for AI agents and humans. This is an **Nx + pnpm monorepo** with a mi
 |------|-------|---------|------|---------|
 | `apps/timemanager` | Flutter (Dart) client | flutter | — | `scope:timemanager, type:app, runtime:flutter` |
 | `apps/timemanager-api` | Pylon GraphQL + Kysely + Postgres | deno | `:3000` | `scope:timemanager, type:api, runtime:deno` |
+| `apps/spendmanager` | Flutter (Dart) spending tracker | flutter | — | `scope:spendmanager, type:app, runtime:flutter` |
+| `apps/spendmanager-api` | Pylon GraphQL + Kysely + Postgres | deno | `:3002` | `scope:spendmanager, type:api, runtime:deno` |
 | `apps/user-manager-web` | React + Vite + SuperTokens | node | — | `scope:user-manager, type:app, runtime:node` |
 | `apps/user-manager-api` | Express + SuperTokens | node | `:3001` | `scope:user-manager, type:api, runtime:node` |
 | `infra/timemanager-db` | Postgres + pgAdmin (docker-compose) | docker | `:5432` / `:8080` | `type:infra` |
@@ -17,15 +19,15 @@ Entrypoint for AI agents and humans. This is an **Nx + pnpm monorepo** with a mi
 | `libs/design_system` | Shared Flutter Material 3 design system | flutter | — | `scope:shared, type:lib, runtime:flutter` |
 | `libs/` | reserved for future shared code | — | — | — |
 
-Data flow: Flutter authenticates via SuperTokens (`user-manager-api` `:3001`), then calls GraphQL (`timemanager-api` `:3000`) with a Bearer JWT; the API verifies JWKS and scopes data per user. `user-manager-web` also uses the same SuperTokens API. See [`.ai/architecture.md`](.ai/architecture.md).
+Data flow: Flutter apps authenticate via SuperTokens (`user-manager-api` `:3001`), then call their GraphQL APIs with a Bearer JWT. `timemanager-api` (`:3000`, DB `timemanager`) and `spendmanager-api` (`:3002`, DB `spendmanager`) share the same Postgres instance and JWKS verification. `user-manager-web` also uses the same SuperTokens API. See [`.ai/architecture.md`](.ai/architecture.md).
 
 ## Golden rules
 
 - **Run everything through Nx from the repo root** (`nx ...` / the `pnpm` convenience scripts below), not by cd-ing into apps ad hoc.
 - **Each app owns its runtime and package manager** — do not cross them:
   - Node apps (`user-manager-web`, `user-manager-api`): **pnpm** (workspace). Node version is pinned in `.nvmrc` (20).
-  - `timemanager-api`: **Deno** via `deno.json` tasks. Not Node, not Bun, not npm/pnpm.
-  - `timemanager`: **Flutter/Dart** via `pubspec.yaml`.
+  - Deno APIs (`timemanager-api`, `spendmanager-api`): **Deno** via `deno.json` tasks. Not Node, not Bun, not npm/pnpm.
+  - Flutter apps (`timemanager`, `spendmanager`): **Flutter/Dart** via `pubspec.yaml`.
 - **Never hand-edit generated/vendored output**: `dist/`, `.nx/cache/`, Flutter `build/`, `.dart_tool/`, `node_modules/`, docker `data/` volumes.
 - **Secrets stay out of git**: `.env` files are gitignored; keep `.env.example` current.
 - **Respect settled decisions and scope** — see [`.ai/decisions.md`](.ai/decisions.md) before proposing structural changes.
@@ -44,8 +46,9 @@ Details: [`.ai/local-setup.md`](.ai/local-setup.md).
 
 ```bash
 pnpm timemanager      # GraphQL API + auth + DB; launch Flutter via IDE (Run and Debug → timemanager)
+pnpm spendmanager     # spendmanager GraphQL + auth + DB; launch Flutter via IDE (spendmanager)
 pnpm user-manager     # nx run-many -t serve -p user-manager-web,user-manager-api
-pnpm db:up            # start Postgres + pgAdmin, then run migrations
+pnpm db:up            # start Postgres + pgAdmin, then run timemanager migrations
 pnpm db:down          # stop the DB stack
 ```
 

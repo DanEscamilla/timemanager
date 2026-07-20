@@ -1,0 +1,134 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Spend Manager",
+
+  "navOverview": "Overview",
+  "navExpenses": "Expenses",
+  "navCategories": "Categories",
+
+  "tooltipRefresh": "Refresh",
+  "tooltipSignOut": "Sign out",
+  "tooltipSettings": "Settings",
+  "tooltipAddExpense": "Add expense",
+  "tooltipAddCategory": "Add category",
+
+  "loginCreateAccount": "Create an account",
+  "loginSignInContinue": "Sign in to continue",
+  "loginEmail": "Email",
+  "loginEmailRequired": "Email is required",
+  "loginEmailInvalid": "Enter a valid email",
+  "loginPassword": "Password",
+  "loginPasswordRequired": "Password is required",
+  "loginPasswordTooShort": "Use at least 8 characters",
+  "loginShowPassword": "Show password",
+  "loginHidePassword": "Hide password",
+  "loginRememberDevice": "Remember this device",
+  "loginSignUp": "Sign up",
+  "loginSignIn": "Sign in",
+  "loginAlreadyHaveAccount": "Already have an account? Sign in",
+  "loginNeedAccount": "Need an account? Sign up",
+  "loginOrContinueWith": "Or continue with",
+  "providerGoogle": "Google",
+  "providerGitHub": "GitHub",
+  "providerApple": "Apple",
+  "providerTwitter": "Twitter",
+
+  "authActionSignUp": "Sign up",
+  "authActionSignIn": "Sign in",
+  "authActionOAuth": "OAuth sign in",
+  "authFailedStatus": "{action} failed ({status})",
+  "@authFailedStatus": {
+    "placeholders": {
+      "action": { "type": "String" },
+      "status": { "type": "String" }
+    }
+  },
+  "authNoSessionToken": "{action} succeeded but no session token was returned",
+  "@authNoSessionToken": {
+    "placeholders": {
+      "action": { "type": "String" }
+    }
+  },
+  "authStartOAuthFailed": "Failed to start {provider} login ({statusCode})",
+  "@authStartOAuthFailed": {
+    "placeholders": {
+      "provider": { "type": "String" },
+      "statusCode": { "type": "int" }
+    }
+  },
+  "authAuthorisationUrlMissing": "Authorisation URL missing from response",
+  "authCouldNotGetAuthorisationUrl": "Could not get authorisation URL",
+  "authCouldNotOpenLogin": "Could not open {provider} login",
+  "@authCouldNotOpenLogin": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+
+  "errorNotSignedIn": "Not signed in",
+  "errorSessionExpired": "Session expired. Please sign in again.",
+  "errorRequestFailed": "Request failed ({statusCode}): {body}",
+  "@errorRequestFailed": {
+    "placeholders": {
+      "statusCode": { "type": "int" },
+      "body": { "type": "String" }
+    }
+  },
+  "errorNoGraphQlData": "No data in GraphQL response",
+  "errorUnknown": "Unknown error",
+  "errorCouldNotLoad": "Could not load data",
+  "errorRetry": "Retry",
+
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "archive": "Archive",
+
+  "expensesEmptyTitle": "No expenses yet",
+  "expensesEmptyHint": "Tap + to log your first spend.",
+  "expensesEmptyAction": "Add expense",
+  "expensesDeleteTitle": "Delete expense?",
+  "expensesDeleteConfirm": "Remove this expense?",
+  "expensesFormNew": "New expense",
+  "expensesFormEdit": "Edit expense",
+  "expensesFormAmount": "Amount",
+  "expensesFormAmountRequired": "Enter an amount",
+  "expensesFormAmountInvalid": "Enter a valid amount (e.g. 12.50)",
+  "expensesFormCategory": "Category",
+  "expensesFormCategoryRequired": "Pick a category",
+  "expensesFormDate": "Date",
+  "expensesFormNote": "Note",
+  "expensesFormCurrency": "Currency",
+
+  "categoriesEmptyTitle": "No categories yet",
+  "categoriesEmptyHint": "Create categories to organize spending.",
+  "categoriesEmptyAction": "Add category",
+  "categoriesArchiveTitle": "Archive category?",
+  "categoriesArchiveConfirm": "Archive \"{name}\"? Existing expenses keep this category.",
+  "@categoriesArchiveConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "categoriesFormNew": "New category",
+  "categoriesFormEdit": "Edit category",
+  "categoriesFormName": "Name",
+  "categoriesFormNameRequired": "Name is required",
+  "categoriesFormColor": "Color",
+
+  "overviewTitle": "This month",
+  "overviewEmpty": "No spending in this range yet.",
+  "overviewTotal": "Total",
+  "overviewByCategory": "By category",
+
+  "settingsTitle": "Settings",
+  "settingsTheme": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsLanguage": "Language",
+  "settingsLanguageSystem": "System",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageSpanish": "Spanish"
+}

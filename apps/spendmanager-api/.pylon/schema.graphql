@@ -1,0 +1,123 @@
+input ArgsInput {
+	includeArchived: Boolean
+}
+input ArgsInput_1 {
+	id: Number!
+}
+input ArgsInput_2 {
+	fromDate: String
+	toDate: String
+	categoryId: Number
+}
+input ArgsInput_3 {
+	id: Number!
+}
+input ArgsInput_4 {
+	fromDate: String!
+	toDate: String!
+}
+input ArgsInput_5 {
+	input: CreateCategoryInputInput!
+}
+input CreateCategoryInputInput {
+	name: String!
+	color: String!
+}
+input ArgsInput_6 {
+	id: Number!
+	input: UpdateCategoryInputInput!
+}
+input UpdateCategoryInputInput {
+	name: String
+	color: String
+}
+input ArgsInput_7 {
+	id: Number!
+}
+input ArgsInput_8 {
+	input: CreateExpenseInputInput!
+}
+input CreateExpenseInputInput {
+	categoryId: Number!
+	amountCents: Number!
+	spentOn: String!
+	currency: String
+	note: String
+}
+input ArgsInput_9 {
+	id: Number!
+	input: UpdateExpenseInputInput!
+}
+input UpdateExpenseInputInput {
+	categoryId: Number
+	amountCents: Number
+	spentOn: String
+	currency: String
+	note: String
+}
+input ArgsInput_10 {
+	id: Number!
+}
+type Query {
+categories(args: ArgsInput): [Categories!]!
+category(args: ArgsInput_1!): Categories
+expenses(args: ArgsInput_2): [Expenses!]!
+expense(args: ArgsInput_3!): Expenses
+expenseTotals(args: ArgsInput_4!): [ExpenseTotals!]!
+}
+type Categories {
+user_id: Number!
+id: Number!
+name: String!
+color: String!
+archived_at: Date
+created_at: Date!
+updated_at: Date!
+}
+type Expenses {
+amount_cents: Number!
+id: Number!
+user_id: Number!
+category_id: Number!
+currency: String!
+spent_on: String!
+note: String
+created_at: String!
+updated_at: String!
+}
+type ExpenseTotals {
+category_id: Number!
+category_name: String!
+category_color: String!
+currency: String!
+total_cents: Number!
+}
+type Mutation {
+createCategory(args: ArgsInput_5!): CreateCategory!
+updateCategory(args: ArgsInput_6!): CreateCategory!
+archiveCategory(args: ArgsInput_7!): Categories!
+createExpense(args: ArgsInput_8!): Expenses!
+updateExpense(args: ArgsInput_9!): Expenses!
+deleteExpense(args: ArgsInput_10!): Boolean!
+}
+type CreateCategory {
+user_id: Number!
+id: Number!
+name: String!
+color: String!
+archived_at: Date
+created_at: Date!
+updated_at: Date!
+}
+scalar ID
+scalar Int
+scalar Float
+scalar Number
+scalar Any
+scalar Void
+scalar Object
+scalar File
+scalar Date
+scalar JSON
+scalar String
+scalar Boolean

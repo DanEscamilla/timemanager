@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.34.5",
   "scripts": {
     "timemanager": "nx serve timemanager-api",
+    "spendmanager": "nx serve spendmanager-api",
     "user-manager": "nx run-many -t serve -p user-manager-web,user-manager-api",
     "db:up": "nx run timemanager-api:migrate",
     "db:down": "nx run timemanager-db:down"

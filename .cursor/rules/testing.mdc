@@ -28,7 +28,9 @@ Prefer **few, high-value tests** over broad shallow coverage.
 | App | Location | Command |
 |-----|----------|---------|
 | `apps/timemanager` | `test/` (mirror `lib/` structure) | `nx test timemanager` |
+| `apps/spendmanager` | `test/` (mirror `lib/` structure) | `nx test spendmanager` |
 | `apps/timemanager-api` | colocate `*.test.ts` next to source, or under `src/` | `deno test` (from app dir) |
+| `apps/spendmanager-api` | colocate `*.test.ts` next to source, or under `src/` | `nx test spendmanager-api` |
 | Node apps | colocate `*.test.ts` / `*.spec.ts` | add/run via app `package.json` when present |
 
 Run tests through **Nx from the repo root** when a target exists.
