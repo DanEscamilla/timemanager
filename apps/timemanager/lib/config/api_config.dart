@@ -7,18 +7,23 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 /// Defaults to localhost (`:3001` auth, `:3000` GraphQL). Override for cloud:
 /// `--dart-define=AUTH_API_BASE_URL=https://auth.example.com`
 /// `--dart-define=API_BASE_URL=https://api.example.com`
+/// `--dart-define=IDLE_SESSION_TIMEOUT_MINUTES=30` (use `0` to disable)
 ///
 /// Convenience: `DOMAIN=example.com nx run timemanager:build-macos` (etc.),
 /// `config/cloud.dart-defines.json`, or IDE **timemanager (cloud)**.
 class ApiConfig {
   static const int _authPort = 3001;
   static const int _apiPort = 3000;
+  static const int _defaultIdleSessionTimeoutMinutes = 30;
 
   static const String _authApiBaseUrlOverride = String.fromEnvironment(
     'AUTH_API_BASE_URL',
   );
   static const String _apiBaseUrlOverride = String.fromEnvironment(
     'API_BASE_URL',
+  );
+  static const String _idleSessionTimeoutMinutesOverride = String.fromEnvironment(
+    'IDLE_SESSION_TIMEOUT_MINUTES',
   );
 
   static String get _host {
@@ -46,4 +51,14 @@ class ApiConfig {
   /// OAuth redirect target after the provider callback (Flutter web / deep link).
   static String get oauthRedirectUri =>
       kIsWeb ? Uri.base.origin : 'timemanager://auth/callback';
+
+  /// Client-side idle logout duration. `Duration.zero` disables the monitor.
+  static Duration get idleSessionTimeout {
+    final raw = _idleSessionTimeoutMinutesOverride;
+    final minutes = raw.isEmpty
+        ? _defaultIdleSessionTimeoutMinutes
+        : int.tryParse(raw) ?? _defaultIdleSessionTimeoutMinutes;
+    if (minutes <= 0) return Duration.zero;
+    return Duration(minutes: minutes);
+  }
 }

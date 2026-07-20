@@ -17,6 +17,8 @@ export 'widgets/color_swatch_button.dart';
 export 'widgets/empty_state.dart';
 export 'widgets/error_state.dart';
 export 'widgets/loading_view.dart';
+export 'widgets/login_view.dart';
+export 'widgets/login_view_config.dart';
 export 'widgets/reward_card.dart';
 export 'widgets/stat_card.dart';
 export 'widgets/theme_mode_radio_group.dart';

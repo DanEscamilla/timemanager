@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
+import '../config/api_config.dart';
 import '../screens/activities_screen.dart';
 import '../screens/calendar_screen.dart';
 import '../screens/goals_screen.dart';
@@ -14,6 +15,7 @@ import '../services/auth_service.dart';
 import '../services/goal_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
+import '../services/idle_session_monitor.dart';
 import '../services/reward_repository.dart';
 
 /// Session + GraphQL services for the signed-in shell.
@@ -28,15 +30,24 @@ class AuthController extends ChangeNotifier {
     CompletionRepository? completionRepository,
     RewardRepository? rewardRepository,
     AssetUploadService? assetUploadService,
+    IdleSessionMonitor? idleSessionMonitor,
+    Duration? idleSessionTimeout,
   })  : _auth = authService ?? AuthService(),
         _activityRepository = activityRepository,
         _groupRepository = groupRepository,
         _goalRepository = goalRepository,
         _completionRepository = completionRepository,
         _rewardRepository = rewardRepository,
-        _assetUploadService = assetUploadService;
+        _assetUploadService = assetUploadService {
+    _idleMonitor = idleSessionMonitor ??
+        IdleSessionMonitor(
+          timeout: idleSessionTimeout ?? ApiConfig.idleSessionTimeout,
+          onIdle: signOut,
+        );
+  }
 
   final AuthService _auth;
+  late final IdleSessionMonitor _idleMonitor;
 
   /// `null` while [bootstrap] is in progress.
   bool? _signedIn;
@@ -55,6 +66,8 @@ class AuthController extends ChangeNotifier {
   final rewardsKey = GlobalKey<RewardsScreenState>();
 
   AuthService get authService => _auth;
+
+  IdleSessionMonitor get idleSessionMonitor => _idleMonitor;
 
   bool get isLoading => _signedIn == null;
 
@@ -102,6 +115,7 @@ class AuthController extends ChangeNotifier {
       if (completed) {
         _ensureSessionServices();
         _signedIn = true;
+        _idleMonitor.start();
         notifyListeners();
         unawaited(_syncNotifications());
         return;
@@ -113,6 +127,7 @@ class AuthController extends ChangeNotifier {
     final exists = await _auth.doesSessionExist();
     if (exists) {
       _ensureSessionServices();
+      _idleMonitor.start();
     }
     _signedIn = exists;
     notifyListeners();
@@ -124,11 +139,18 @@ class AuthController extends ChangeNotifier {
   void onAuthenticated() {
     _ensureSessionServices();
     _signedIn = true;
+    _idleMonitor.start();
     notifyListeners();
     unawaited(_syncNotifications());
   }
 
+  void recordActivity() {
+    if (!isSignedIn) return;
+    _idleMonitor.recordActivity();
+  }
+
   Future<void> signOut() async {
+    _idleMonitor.stop();
     await _auth.signOut();
     _activityRepository = null;
     _groupRepository = null;
@@ -182,5 +204,11 @@ class AuthController extends ChangeNotifier {
         await signOut();
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _idleMonitor.stop();
+    super.dispose();
   }
 }

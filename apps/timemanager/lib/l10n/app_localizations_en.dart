@@ -504,6 +504,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginHidePassword => 'Hide password';
 
   @override
+  String get loginRememberDevice => 'Remember this device';
+
+  @override
   String get loginSignUp => 'Sign up';
 
   @override

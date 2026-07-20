@@ -68,6 +68,7 @@ Material ink + fade page transitions. Prefer `AnimatedSwitcher` for local swaps.
 | `ThemeModeRadioGroup` | System / Light / Dark radios |
 | `ColorSwatchButton` | Palette picker swatch |
 | `AppTimeField` / `AppDateField` | Tappable date/time inputs |
+| `LoginView` | Email/password (+ optional OAuth) form; callers inject copy + auth callbacks |
 | Buttons / fields | Themed Material (`FilledButton`, `inputDecorationTheme`) |
 
 App-local: `ActivityListTile`, goal progress cards, `calendar_view` theme merge (`withCalendarTheme`).

@@ -1,6 +1,7 @@
 import 'package:design_system/design_system.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 
@@ -78,6 +79,7 @@ class _TimeManagerAppState extends State<TimeManagerApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && _auth.isSignedIn) {
+      _auth.recordActivity();
       _auth.syncNotifications();
     }
   }
@@ -118,14 +120,30 @@ class _TimeManagerAppState extends State<TimeManagerApp>
           debugShowCheckedModeBanner: false,
           routerConfig: _router,
           builder: (context, child) {
-            final content = child ?? const SizedBox.shrink();
-            if (!kDebugMode) return content;
-            return DebugMenuShell(
-              localeOverride: _overrideLocale,
-              onLocaleChanged: _onLocaleChanged,
-              themeMode: themeMode,
-              onThemeModeChanged: _onThemeModeChanged,
-              child: content,
+            Widget content = child ?? const SizedBox.shrink();
+            if (kDebugMode) {
+              content = DebugMenuShell(
+                localeOverride: _overrideLocale,
+                onLocaleChanged: _onLocaleChanged,
+                themeMode: themeMode,
+                onThemeModeChanged: _onThemeModeChanged,
+                child: content,
+              );
+            }
+            return Listener(
+              behavior: HitTestBehavior.translucent,
+              onPointerDown: (_) => _auth.recordActivity(),
+              onPointerSignal: (_) => _auth.recordActivity(),
+              child: Focus(
+                autofocus: true,
+                onKeyEvent: (node, event) {
+                  if (event is KeyDownEvent || event is KeyRepeatEvent) {
+                    _auth.recordActivity();
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: content,
+              ),
             );
           },
         );

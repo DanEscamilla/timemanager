@@ -8,4 +8,8 @@ void main() {
     expect(ApiConfig.apiBaseUrl, contains(':3000'));
     expect(ApiConfig.graphqlEndpoint, endsWith('/graphql'));
   });
+
+  test('ApiConfig idleSessionTimeout defaults to 30 minutes', () {
+    expect(ApiConfig.idleSessionTimeout, const Duration(minutes: 30));
+  });
 }

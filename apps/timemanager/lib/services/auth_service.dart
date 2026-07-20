@@ -1,11 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/api_config.dart';
 import '../l10n/app_localizations.dart';
+import 'auth_token_store.dart';
+import 'session_token_store.dart';
 
 enum AuthAction { signUp, signIn, oauth }
 
@@ -135,10 +138,27 @@ class AuthException implements Exception {
 ///
 /// `supertokens_flutter` is Android/iOS-only; this app targets Chrome, so we
 /// talk to the FDI endpoints directly and persist tokens locally.
+///
+/// On web, [rememberDevice] chooses localStorage (SharedPreferences) vs
+/// sessionStorage so unchecked sessions end when the browser closes.
 class AuthService {
-  AuthService({http.Client? httpClient}) : _http = httpClient ?? http.Client();
+  AuthService({
+    http.Client? httpClient,
+    AuthTokenStore? persistentStore,
+    AuthTokenStore? sessionStore,
+    bool? isWeb,
+  })  : _http = httpClient ?? http.Client(),
+        _persistentStoreOverride = persistentStore,
+        _sessionStore =
+            sessionStore ?? createSessionTokenStore(),
+        _isWeb = isWeb ?? kIsWeb;
 
   final http.Client _http;
+  final AuthTokenStore? _persistentStoreOverride;
+  final AuthTokenStore _sessionStore;
+  final bool _isWeb;
+
+  SharedPreferences? _prefsCache;
 
   static const _accessTokenKey = 'st_access_token';
   static const _refreshTokenKey = 'st_refresh_token';
@@ -146,6 +166,7 @@ class AuthService {
   static const _oauthProviderKey = 'st_oauth_provider';
   static const _oauthPkceVerifierKey = 'st_oauth_pkce_verifier';
   static const _oauthRedirectUriKey = 'st_oauth_redirect_uri';
+  static const _rememberDeviceKey = 'st_remember_device';
 
   static const oauthProviders = ['google', 'github', 'apple', 'twitter'];
 
@@ -155,14 +176,30 @@ class AuthService {
   }
 
   Future<String?> getAccessToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_accessTokenKey);
+    final store = await _activeTokenStore();
+    return store.read(_accessTokenKey);
+  }
+
+  /// Whether tokens should survive browser restarts (web only).
+  ///
+  /// Native platforms always behave as remembered.
+  Future<bool> getRememberDevice() async {
+    if (!_isWeb) return true;
+    final prefs = await _prefs();
+    return prefs.getBool(_rememberDeviceKey) ?? false;
+  }
+
+  Future<void> setRememberDevice(bool remember) async {
+    final prefs = await _prefs();
+    await prefs.setBool(_rememberDeviceKey, _isWeb ? remember : true);
   }
 
   Future<void> signUp({
     required String email,
     required String password,
+    bool rememberDevice = true,
   }) async {
+    await setRememberDevice(rememberDevice);
     final response = await _postAuth(
       '/signup',
       rid: 'emailpassword',
@@ -179,7 +216,9 @@ class AuthService {
   Future<void> signIn({
     required String email,
     required String password,
+    bool rememberDevice = true,
   }) async {
+    await setRememberDevice(rememberDevice);
     final response = await _postAuth(
       '/signin',
       rid: 'emailpassword',
@@ -197,7 +236,11 @@ class AuthService {
   ///
   /// On web, after redirect back to this app with `?code=&state=`, call
   /// [completeOAuthFromCurrentUri].
-  Future<void> startOAuth(String thirdPartyId) async {
+  Future<void> startOAuth(
+    String thirdPartyId, {
+    bool rememberDevice = true,
+  }) async {
+    await setRememberDevice(rememberDevice);
     final redirectUri = ApiConfig.oauthRedirectUri;
     final uri = Uri.parse(
       '${ApiConfig.authApiBaseUrl}${ApiConfig.authBasePath}/authorisationurl',
@@ -238,7 +281,7 @@ class AuthService {
 
     // Google (and others) require PKCE — SuperTokens returns the verifier
     // with the authorisation URL; we must send it back on /signinup.
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
     await prefs.setString(_oauthProviderKey, thirdPartyId);
     await prefs.setString(_oauthRedirectUriKey, redirectUri);
     final pkce = body['pkceCodeVerifier'] as String?;
@@ -266,7 +309,7 @@ class AuthService {
       return false;
     }
 
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
     final thirdPartyId = prefs.getString(_oauthProviderKey) ??
         params['thirdPartyId'] ??
         'google';
@@ -319,8 +362,8 @@ class AuthService {
 
   /// Refresh the access token. Returns false if the session is dead.
   Future<bool> refreshSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    final refreshToken = prefs.getString(_refreshTokenKey);
+    final store = await _activeTokenStore();
+    final refreshToken = await store.read(_refreshTokenKey);
     if (refreshToken == null || refreshToken.isEmpty) {
       await _clearTokens();
       return false;
@@ -423,31 +466,59 @@ class AuthService {
     final refresh = headers['st-refresh-token'];
     final front = headers['front-token'];
 
-    final prefs = await SharedPreferences.getInstance();
+    final store = await _activeTokenStore();
+    final other = await _inactiveTokenStore();
+    for (final key in [_accessTokenKey, _refreshTokenKey, _frontTokenKey]) {
+      await other.delete(key);
+    }
+
     if (access != null && access.isNotEmpty) {
-      await prefs.setString(_accessTokenKey, access);
+      await store.write(_accessTokenKey, access);
     }
     if (refresh != null && refresh.isNotEmpty) {
-      await prefs.setString(_refreshTokenKey, refresh);
+      await store.write(_refreshTokenKey, refresh);
     }
     if (front != null && front.isNotEmpty) {
-      await prefs.setString(_frontTokenKey, front);
+      await store.write(_frontTokenKey, front);
     }
   }
 
   Future<void> _clearOAuthState() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
     await prefs.remove(_oauthProviderKey);
     await prefs.remove(_oauthPkceVerifierKey);
     await prefs.remove(_oauthRedirectUriKey);
   }
 
   Future<void> _clearTokens() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_accessTokenKey);
-    await prefs.remove(_refreshTokenKey);
-    await prefs.remove(_frontTokenKey);
+    final persistent = await _persistentStore();
+    for (final key in [_accessTokenKey, _refreshTokenKey, _frontTokenKey]) {
+      await persistent.delete(key);
+      await _sessionStore.delete(key);
+    }
     await _clearOAuthState();
+  }
+
+  Future<AuthTokenStore> _activeTokenStore() async {
+    final remember = await getRememberDevice();
+    if (_isWeb && !remember) return _sessionStore;
+    return _persistentStore();
+  }
+
+  Future<AuthTokenStore> _inactiveTokenStore() async {
+    final remember = await getRememberDevice();
+    if (_isWeb && !remember) return _persistentStore();
+    return _sessionStore;
+  }
+
+  Future<AuthTokenStore> _persistentStore() async {
+    final override = _persistentStoreOverride;
+    if (override != null) return override;
+    return SharedPreferencesTokenStore(await _prefs());
+  }
+
+  Future<SharedPreferences> _prefs() async {
+    return _prefsCache ??= await SharedPreferences.getInstance();
   }
 
   void dispose() => _http.close();

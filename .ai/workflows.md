@@ -63,6 +63,8 @@ nx run timemanager:analyze  # flutter analyze
 
 `ApiConfig` defaults to localhost. Override with `--dart-define` (or a defines file) so builds point at `auth.<domain>` / `api.<domain>`.
 
+Optional: `IDLE_SESSION_TIMEOUT_MINUTES` (default `30`) controls client-side idle logout; set to `0` to disable.
+
 ```bash
 # one-time: copy and edit (or rely on DOMAIN below)
 cp apps/timemanager/config/cloud.dart-defines.json.example \

@@ -213,6 +213,7 @@
   "loginPasswordTooShort": "Use at least 8 characters",
   "loginShowPassword": "Show password",
   "loginHidePassword": "Hide password",
+  "loginRememberDevice": "Remember this device",
   "loginSignUp": "Sign up",
   "loginSignIn": "Sign in",
   "loginAlreadyHaveAccount": "Already have an account? Sign in",

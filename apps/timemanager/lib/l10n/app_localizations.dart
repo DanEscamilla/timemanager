@@ -1049,6 +1049,12 @@ abstract class AppLocalizations {
   /// **'Hide password'**
   String get loginHidePassword;
 
+  /// No description provided for @loginRememberDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember this device'**
+  String get loginRememberDevice;
+
   /// No description provided for @loginSignUp.
   ///
   /// In en, this message translates to:
