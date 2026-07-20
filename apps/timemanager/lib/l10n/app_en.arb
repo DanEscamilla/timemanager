@@ -311,6 +311,8 @@
   "formIntervalAtLeastOne": "Enter an integer of at least 1",
   "formSaveChanges": "Save changes",
   "formCreate": "Create",
+  "formAdvanced": "Advanced",
+  "formAdvancedConfigured": "Configured",
   "formEndTimeAfterStart": "End time must be after start time",
   "formDateRequired": "Date is required for one-time activities",
   "formRecurrenceStartRequired": "Recurrence start date is required",

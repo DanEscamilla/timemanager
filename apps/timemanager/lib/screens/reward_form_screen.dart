@@ -13,6 +13,8 @@ import '../services/reward_repository.dart';
 import '../theme/tokens/app_radius.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../theme/tokens/group_palette.dart';
+import '../utils/form_advanced_values.dart';
+import '../widgets/advanced_form_section.dart';
 import '../widgets/app_card.dart';
 
 class RewardFormScreen extends StatefulWidget {
@@ -35,6 +37,7 @@ class RewardFormScreen extends StatefulWidget {
 
 class _RewardFormScreenState extends State<RewardFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _advancedKey = GlobalKey<AdvancedFormSectionState>();
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _notesController;
@@ -49,6 +52,14 @@ class _RewardFormScreenState extends State<RewardFormScreen> {
   bool _saving = false;
   bool _uploading = false;
   List<Asset> _recentAssets = const [];
+
+  bool get _hasAdvancedValues => rewardHasAdvancedValues(
+        notes: _notesController.text,
+        category: _categoryController.text,
+        tags: _tagsController.text,
+        icon: _iconController.text,
+        stackable: _stackable,
+      );
 
   @override
   void initState() {
@@ -155,7 +166,10 @@ class _RewardFormScreenState extends State<RewardFormScreen> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      _advancedKey.currentState?.expand();
+      return;
+    }
 
     setState(() => _saving = true);
     final l10n = AppLocalizations.of(context);
@@ -249,37 +263,6 @@ class _RewardFormScreenState extends State<RewardFormScreen> {
                     maxLines: 2,
                     textCapitalization: TextCapitalization.sentences,
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _notesController,
-                    decoration: InputDecoration(
-                      labelText: l10n.rewardsFormNotes,
-                    ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _categoryController,
-                    decoration: InputDecoration(
-                      labelText: l10n.rewardsFormCategory,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _tagsController,
-                    decoration: InputDecoration(
-                      labelText: l10n.rewardsFormTags,
-                      hintText: l10n.rewardsFormTagsHint,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _iconController,
-                    decoration: InputDecoration(
-                      labelText: l10n.rewardsFormIcon,
-                      hintText: l10n.rewardsFormIconHint,
-                    ),
-                  ),
                   const SizedBox(height: AppSpacing.lg),
                   Text(
                     l10n.formGroupColor,
@@ -297,14 +280,6 @@ class _RewardFormScreenState extends State<RewardFormScreen> {
                           onTap: () => setState(() => _color = hex),
                         ),
                     ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.rewardsFormStackable),
-                    subtitle: Text(l10n.rewardsFormStackableHint),
-                    value: _stackable,
-                    onChanged: (v) => setState(() => _stackable = v),
                   ),
                 ],
               ),
@@ -385,6 +360,56 @@ class _RewardFormScreenState extends State<RewardFormScreen> {
                   ],
                 ],
               ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AdvancedFormSection(
+              key: _advancedKey,
+              initiallyExpanded: widget.isEditing && _hasAdvancedValues,
+              hasConfiguredValues: _hasAdvancedValues,
+              children: [
+                TextFormField(
+                  controller: _notesController,
+                  decoration: InputDecoration(
+                    labelText: l10n.rewardsFormNotes,
+                  ),
+                  maxLines: 2,
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  controller: _categoryController,
+                  decoration: InputDecoration(
+                    labelText: l10n.rewardsFormCategory,
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  controller: _tagsController,
+                  decoration: InputDecoration(
+                    labelText: l10n.rewardsFormTags,
+                    hintText: l10n.rewardsFormTagsHint,
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  controller: _iconController,
+                  decoration: InputDecoration(
+                    labelText: l10n.rewardsFormIcon,
+                    hintText: l10n.rewardsFormIconHint,
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.rewardsFormStackable),
+                  subtitle: Text(l10n.rewardsFormStackableHint),
+                  value: _stackable,
+                  onChanged: (v) => setState(() => _stackable = v),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.lg),
             FilledButton(

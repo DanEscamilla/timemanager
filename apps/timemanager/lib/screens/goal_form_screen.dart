@@ -10,6 +10,8 @@ import '../services/group_repository.dart';
 import '../services/reward_repository.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../theme/tokens/group_palette.dart';
+import '../utils/form_advanced_values.dart';
+import '../widgets/advanced_form_section.dart';
 import '../widgets/loading_view.dart';
 import '../widgets/reward_rules_section.dart';
 
@@ -36,6 +38,7 @@ class GoalFormScreen extends StatefulWidget {
 
 class _GoalFormScreenState extends State<GoalFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _advancedKey = GlobalKey<AdvancedFormSectionState>();
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _targetController;
@@ -64,6 +67,17 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
   List<ActivityGroup> _groups = const [];
   List<Goal> _otherGoals = const [];
   bool _loading = true;
+
+  bool get _hasAdvancedValues => goalHasAdvancedValues(
+        description: _descriptionController.text,
+        color: _color,
+        isComposite: _isComposite,
+        dependencyIds: _dependencyIds,
+        blockUntilUnlocked: _blockUntilUnlocked,
+        useCustomStart: _useCustomStart,
+        recurrencePeriod: _recurrencePeriod,
+        deadlineKind: _deadlineKind,
+      );
 
   @override
   void initState() {
@@ -154,7 +168,10 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
 
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context);
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      _advancedKey.currentState?.expand();
+      return;
+    }
 
     if (!_isComposite) {
       if (_needsActivities && _activityIds.isEmpty) {
@@ -356,14 +373,6 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
                         (v == null || v.trim().isEmpty) ? l10n.formTitleRequired : null,
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _descriptionController,
-                    decoration: InputDecoration(
-                      labelText: l10n.formDescriptionOptional,
-                    ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
                   DropdownButtonFormField<GoalRuleType>(
                     value: _ruleType,
                     decoration: InputDecoration(labelText: l10n.goalsFormRuleType),
@@ -402,28 +411,6 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
                       if (n == null || n <= 0) return l10n.goalsFormTargetInvalid;
                       return null;
                     },
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(l10n.formGroupColor, style: Theme.of(context).textTheme.titleSmall),
-                  const SizedBox(height: AppSpacing.sm),
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    children: [
-                      for (final hex in kGroupColorPalette)
-                        ChoiceChip(
-                          label: const SizedBox(width: 12, height: 12),
-                          selected: _color.toUpperCase() == hex.toUpperCase(),
-                          selectedColor: Color(
-                            int.parse(hex.replaceFirst('#', ''), radix: 16) +
-                                0xFF000000,
-                          ),
-                          backgroundColor: Color(
-                            int.parse(hex.replaceFirst('#', ''), radix: 16) +
-                                0xFF000000,
-                          ).withValues(alpha: 0.4),
-                          onSelected: (_) => setState(() => _color = hex),
-                        ),
-                    ],
                   ),
                   if (_needsActivities) ...[
                     const SizedBox(height: AppSpacing.lg),
@@ -467,32 +454,31 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
                       ),
                     ),
                   ],
-                  if (_isComposite || _dependencyIds.isNotEmpty || true) ...[
+                  if (_isComposite) ...[
                     const SizedBox(height: AppSpacing.lg),
                     Text(l10n.goalsFormDependencies,
                         style: Theme.of(context).textTheme.titleSmall),
-                    if (_isComposite)
-                      DropdownButtonFormField<String>(
-                        value: _compositeMode,
-                        decoration:
-                            InputDecoration(labelText: l10n.goalsFormCompositeMode),
-                        items: [
-                          DropdownMenuItem(
-                            value: 'all',
-                            child: Text(l10n.goalsCompositeAll),
-                          ),
-                          DropdownMenuItem(
-                            value: 'any',
-                            child: Text(l10n.goalsCompositeAny),
-                          ),
-                          DropdownMenuItem(
-                            value: 'weighted',
-                            child: Text(l10n.goalsCompositeWeighted),
-                          ),
-                        ],
-                        onChanged: (v) =>
-                            setState(() => _compositeMode = v ?? 'all'),
-                      ),
+                    DropdownButtonFormField<String>(
+                      value: _compositeMode,
+                      decoration:
+                          InputDecoration(labelText: l10n.goalsFormCompositeMode),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'all',
+                          child: Text(l10n.goalsCompositeAll),
+                        ),
+                        DropdownMenuItem(
+                          value: 'any',
+                          child: Text(l10n.goalsCompositeAny),
+                        ),
+                        DropdownMenuItem(
+                          value: 'weighted',
+                          child: Text(l10n.goalsCompositeWeighted),
+                        ),
+                      ],
+                      onChanged: (v) =>
+                          setState(() => _compositeMode = v ?? 'all'),
+                    ),
                     ..._otherGoals.map(
                       (g) => CheckboxListTile(
                         dense: true,
@@ -509,168 +495,239 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
                         },
                       ),
                     ),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(l10n.goalsFormBlockUntilUnlocked),
-                      value: _blockUntilUnlocked,
-                      onChanged: (v) => setState(() => _blockUntilUnlocked = v),
-                    ),
                   ],
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(l10n.goalsFormStartsAt,
-                      style: Theme.of(context).textTheme.titleSmall),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.goalsFormStartsAtCustom),
-                    subtitle: Text(l10n.goalsFormStartsAtHint),
-                    value: _useCustomStart,
-                    onChanged: (v) => setState(() {
-                      _useCustomStart = v;
-                      if (v && _startDate == null) {
-                        _startDate = DateTime(
-                          DateTime.now().year,
-                          DateTime.now().month,
-                          DateTime.now().day,
-                        );
-                      }
-                    }),
-                  ),
-                  if (_useCustomStart) ...[
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        _startDate == null
-                            ? l10n.formSelectDate
-                            : '${_startDate!.year.toString().padLeft(4, '0')}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.day.toString().padLeft(2, '0')}',
+                  const SizedBox(height: AppSpacing.md),
+                  AdvancedFormSection(
+                    key: _advancedKey,
+                    initiallyExpanded: editing && _hasAdvancedValues,
+                    hasConfiguredValues: _hasAdvancedValues,
+                    children: [
+                      TextFormField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: l10n.formDescriptionOptional,
+                        ),
+                        maxLines: 2,
+                        onChanged: (_) => setState(() {}),
                       ),
-                      trailing: const Icon(Icons.calendar_today_outlined),
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: _startDate ?? DateTime.now(),
-                          firstDate: DateTime.now()
-                              .subtract(const Duration(days: 3650)),
-                          lastDate: DateTime.now()
-                              .add(const Duration(days: 3650)),
-                        );
-                        if (picked != null) {
-                          setState(() => _startDate = picked);
-                        }
-                      },
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(l10n.goalsFormRecurrence,
-                      style: Theme.of(context).textTheme.titleSmall),
-                  DropdownButtonFormField<String?>(
-                    value: _recurrencePeriod,
-                    decoration:
-                        InputDecoration(labelText: l10n.goalsFormRecurrencePeriod),
-                    items: [
-                      DropdownMenuItem(
-                        value: null,
-                        child: Text(l10n.goalsFormOneTime),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(l10n.formGroupColor,
+                          style: Theme.of(context).textTheme.titleSmall),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        children: [
+                          for (final hex in kGroupColorPalette)
+                            ChoiceChip(
+                              label: const SizedBox(width: 12, height: 12),
+                              selected:
+                                  _color.toUpperCase() == hex.toUpperCase(),
+                              selectedColor: Color(
+                                int.parse(hex.replaceFirst('#', ''), radix: 16) +
+                                    0xFF000000,
+                              ),
+                              backgroundColor: Color(
+                                int.parse(hex.replaceFirst('#', ''), radix: 16) +
+                                    0xFF000000,
+                              ).withValues(alpha: 0.4),
+                              onSelected: (_) => setState(() => _color = hex),
+                            ),
+                        ],
                       ),
-                      DropdownMenuItem(
-                        value: 'weekly',
-                        child: Text(l10n.recurrenceWeekly),
+                      if (!_isComposite) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(l10n.goalsFormDependencies,
+                            style: Theme.of(context).textTheme.titleSmall),
+                        ..._otherGoals.map(
+                          (g) => CheckboxListTile(
+                            dense: true,
+                            value: _dependencyIds.contains(g.id),
+                            title: Text(g.title),
+                            onChanged: (checked) {
+                              setState(() {
+                                if (checked == true) {
+                                  _dependencyIds.add(g.id);
+                                } else {
+                                  _dependencyIds.remove(g.id);
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(l10n.goalsFormBlockUntilUnlocked),
+                        value: _blockUntilUnlocked,
+                        onChanged: (v) =>
+                            setState(() => _blockUntilUnlocked = v),
                       ),
-                      DropdownMenuItem(
-                        value: 'monthly',
-                        child: Text(l10n.recurrenceMonthly),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(l10n.goalsFormStartsAt,
+                          style: Theme.of(context).textTheme.titleSmall),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(l10n.goalsFormStartsAtCustom),
+                        subtitle: Text(l10n.goalsFormStartsAtHint),
+                        value: _useCustomStart,
+                        onChanged: (v) => setState(() {
+                          _useCustomStart = v;
+                          if (v && _startDate == null) {
+                            _startDate = DateTime(
+                              DateTime.now().year,
+                              DateTime.now().month,
+                              DateTime.now().day,
+                            );
+                          }
+                        }),
                       ),
-                      DropdownMenuItem(
-                        value: 'quarterly',
-                        child: Text(l10n.goalsRecurrenceQuarterly),
+                      if (_useCustomStart) ...[
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            _startDate == null
+                                ? l10n.formSelectDate
+                                : '${_startDate!.year.toString().padLeft(4, '0')}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.day.toString().padLeft(2, '0')}',
+                          ),
+                          trailing: const Icon(Icons.calendar_today_outlined),
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: _startDate ?? DateTime.now(),
+                              firstDate: DateTime.now()
+                                  .subtract(const Duration(days: 3650)),
+                              lastDate: DateTime.now()
+                                  .add(const Duration(days: 3650)),
+                            );
+                            if (picked != null) {
+                              setState(() => _startDate = picked);
+                            }
+                          },
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(l10n.goalsFormRecurrence,
+                          style: Theme.of(context).textTheme.titleSmall),
+                      DropdownButtonFormField<String?>(
+                        value: _recurrencePeriod,
+                        decoration: InputDecoration(
+                            labelText: l10n.goalsFormRecurrencePeriod),
+                        items: [
+                          DropdownMenuItem(
+                            value: null,
+                            child: Text(l10n.goalsFormOneTime),
+                          ),
+                          DropdownMenuItem(
+                            value: 'weekly',
+                            child: Text(l10n.recurrenceWeekly),
+                          ),
+                          DropdownMenuItem(
+                            value: 'monthly',
+                            child: Text(l10n.recurrenceMonthly),
+                          ),
+                          DropdownMenuItem(
+                            value: 'quarterly',
+                            child: Text(l10n.goalsRecurrenceQuarterly),
+                          ),
+                          DropdownMenuItem(
+                            value: 'every_x_days',
+                            child: Text(l10n.recurrenceEveryXDays),
+                          ),
+                        ],
+                        onChanged: (v) =>
+                            setState(() => _recurrencePeriod = v),
                       ),
-                      DropdownMenuItem(
-                        value: 'every_x_days',
-                        child: Text(l10n.recurrenceEveryXDays),
+                      if (_recurrencePeriod != null) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        TextFormField(
+                          initialValue: '$_recurrenceInterval',
+                          decoration: InputDecoration(
+                              labelText: l10n.goalsFormInterval),
+                          keyboardType: TextInputType.number,
+                          onChanged: (v) {
+                            final n = int.tryParse(v);
+                            if (n != null && n >= 1) _recurrenceInterval = n;
+                          },
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(l10n.goalsFormDeadline,
+                          style: Theme.of(context).textTheme.titleSmall),
+                      DropdownButtonFormField<String?>(
+                        value: _deadlineKind,
+                        decoration: InputDecoration(
+                            labelText: l10n.goalsFormDeadlineKind),
+                        items: [
+                          DropdownMenuItem(
+                            value: null,
+                            child: Text(l10n.goalsFormNoDeadline),
+                          ),
+                          DropdownMenuItem(
+                            value: 'absolute',
+                            child: Text(l10n.goalsFormDeadlineAbsolute),
+                          ),
+                          DropdownMenuItem(
+                            value: 'relative',
+                            child: Text(l10n.goalsFormDeadlineRelative),
+                          ),
+                        ],
+                        onChanged: (v) => setState(() => _deadlineKind = v),
                       ),
+                      if (_deadlineKind == 'absolute') ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            _absoluteDeadline == null
+                                ? l10n.formSelectDate
+                                : _absoluteDeadline!
+                                    .toIso8601String()
+                                    .slice(0, 10),
+                          ),
+                          trailing: const Icon(Icons.calendar_today_outlined),
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate:
+                                  _absoluteDeadline ?? DateTime.now(),
+                              firstDate: DateTime.now()
+                                  .subtract(const Duration(days: 1)),
+                              lastDate: DateTime.now()
+                                  .add(const Duration(days: 3650)),
+                            );
+                            if (picked != null) {
+                              setState(() => _absoluteDeadline = picked);
+                            }
+                          },
+                        ),
+                      ],
+                      if (_deadlineKind == 'relative') ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        TextFormField(
+                          initialValue: '$_relativeDeadlineDays',
+                          decoration: InputDecoration(
+                            labelText: l10n.goalsFormDeadlineDays,
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (v) {
+                            final n = int.tryParse(v);
+                            if (n != null && n >= 0) {
+                              _relativeDeadlineDays = n;
+                            }
+                          },
+                        ),
+                      ],
+                      if (editing && widget.rewardRepository != null) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        RewardRulesSection(
+                          repository: widget.rewardRepository!,
+                          sourceType: 'goal',
+                          sourceId: widget.goal!.id,
+                          wrapInCard: false,
+                        ),
+                      ],
                     ],
-                    onChanged: (v) => setState(() => _recurrencePeriod = v),
                   ),
-                  if (_recurrencePeriod != null) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    TextFormField(
-                      initialValue: '$_recurrenceInterval',
-                      decoration:
-                          InputDecoration(labelText: l10n.goalsFormInterval),
-                      keyboardType: TextInputType.number,
-                      onChanged: (v) {
-                        final n = int.tryParse(v);
-                        if (n != null && n >= 1) _recurrenceInterval = n;
-                      },
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(l10n.goalsFormDeadline,
-                      style: Theme.of(context).textTheme.titleSmall),
-                  DropdownButtonFormField<String?>(
-                    value: _deadlineKind,
-                    decoration:
-                        InputDecoration(labelText: l10n.goalsFormDeadlineKind),
-                    items: [
-                      DropdownMenuItem(
-                        value: null,
-                        child: Text(l10n.goalsFormNoDeadline),
-                      ),
-                      DropdownMenuItem(
-                        value: 'absolute',
-                        child: Text(l10n.goalsFormDeadlineAbsolute),
-                      ),
-                      DropdownMenuItem(
-                        value: 'relative',
-                        child: Text(l10n.goalsFormDeadlineRelative),
-                      ),
-                    ],
-                    onChanged: (v) => setState(() => _deadlineKind = v),
-                  ),
-                  if (_deadlineKind == 'absolute') ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        _absoluteDeadline == null
-                            ? l10n.formSelectDate
-                            : _absoluteDeadline!.toIso8601String().slice(0, 10),
-                      ),
-                      trailing: const Icon(Icons.calendar_today_outlined),
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: _absoluteDeadline ?? DateTime.now(),
-                          firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                          lastDate: DateTime.now().add(const Duration(days: 3650)),
-                        );
-                        if (picked != null) {
-                          setState(() => _absoluteDeadline = picked);
-                        }
-                      },
-                    ),
-                  ],
-                  if (_deadlineKind == 'relative') ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    TextFormField(
-                      initialValue: '$_relativeDeadlineDays',
-                      decoration: InputDecoration(
-                        labelText: l10n.goalsFormDeadlineDays,
-                      ),
-                      keyboardType: TextInputType.number,
-                      onChanged: (v) {
-                        final n = int.tryParse(v);
-                        if (n != null && n >= 0) _relativeDeadlineDays = n;
-                      },
-                    ),
-                  ],
-                  if (editing && widget.rewardRepository != null) ...[
-                    const SizedBox(height: AppSpacing.lg),
-                    RewardRulesSection(
-                      repository: widget.rewardRepository!,
-                      sourceType: 'goal',
-                      sourceId: widget.goal!.id,
-                    ),
-                  ],
                   const SizedBox(height: AppSpacing.xl),
                   FilledButton(
                     onPressed: _saving ? null : _save,

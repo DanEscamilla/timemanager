@@ -14,11 +14,15 @@ class RewardRulesSection extends StatefulWidget {
     required this.repository,
     required this.sourceType,
     required this.sourceId,
+    this.wrapInCard = true,
   });
 
   final RewardRepository repository;
   final String sourceType;
   final int sourceId;
+
+  /// When false, skip the outer [AppCard] (e.g. nested inside Advanced).
+  final bool wrapInCard;
 
   @override
   State<RewardRulesSection> createState() => _RewardRulesSectionState();
@@ -164,73 +168,74 @@ class _RewardRulesSectionState extends State<RewardRulesSection> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.rewardsRulesSectionTitle,
+                style: theme.textTheme.titleSmall,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: _attach,
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(l10n.rewardsRulesAdd),
+            ),
+          ],
+        ),
+        FutureBuilder<List<RewardRule>>(
+          future: _rulesFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                child: LinearProgressIndicator(),
+              );
+            }
+            if (snapshot.hasError) {
+              return Text(
+                snapshot.error is GraphQLException
+                    ? (snapshot.error! as GraphQLException).localize(l10n)
+                    : snapshot.error.toString(),
+                style: TextStyle(color: theme.colorScheme.error),
+              );
+            }
+            final rules = snapshot.data ?? [];
+            if (rules.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xs),
                 child: Text(
-                  l10n.rewardsRulesSectionTitle,
-                  style: theme.textTheme.titleSmall,
+                  l10n.rewardsRulesEmpty,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              TextButton.icon(
-                onPressed: _attach,
-                icon: const Icon(Icons.add, size: 18),
-                label: Text(l10n.rewardsRulesAdd),
-              ),
-            ],
-          ),
-          FutureBuilder<List<RewardRule>>(
-            future: _rulesFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                  child: LinearProgressIndicator(),
-                );
-              }
-              if (snapshot.hasError) {
-                return Text(
-                  snapshot.error is GraphQLException
-                      ? (snapshot.error! as GraphQLException).localize(l10n)
-                      : snapshot.error.toString(),
-                  style: TextStyle(color: theme.colorScheme.error),
-                );
-              }
-              final rules = snapshot.data ?? [];
-              if (rules.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.xs),
-                  child: Text(
-                    l10n.rewardsRulesEmpty,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+              );
+            }
+            return Column(
+              children: [
+                for (final rule in rules)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(rule.definitionName),
+                    subtitle: Text(l10n.rewardsRulesQtyLabel(rule.quantity)),
+                    trailing: IconButton(
+                      tooltip: l10n.rewardsRulesDetach,
+                      onPressed: () => _detach(rule),
+                      icon: const Icon(Icons.link_off),
                     ),
                   ),
-                );
-              }
-              return Column(
-                children: [
-                  for (final rule in rules)
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(rule.definitionName),
-                      subtitle: Text(l10n.rewardsRulesQtyLabel(rule.quantity)),
-                      trailing: IconButton(
-                        tooltip: l10n.rewardsRulesDetach,
-                        onPressed: () => _detach(rule),
-                        icon: const Icon(Icons.link_off),
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
+              ],
+            );
+          },
+        ),
+      ],
     );
+
+    if (!widget.wrapInCard) return content;
+    return AppCard(child: content);
   }
 }

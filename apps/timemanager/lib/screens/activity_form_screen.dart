@@ -12,7 +12,9 @@ import '../services/reward_repository.dart';
 import '../theme/tokens/app_radius.dart';
 import '../theme/tokens/app_spacing.dart';
 import '../utils/date_only.dart';
+import '../utils/form_advanced_values.dart';
 import '../utils/recurrence_summary.dart';
+import '../widgets/advanced_form_section.dart';
 import '../widgets/app_card.dart';
 import '../widgets/reward_rules_section.dart';
 
@@ -42,6 +44,7 @@ class ActivityFormScreen extends StatefulWidget {
 
 class _ActivityFormScreenState extends State<ActivityFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _advancedKey = GlobalKey<AdvancedFormSectionState>();
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _intervalController;
@@ -66,6 +69,14 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   static const _presetOffsets = [0, 5, 15, 30, 60, 1440];
   static const _maxOffsets = 8;
   static const _maxOffsetMinutes = 10080;
+
+  bool get _hasAdvancedValues => activityHasAdvancedValues(
+        description: _descriptionController.text,
+        groupId: _groupId,
+        recurrenceEndDate: _recurrenceEndDate,
+        isLastDayOfMonth: _isLastDayOfMonth,
+        notificationOffsets: _notificationOffsets,
+      );
 
   @override
   void initState() {
@@ -257,7 +268,10 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      _advancedKey.currentState?.expand();
+      return;
+    }
 
     final l10n = AppLocalizations.of(context);
     final start = _formatTime(_startTime);
@@ -458,15 +472,6 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                     },
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _descriptionController,
-                    decoration: InputDecoration(
-                      labelText: l10n.formDescriptionOptional,
-                    ),
-                    maxLines: 3,
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
                   _TimeField(
                     label: l10n.formStart,
                     time: _startTime,
@@ -478,48 +483,6 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                     time: _endTime,
                     onTap: () => _pickTime(isStart: false),
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  if (_groupsLoading)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                      child: LinearProgressIndicator(),
-                    )
-                  else
-                    DropdownButtonFormField<int?>(
-                      value: _groupId,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: l10n.formGroup,
-                      ),
-                      items: [
-                        DropdownMenuItem<int?>(
-                          value: null,
-                          child: Text(l10n.formNoGroup),
-                        ),
-                        for (final group in _groups)
-                          DropdownMenuItem<int?>(
-                            value: group.id,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 12,
-                                  height: 12,
-                                  margin: const EdgeInsets.only(
-                                    right: AppSpacing.sm,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: group.colorValue,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                Text(group.name),
-                              ],
-                            ),
-                          ),
-                      ],
-                      onChanged: (value) => setState(() => _groupId = value),
-                    ),
                 ],
               ),
             ),
@@ -586,26 +549,6 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    _DateField(
-                      label: l10n.formEndsOptional,
-                      value: _recurrenceEndDate == null
-                          ? l10n.formNoEndDate
-                          : _displayDate(_recurrenceEndDate!),
-                      onTap: () => _pickDate(
-                        current: _recurrenceEndDate ?? _recurrenceStartDate,
-                        onPicked: (picked) =>
-                            setState(() => _recurrenceEndDate = picked),
-                      ),
-                      trailing: _recurrenceEndDate == null
-                          ? null
-                          : IconButton(
-                              tooltip: l10n.formClearEndDate,
-                              onPressed: () =>
-                                  setState(() => _recurrenceEndDate = null),
-                              icon: const Icon(Icons.clear),
-                            ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
                     if (_recurrenceType == RecurrenceType.weekly) ...[
                       Text(
                         l10n.formDaysOfWeek,
@@ -661,14 +604,6 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                           );
                         }),
                       ),
-                      CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(l10n.formLastDayOfMonth),
-                        value: _isLastDayOfMonth,
-                        onChanged: (value) {
-                          setState(() => _isLastDayOfMonth = value ?? false);
-                        },
-                      ),
                     ],
                     if (_recurrenceType == RecurrenceType.everyXDays) ...[
                       TextFormField(
@@ -698,61 +633,147 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    l10n.formNotifications,
-                    style: theme.textTheme.titleSmall,
+            AdvancedFormSection(
+              key: _advancedKey,
+              initiallyExpanded: widget.isEditing && _hasAdvancedValues,
+              hasConfiguredValues: _hasAdvancedValues,
+              children: [
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(
+                    labelText: l10n.formDescriptionOptional,
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    l10n.formNotificationsHint,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                  maxLines: 3,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                if (_groupsLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                    child: LinearProgressIndicator(),
+                  )
+                else
+                  DropdownButtonFormField<int?>(
+                    value: _groupId,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: l10n.formGroup,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.sm,
-                    children: [
-                      for (final minutes in _presetOffsets)
-                        FilterChip(
-                          label: Text(_presetLabel(l10n, minutes)),
-                          selected: _notificationOffsets.contains(minutes),
-                          onSelected: (selected) =>
-                              _toggleOffset(minutes, selected, l10n),
-                        ),
-                      for (final minutes in _notificationOffsets
-                          .where((m) => !_presetOffsets.contains(m))
-                          .toList()
-                        ..sort())
-                        FilterChip(
-                          label: Text(l10n.notificationStartsInMinutes(minutes)),
-                          selected: true,
-                          onSelected: (selected) =>
-                              _toggleOffset(minutes, selected, l10n),
-                        ),
-                      ActionChip(
-                        avatar: const Icon(Icons.add, size: 18),
-                        label: Text(l10n.formNotifyAddCustom),
-                        onPressed: () => _addCustomOffset(l10n),
+                    items: [
+                      DropdownMenuItem<int?>(
+                        value: null,
+                        child: Text(l10n.formNoGroup),
                       ),
+                      for (final group in _groups)
+                        DropdownMenuItem<int?>(
+                          value: group.id,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 12,
+                                height: 12,
+                                margin: const EdgeInsets.only(
+                                  right: AppSpacing.sm,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: group.colorValue,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              Text(group.name),
+                            ],
+                          ),
+                        ),
                     ],
+                    onChanged: (value) => setState(() => _groupId = value),
+                  ),
+                if (_isRecurring) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  _DateField(
+                    label: l10n.formEndsOptional,
+                    value: _recurrenceEndDate == null
+                        ? l10n.formNoEndDate
+                        : _displayDate(_recurrenceEndDate!),
+                    onTap: () => _pickDate(
+                      current: _recurrenceEndDate ?? _recurrenceStartDate,
+                      onPicked: (picked) =>
+                          setState(() => _recurrenceEndDate = picked),
+                    ),
+                    trailing: _recurrenceEndDate == null
+                        ? null
+                        : IconButton(
+                            tooltip: l10n.formClearEndDate,
+                            onPressed: () =>
+                                setState(() => _recurrenceEndDate = null),
+                            icon: const Icon(Icons.clear),
+                          ),
+                  ),
+                  if (_recurrenceType == RecurrenceType.monthly) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l10n.formLastDayOfMonth),
+                      value: _isLastDayOfMonth,
+                      onChanged: (value) {
+                        setState(() => _isLastDayOfMonth = value ?? false);
+                      },
+                    ),
+                  ],
+                ],
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  l10n.formNotifications,
+                  style: theme.textTheme.titleSmall,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  l10n.formNotificationsHint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    for (final minutes in _presetOffsets)
+                      FilterChip(
+                        label: Text(_presetLabel(l10n, minutes)),
+                        selected: _notificationOffsets.contains(minutes),
+                        onSelected: (selected) =>
+                            _toggleOffset(minutes, selected, l10n),
+                      ),
+                    for (final minutes in _notificationOffsets
+                        .where((m) => !_presetOffsets.contains(m))
+                        .toList()
+                      ..sort())
+                      FilterChip(
+                        label: Text(l10n.notificationStartsInMinutes(minutes)),
+                        selected: true,
+                        onSelected: (selected) =>
+                            _toggleOffset(minutes, selected, l10n),
+                      ),
+                    ActionChip(
+                      avatar: const Icon(Icons.add, size: 18),
+                      label: Text(l10n.formNotifyAddCustom),
+                      onPressed: () => _addCustomOffset(l10n),
+                    ),
+                  ],
+                ),
+                if (widget.isEditing && widget.rewardRepository != null) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  RewardRulesSection(
+                    repository: widget.rewardRepository!,
+                    sourceType: 'activity',
+                    sourceId: widget.activity!.id,
+                    wrapInCard: false,
                   ),
                 ],
-              ),
+              ],
             ),
-            if (widget.isEditing && widget.rewardRepository != null) ...[
-              const SizedBox(height: AppSpacing.md),
-              RewardRulesSection(
-                repository: widget.rewardRepository!,
-                sourceType: 'activity',
-                sourceId: widget.activity!.id,
-              ),
-            ],
             const SizedBox(height: AppSpacing.lg),
             FilledButton(
               onPressed: _saving ? null : _save,

@@ -311,6 +311,8 @@
   "formIntervalAtLeastOne": "Introduce un entero de al menos 1",
   "formSaveChanges": "Guardar cambios",
   "formCreate": "Crear",
+  "formAdvanced": "Avanzado",
+  "formAdvancedConfigured": "Configurado",
   "formEndTimeAfterStart": "La hora de fin debe ser posterior a la de inicio",
   "formDateRequired": "La fecha es obligatoria para actividades únicas",
   "formRecurrenceStartRequired": "La fecha de inicio de la recurrencia es obligatoria",

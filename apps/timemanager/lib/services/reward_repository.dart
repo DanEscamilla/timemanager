@@ -67,7 +67,19 @@ class RewardRepository {
     reward_definition_id
     quantity
     mode
-    config
+    config {
+      once
+      cooldown_hours
+      max_grants_total
+      max_grants_per_period
+      period_hours
+      probability
+      pool {
+        definition_id
+        weight
+        quantity
+      }
+    }
     enabled
     created_at
     updated_at

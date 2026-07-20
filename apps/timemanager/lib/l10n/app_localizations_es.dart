@@ -57,8 +57,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalsEmptyTitle => 'Aún no hay metas';
 
   @override
-  String get goalsEmptyHint =>
-      'Crea una meta para seguir completaciones y tiempo hacia un objetivo.';
+  String get goalsEmptyHint => 'Crea una meta para seguir completaciones y tiempo hacia un objetivo.';
 
   @override
   String get goalsEmptyAction => 'Añadir meta';
@@ -102,15 +101,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalsFormStartsAtCustom => 'Definir fecha de inicio';
 
   @override
-  String get goalsFormStartsAtHint =>
-      'Si no la defines, la meta empieza al crearla.';
+  String get goalsFormStartsAtHint => 'Si no la defines, la meta empieza al crearla.';
 
   @override
   String get goalsStartsAtConfirmTitle => '¿Retrasar el inicio?';
 
   @override
-  String get goalsStartsAtConfirmBody =>
-      'Retrasar la fecha de inicio puede quitar progreso ya contado. ¿Continuar?';
+  String get goalsStartsAtConfirmBody => 'Retrasar la fecha de inicio puede quitar progreso ya contado. ¿Continuar?';
 
   @override
   String get goalsStartsAtConfirmAction => 'Mover inicio';
@@ -181,8 +178,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalsRuleGroupAnyCount => 'Completar cualquiera del grupo N veces';
 
   @override
-  String get goalsRuleGroupAllComplete =>
-      'Completar todas las actividades del grupo';
+  String get goalsRuleGroupAllComplete => 'Completar todas las actividades del grupo';
 
   @override
   String get goalsRuleMultiDuration => 'Tiempo en actividades seleccionadas';
@@ -248,8 +244,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalsCompositeWeighted => 'Promedio ponderado';
 
   @override
-  String get goalsFormBlockUntilUnlocked =>
-      'Bloquear progreso hasta cumplir dependencias';
+  String get goalsFormBlockUntilUnlocked => 'Bloquear progreso hasta cumplir dependencias';
 
   @override
   String get goalsFormRecurrence => 'Recurrencia';
@@ -361,8 +356,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get groupsEmptyTitle => 'Aún no hay grupos';
 
   @override
-  String get groupsEmptyHint =>
-      'Crea un grupo para organizar tus actividades por color.';
+  String get groupsEmptyHint => 'Crea un grupo para organizar tus actividades por color.';
 
   @override
   String get groupsEmptyAction => 'Añadir grupo';
@@ -453,8 +447,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get overviewEmptyToday => 'Nada programado hoy';
 
   @override
-  String get overviewEmptyTodayHint =>
-      'Añade una actividad para llenar tu día.';
+  String get overviewEmptyTodayHint => 'Añade una actividad para llenar tu día.';
 
   @override
   String get overviewEmptyUpcoming => 'No hay actividades próximas';
@@ -469,8 +462,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get overviewViewRewards => 'Ver todas';
 
   @override
-  String get calendarEmptyHint =>
-      'No hay eventos en este rango. Toca + para añadir uno.';
+  String get calendarEmptyHint => 'No hay eventos en este rango. Toca + para añadir uno.';
 
   @override
   String get activitiesEmptyTitle => 'Aún no hay actividades';
@@ -557,12 +549,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get authAuthorisationUrlMissing =>
-      'Falta la URL de autorización en la respuesta';
+  String get authAuthorisationUrlMissing => 'Falta la URL de autorización en la respuesta';
 
   @override
-  String get authCouldNotGetAuthorisationUrl =>
-      'No se pudo obtener la URL de autorización';
+  String get authCouldNotGetAuthorisationUrl => 'No se pudo obtener la URL de autorización';
 
   @override
   String authCouldNotOpenLogin(String provider) {
@@ -573,8 +563,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorNotSignedIn => 'No has iniciado sesión';
 
   @override
-  String get errorSessionExpired =>
-      'La sesión ha caducado. Vuelve a iniciar sesión.';
+  String get errorSessionExpired => 'La sesión ha caducado. Vuelve a iniciar sesión.';
 
   @override
   String errorRequestFailed(int statusCode, String body) {
@@ -588,15 +577,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorUnknown => 'Error desconocido';
 
   @override
-  String get errorCouldNotLoadActivities =>
-      'No se pudieron cargar las actividades';
+  String get errorCouldNotLoadActivities => 'No se pudieron cargar las actividades';
 
   @override
   String get errorRetry => 'Reintentar';
 
   @override
-  String get activitiesEmpty =>
-      'Aún no hay actividades.\nToca + para añadir una.';
+  String get activitiesEmpty => 'Aún no hay actividades.\nToca + para añadir una.';
 
   @override
   String get activitiesDeleteTitle => '¿Eliminar actividad?';
@@ -709,38 +696,37 @@ class AppLocalizationsEs extends AppLocalizations {
   String get formCreate => 'Crear';
 
   @override
-  String get formEndTimeAfterStart =>
-      'La hora de fin debe ser posterior a la de inicio';
+  String get formAdvanced => 'Avanzado';
 
   @override
-  String get formDateRequired =>
-      'La fecha es obligatoria para actividades únicas';
+  String get formAdvancedConfigured => 'Configurado';
 
   @override
-  String get formRecurrenceStartRequired =>
-      'La fecha de inicio de la recurrencia es obligatoria';
+  String get formEndTimeAfterStart => 'La hora de fin debe ser posterior a la de inicio';
 
   @override
-  String get formEndDateAfterStart =>
-      'La fecha de fin debe ser igual o posterior a la de inicio';
+  String get formDateRequired => 'La fecha es obligatoria para actividades únicas';
+
+  @override
+  String get formRecurrenceStartRequired => 'La fecha de inicio de la recurrencia es obligatoria';
+
+  @override
+  String get formEndDateAfterStart => 'La fecha de fin debe ser igual o posterior a la de inicio';
 
   @override
   String get formSelectWeekday => 'Selecciona al menos un día de la semana';
 
   @override
-  String get formSelectMonthDay =>
-      'Selecciona al menos un día del mes, o el último día';
+  String get formSelectMonthDay => 'Selecciona al menos un día del mes, o el último día';
 
   @override
-  String get formIntervalInvalid =>
-      'El intervalo debe ser un entero de al menos 1';
+  String get formIntervalInvalid => 'El intervalo debe ser un entero de al menos 1';
 
   @override
   String get formNotifications => 'Notificaciones';
 
   @override
-  String get formNotificationsHint =>
-      'Recordatorios opcionales antes de que empiece la actividad';
+  String get formNotificationsHint => 'Recordatorios opcionales antes de que empiece la actividad';
 
   @override
   String get formNotifyAtStart => 'Al empezar';
@@ -773,8 +759,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get formNotifyCustomInvalid => 'Introduce un entero de 0 a 10080';
 
   @override
-  String get formNotifyMaxReached =>
-      'Puedes añadir como máximo 8 recordatorios';
+  String get formNotifyMaxReached => 'Puedes añadir como máximo 8 recordatorios';
 
   @override
   String get formNotifyAdd => 'Añadir';
@@ -882,15 +867,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardsEmptyInventoryTitle => 'Aún no hay recompensas';
 
   @override
-  String get rewardsEmptyInventoryHint =>
-      'Gana recompensas completando actividades y metas, o crea una en el catálogo.';
+  String get rewardsEmptyInventoryHint => 'Gana recompensas completando actividades y metas, o crea una en el catálogo.';
 
   @override
   String get rewardsEmptyCatalogTitle => 'Sin definiciones de recompensa';
 
   @override
-  String get rewardsEmptyCatalogHint =>
-      'Crea recompensas que puedas ganar y usar.';
+  String get rewardsEmptyCatalogHint => 'Crea recompensas que puedas ganar y usar.';
 
   @override
   String get rewardsEmptyCatalogAction => 'Añadir recompensa';
@@ -899,8 +882,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardsEmptyHistoryTitle => 'Aún no hay historial';
 
   @override
-  String get rewardsEmptyHistoryHint =>
-      'Gana y usa recompensas para verlas aquí.';
+  String get rewardsEmptyHistoryHint => 'Gana y usa recompensas para verlas aquí.';
 
   @override
   String get rewardsFormNew => 'Nueva recompensa';
@@ -939,8 +921,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardsFormStackable => 'Apilable';
 
   @override
-  String get rewardsFormStackableHint =>
-      'Permitir varias copias en el inventario';
+  String get rewardsFormStackableHint => 'Permitir varias copias en el inventario';
 
   @override
   String get rewardsFormImage => 'Imagen';
@@ -1031,8 +1012,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardsRulesDetach => 'Quitar';
 
   @override
-  String get rewardsRulesNoDefinitions =>
-      'Crea primero una recompensa en el catálogo.';
+  String get rewardsRulesNoDefinitions => 'Crea primero una recompensa en el catálogo.';
 
   @override
   String rewardsRulesQtyLabel(int quantity) {
