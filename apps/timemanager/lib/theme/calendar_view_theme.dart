@@ -1,6 +1,16 @@
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 
+/// Merges [calendar_view] theme extensions into a base design-system [ThemeData].
+ThemeData withCalendarTheme(ThemeData base) {
+  return base.copyWith(
+    extensions: [
+      ...base.extensions.values,
+      ...buildCalendarViewThemeExtensions(base.colorScheme),
+    ],
+  );
+}
+
 /// Builds [calendar_view] theme extensions from the app [ColorScheme].
 ///
 /// Without these, the package falls back to its own light/dark palettes

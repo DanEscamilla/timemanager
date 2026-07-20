@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/reward.dart';
 import '../services/asset_upload_service.dart';
 import '../services/graphql_client.dart';
 import '../services/reward_repository.dart';
-import '../theme/tokens/app_spacing.dart';
-import '../widgets/empty_state.dart';
-import '../widgets/error_state.dart';
-import '../widgets/loading_view.dart';
 import '../widgets/reward_card.dart';
 import 'reward_detail_screen.dart';
 import 'reward_form_screen.dart';
@@ -205,6 +202,8 @@ class RewardsScreenState extends State<RewardsScreen> {
                 return ErrorState(
                   message: _errorMessage(snapshot.error, l10n),
                   onRetry: reload,
+                  title: l10n.errorCouldNotLoadActivities,
+                  retryLabel: l10n.errorRetry,
                 );
               }
 
@@ -288,7 +287,7 @@ class _InventoryList extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
       itemBuilder: (context, index) {
         final item = items[index];
-        return RewardCard.fromInventory(
+        return rewardCardFromInventory(
           item,
           onTap: () => onOpen(item),
         );
@@ -336,7 +335,7 @@ class _CatalogList extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
       itemBuilder: (context, index) {
         final def = active[index];
-        return RewardCard.fromDefinition(
+        return rewardCardFromDefinition(
           def,
           onTap: () => onOpen(def),
         );

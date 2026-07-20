@@ -27,11 +27,16 @@ Git was initialized fresh at the workspace root; nested repos and local-only his
 
 These were explicitly deferred in the migration. Treat as future direction, not current work:
 
-- Extracting shared libs / GraphQL codegen into `libs/`.
+- GraphQL codegen into `libs/`.
 - Wiring Authentik into SuperTokens or Flutter auth (the Authentik stack currently stands alone; SuperTokens covers multi-app SSO without it).
 - Implementing CI pipelines / Nx Cloud (infra and deploy scripts are CI-ready; workflows not shipped yet).
 - Renaming the workspace folder away from `flutter`.
 - Self-hosting SuperTokens Core (currently `try.supertokens.com` for local/dev and first AWS staging; cloud hosts use env `SUPERTOKENS_CONNECTION_URI`).
+- Web/CSS token mirror of `libs/design_system` for React apps.
+
+## Shared libraries
+
+- **`libs/design_system`** — first shared Flutter package (Material 3 tokens, themes, UI kit). Apps depend via `path:` in `pubspec.yaml`, not pnpm. Tags: `scope:shared`, `type:lib`, `runtime:flutter`.
 
 ## Cloud (AWS)
 

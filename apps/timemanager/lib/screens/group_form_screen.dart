@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/group.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
-import '../theme/tokens/app_radius.dart';
-import '../theme/tokens/app_spacing.dart';
-import '../theme/tokens/group_palette.dart';
-import '../widgets/app_card.dart';
 
 class GroupFormScreen extends StatefulWidget {
   const GroupFormScreen({
@@ -114,7 +111,7 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
                     runSpacing: AppSpacing.sm,
                     children: [
                       for (final hex in kGroupColorPalette)
-                        _ColorSwatch(
+                        ColorSwatchButton(
                           color: parseGroupColor(hex),
                           selected: _color.toUpperCase() == hex.toUpperCase(),
                           onTap: () => setState(() => _color = hex),
@@ -141,48 +138,6 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ColorSwatch extends StatelessWidget {
-  const _ColorSwatch({
-    required this.color,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.borderPill,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: selected ? colorScheme.onSurface : Colors.transparent,
-            width: 3,
-          ),
-        ),
-        child: selected
-            ? Icon(
-                Icons.check,
-                size: 20,
-                color: color.computeLuminance() > 0.5
-                    ? Colors.black
-                    : Colors.white,
-              )
-            : null,
       ),
     );
   }

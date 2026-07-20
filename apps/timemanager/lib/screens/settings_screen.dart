@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
-import '../theme/tokens/app_spacing.dart';
-import '../widgets/app_card.dart';
 
 /// Production settings: theme mode and sign out.
 class SettingsScreen extends StatefulWidget {
@@ -58,6 +57,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ThemeModeRadioGroup(
                   themeMode: _themeMode,
                   onChanged: _onThemeChanged,
+                  systemLabel: l10n.settingsThemeSystem,
+                  lightLabel: l10n.settingsThemeLight,
+                  darkLabel: l10n.settingsThemeDark,
                 ),
               ],
             ),
@@ -81,54 +83,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ],
       ),
-    );
-  }
-}
-
-class ThemeModeRadioGroup extends StatelessWidget {
-  const ThemeModeRadioGroup({
-    super.key,
-    required this.themeMode,
-    required this.onChanged,
-  });
-
-  final ThemeMode themeMode;
-  final ValueChanged<ThemeMode> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Column(
-      children: [
-        RadioListTile<ThemeMode>(
-          contentPadding: EdgeInsets.zero,
-          title: Text(l10n.settingsThemeSystem),
-          value: ThemeMode.system,
-          groupValue: themeMode,
-          onChanged: (value) {
-            if (value != null) onChanged(value);
-          },
-        ),
-        RadioListTile<ThemeMode>(
-          contentPadding: EdgeInsets.zero,
-          title: Text(l10n.settingsThemeLight),
-          value: ThemeMode.light,
-          groupValue: themeMode,
-          onChanged: (value) {
-            if (value != null) onChanged(value);
-          },
-        ),
-        RadioListTile<ThemeMode>(
-          contentPadding: EdgeInsets.zero,
-          title: Text(l10n.settingsThemeDark),
-          value: ThemeMode.dark,
-          groupValue: themeMode,
-          onChanged: (value) {
-            if (value != null) onChanged(value);
-          },
-        ),
-      ],
     );
   }
 }

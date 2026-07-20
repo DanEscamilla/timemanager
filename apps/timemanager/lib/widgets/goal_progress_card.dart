@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/goal.dart';
-import '../theme/tokens/app_radius.dart';
-import '../theme/tokens/app_spacing.dart';
-import 'app_card.dart';
 
 /// Compact goal progress card for lists and dashboard strips.
 class GoalProgressCard extends StatelessWidget {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
@@ -8,11 +9,7 @@ import '../services/activity_repository.dart';
 import '../services/goal_repository.dart';
 import '../services/group_repository.dart';
 import '../services/reward_repository.dart';
-import '../theme/tokens/app_spacing.dart';
-import '../theme/tokens/group_palette.dart';
 import '../utils/form_advanced_values.dart';
-import '../widgets/advanced_form_section.dart';
-import '../widgets/loading_view.dart';
 import '../widgets/reward_rules_section.dart';
 
 /// Create / edit goal form covering MVP + advanced rule types.
@@ -501,6 +498,8 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
                     key: _advancedKey,
                     initiallyExpanded: editing && _hasAdvancedValues,
                     hasConfiguredValues: _hasAdvancedValues,
+                    title: l10n.formAdvanced,
+                    configuredBadgeLabel: l10n.formAdvancedConfigured,
                     children: [
                       TextFormField(
                         controller: _descriptionController,

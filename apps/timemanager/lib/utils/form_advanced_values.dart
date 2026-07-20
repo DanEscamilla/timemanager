@@ -1,4 +1,4 @@
-import '../theme/tokens/group_palette.dart';
+import 'package:design_system/design_system.dart';
 
 /// Whether a reward definition has non-default Advanced-section values.
 bool rewardHasAdvancedValues({

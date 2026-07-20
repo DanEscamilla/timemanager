@@ -14,6 +14,7 @@ Entrypoint for AI agents and humans. This is an **Nx + pnpm monorepo** with a mi
 | `apps/user-manager-api` | Express + SuperTokens | node | `:3001` | `scope:user-manager, type:api, runtime:node` |
 | `infra/timemanager-db` | Postgres + pgAdmin (docker-compose) | docker | `:5432` / `:8080` | `type:infra` |
 | `infra/authentik` | Authentik auth (docker-compose) | docker | — | `type:infra` |
+| `libs/design_system` | Shared Flutter Material 3 design system | flutter | — | `scope:shared, type:lib, runtime:flutter` |
 | `libs/` | reserved for future shared code | — | — | — |
 
 Data flow: Flutter authenticates via SuperTokens (`user-manager-api` `:3001`), then calls GraphQL (`timemanager-api` `:3000`) with a Bearer JWT; the API verifies JWKS and scopes data per user. `user-manager-web` also uses the same SuperTokens API. See [`.ai/architecture.md`](.ai/architecture.md).

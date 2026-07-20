@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/reward.dart';
 import '../services/asset_upload_service.dart';
 import '../services/graphql_client.dart';
 import '../services/reward_repository.dart';
-import '../theme/tokens/app_spacing.dart';
-import '../widgets/app_card.dart';
-import '../widgets/error_state.dart';
-import '../widgets/loading_view.dart';
 import '../widgets/reward_card.dart';
 
 class RewardDetailScreen extends StatefulWidget {
@@ -206,6 +203,8 @@ class _RewardDetailScreenState extends State<RewardDetailScreen> {
               return ErrorState(
                 message: _errorMessage(snapshot.error, l10n),
                 onRetry: reload,
+                title: l10n.errorCouldNotLoadActivities,
+                retryLabel: l10n.errorRetry,
               );
             }
 
@@ -215,6 +214,8 @@ class _RewardDetailScreenState extends State<RewardDetailScreen> {
               return ErrorState(
                 message: l10n.rewardsNotFound,
                 onRetry: reload,
+                title: l10n.errorCouldNotLoadActivities,
+                retryLabel: l10n.errorRetry,
               );
             }
             final history = data?.history ?? const <RewardTransaction>[];
@@ -222,7 +223,7 @@ class _RewardDetailScreenState extends State<RewardDetailScreen> {
             return ListView(
               padding: const EdgeInsets.all(AppSpacing.screen),
               children: [
-                RewardCard.fromInventory(item),
+                rewardCardFromInventory(item),
                 if (item.definition?.description != null &&
                     item.definition!.description!.trim().isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.md),

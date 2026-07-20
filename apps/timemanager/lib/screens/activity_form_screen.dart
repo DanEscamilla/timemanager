@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
@@ -9,13 +10,9 @@ import '../services/activity_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
 import '../services/reward_repository.dart';
-import '../theme/tokens/app_radius.dart';
-import '../theme/tokens/app_spacing.dart';
 import '../utils/date_only.dart';
 import '../utils/form_advanced_values.dart';
 import '../utils/recurrence_summary.dart';
-import '../widgets/advanced_form_section.dart';
-import '../widgets/app_card.dart';
 import '../widgets/reward_rules_section.dart';
 
 class ActivityFormScreen extends StatefulWidget {
@@ -472,13 +469,13 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                     },
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  _TimeField(
+                  AppTimeField(
                     label: l10n.formStart,
                     time: _startTime,
                     onTap: () => _pickTime(isStart: true),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  _TimeField(
+                  AppTimeField(
                     label: l10n.formEnd,
                     time: _endTime,
                     onTap: () => _pickTime(isStart: false),
@@ -506,7 +503,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   if (!_isRecurring) ...[
-                    _DateField(
+                    AppDateField(
                       label: l10n.formDate,
                       value: _oneOffDate == null
                           ? l10n.formSelectDate
@@ -537,7 +534,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                       },
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    _DateField(
+                    AppDateField(
                       label: l10n.formStarts,
                       value: _recurrenceStartDate == null
                           ? l10n.formSelectStartDate
@@ -637,6 +634,8 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
               key: _advancedKey,
               initiallyExpanded: widget.isEditing && _hasAdvancedValues,
               hasConfiguredValues: _hasAdvancedValues,
+              title: l10n.formAdvanced,
+              configuredBadgeLabel: l10n.formAdvancedConfigured,
               children: [
                 TextFormField(
                   controller: _descriptionController,
@@ -691,7 +690,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                   ),
                 if (_isRecurring) ...[
                   const SizedBox(height: AppSpacing.md),
-                  _DateField(
+                  AppDateField(
                     label: l10n.formEndsOptional,
                     value: _recurrenceEndDate == null
                         ? l10n.formNoEndDate
@@ -791,63 +790,6 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _TimeField extends StatelessWidget {
-  const _TimeField({
-    required this.label,
-    required this.time,
-    required this.onTap,
-  });
-
-  final String label;
-  final TimeOfDay time;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final formatted = time.format(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.borderMd,
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          suffixIcon: const Icon(Icons.schedule),
-        ),
-        child: Text(formatted),
-      ),
-    );
-  }
-}
-
-class _DateField extends StatelessWidget {
-  const _DateField({
-    required this.label,
-    required this.value,
-    required this.onTap,
-    this.trailing,
-  });
-
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.borderMd,
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          suffixIcon: trailing ?? const Icon(Icons.calendar_today),
-        ),
-        child: Text(value),
       ),
     );
   }

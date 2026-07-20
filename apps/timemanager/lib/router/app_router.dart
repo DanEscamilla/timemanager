@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:design_system/design_system.dart';
 
 import '../screens/activities_screen.dart';
 import '../screens/calendar_screen.dart';
@@ -10,7 +11,6 @@ import '../screens/login_screen.dart';
 import '../screens/overview_screen.dart';
 import '../screens/rewards_screen.dart';
 import '../screens/settings_screen.dart';
-import '../widgets/loading_view.dart';
 import 'app_routes.dart';
 import 'auth_controller.dart';
 

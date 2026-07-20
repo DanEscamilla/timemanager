@@ -13,7 +13,8 @@ Apps and infra:
 - `apps/user-manager-api` — Express + SuperTokens, on `:3001`. Runtime: node (pnpm).
 - `infra/timemanager-db` — Postgres `:5432` + pgAdmin `:8080` (docker-compose).
 - `infra/authentik` — Authentik auth (docker-compose).
-- `libs/` — reserved for future shared code (currently empty).
+- `libs/design_system` — Shared Flutter Material 3 design system (`scope:shared`, `type:lib`).
+- `libs/` — reserved for additional shared packages.
 
 Golden rules:
 

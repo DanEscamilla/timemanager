@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/goal.dart';
@@ -7,11 +8,7 @@ import '../services/goal_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
 import '../services/reward_repository.dart';
-import '../theme/tokens/app_spacing.dart';
-import '../widgets/empty_state.dart';
-import '../widgets/error_state.dart';
 import '../widgets/goal_progress_card.dart';
-import '../widgets/loading_view.dart';
 import 'goal_detail_screen.dart';
 import 'goal_form_screen.dart';
 
@@ -159,6 +156,8 @@ class GoalsScreenState extends State<GoalsScreen> {
                 return ErrorState(
                   message: _errorMessage(snapshot.error, l10n),
                   onRetry: reload,
+                  title: l10n.errorCouldNotLoadActivities,
+                  retryLabel: l10n.errorRetry,
                 );
               }
 

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/asset.dart';
@@ -10,12 +11,7 @@ import '../models/reward.dart';
 import '../services/asset_upload_service.dart';
 import '../services/graphql_client.dart';
 import '../services/reward_repository.dart';
-import '../theme/tokens/app_radius.dart';
-import '../theme/tokens/app_spacing.dart';
-import '../theme/tokens/group_palette.dart';
 import '../utils/form_advanced_values.dart';
-import '../widgets/advanced_form_section.dart';
-import '../widgets/app_card.dart';
 
 class RewardFormScreen extends StatefulWidget {
   const RewardFormScreen({
@@ -274,7 +270,7 @@ class _RewardFormScreenState extends State<RewardFormScreen> {
                     runSpacing: AppSpacing.sm,
                     children: [
                       for (final hex in kGroupColorPalette)
-                        _ColorSwatch(
+                        ColorSwatchButton(
                           color: parseGroupColor(hex),
                           selected: _color.toUpperCase() == hex.toUpperCase(),
                           onTap: () => setState(() => _color = hex),
@@ -366,6 +362,8 @@ class _RewardFormScreenState extends State<RewardFormScreen> {
               key: _advancedKey,
               initiallyExpanded: widget.isEditing && _hasAdvancedValues,
               hasConfiguredValues: _hasAdvancedValues,
+              title: l10n.formAdvanced,
+              configuredBadgeLabel: l10n.formAdvancedConfigured,
               children: [
                 TextFormField(
                   controller: _notesController,
@@ -428,48 +426,6 @@ class _RewardFormScreenState extends State<RewardFormScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ColorSwatch extends StatelessWidget {
-  const _ColorSwatch({
-    required this.color,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.borderPill,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: selected ? colorScheme.onSurface : Colors.transparent,
-            width: 3,
-          ),
-        ),
-        child: selected
-            ? Icon(
-                Icons.check,
-                size: 20,
-                color: color.computeLuminance() > 0.5
-                    ? Colors.black
-                    : Colors.white,
-              )
-            : null,
       ),
     );
   }

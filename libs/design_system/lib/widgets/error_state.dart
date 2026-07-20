@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 
-import '../l10n/app_localizations.dart';
 import '../theme/tokens/app_icon_sizes.dart';
 import '../theme/tokens/app_spacing.dart';
 
 /// Full-page fetch error with retry.
+///
+/// Callers supply localized [title] and [retryLabel] strings.
 class ErrorState extends StatelessWidget {
   const ErrorState({
     super.key,
     required this.message,
     required this.onRetry,
-    this.title,
+    required this.title,
+    required this.retryLabel,
   });
 
   final String message;
   final VoidCallback onRetry;
-  final String? title;
+  final String title;
+  final String retryLabel;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -36,7 +38,7 @@ class ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              title ?? l10n.errorCouldNotLoadActivities,
+              title,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -52,7 +54,7 @@ class ErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: Text(l10n.errorRetry),
+              label: Text(retryLabel),
             ),
           ],
         ),

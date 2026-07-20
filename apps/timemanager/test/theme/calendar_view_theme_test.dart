@@ -1,8 +1,9 @@
 import 'package:calendar_view/calendar_view.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:timemanager/theme/app_theme.dart';
+import 'package:timemanager/theme/calendar_view_theme.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +14,7 @@ void main() {
 
   group('calendar_view theme extensions', () {
     test('light theme maps weekday and cell colors from ColorScheme', () {
-      final theme = buildLightTheme();
+      final theme = withCalendarTheme(buildLightTheme());
       final scheme = theme.colorScheme;
       final week = theme.extension<WeekViewThemeData>();
       final month = theme.extension<MonthViewThemeData>();
@@ -29,7 +30,7 @@ void main() {
     });
 
     test('dark theme maps weekday and cell colors from ColorScheme', () {
-      final theme = buildDarkTheme();
+      final theme = withCalendarTheme(buildDarkTheme());
       final scheme = theme.colorScheme;
       final week = theme.extension<WeekViewThemeData>();
       final month = theme.extension<MonthViewThemeData>();

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../router/app_routes.dart';
 import '../router/auth_controller.dart';
-import '../theme/tokens/app_breakpoints.dart';
 
 /// App shell: Overview + Activities + Calendar + Goals + Rewards.
 class HomeScreen extends StatelessWidget {

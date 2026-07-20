@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timemanager/main.dart';
 import 'package:timemanager/screens/login_screen.dart';
 import 'package:timemanager/widgets/debug_menu.dart';
-import 'package:timemanager/widgets/loading_view.dart';
+import 'package:design_system/design_system.dart';
 
 void main() {
   setUpAll(() {

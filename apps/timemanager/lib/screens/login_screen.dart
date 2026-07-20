@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
-import '../theme/tokens/app_spacing.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({

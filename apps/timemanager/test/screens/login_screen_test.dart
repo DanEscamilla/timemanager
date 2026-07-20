@@ -3,8 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:timemanager/l10n/app_localizations.dart';
 import 'package:timemanager/screens/login_screen.dart';
 import 'package:timemanager/services/auth_service.dart';
-import 'package:timemanager/theme/app_theme.dart';
-import 'package:timemanager/widgets/app_card.dart';
+import 'package:design_system/design_system.dart';
 
 class _FakeAuthService extends AuthService {
   @override

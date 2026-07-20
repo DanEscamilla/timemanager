@@ -1,3 +1,4 @@
+import 'package:design_system/design_system.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -9,7 +10,7 @@ import 'router/auth_controller.dart';
 import 'services/activity_notification_scheduler.dart';
 import 'services/locale_preference_service.dart';
 import 'services/theme_mode_preference_service.dart';
-import 'theme/app_theme.dart';
+import 'theme/calendar_view_theme.dart';
 import 'widgets/debug_menu.dart';
 
 Future<void> main() async {
@@ -111,8 +112,8 @@ class _TimeManagerAppState extends State<TimeManagerApp>
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           locale: _overrideLocale,
-          theme: buildLightTheme(),
-          darkTheme: buildDarkTheme(),
+          theme: withCalendarTheme(buildLightTheme()),
+          darkTheme: withCalendarTheme(buildDarkTheme()),
           themeMode: themeMode,
           debugShowCheckedModeBanner: false,
           routerConfig: _router,

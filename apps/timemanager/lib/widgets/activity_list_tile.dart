@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
-import '../theme/tokens/app_radius.dart';
-import '../theme/tokens/app_spacing.dart';
 import '../utils/recurrence_summary.dart';
-import 'app_card.dart';
 
 /// Activity row used in lists and Overview cards.
 class ActivityListTile extends StatelessWidget {

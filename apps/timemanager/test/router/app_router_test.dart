@@ -17,7 +17,7 @@ import 'package:timemanager/services/auth_service.dart';
 import 'package:timemanager/services/goal_repository.dart';
 import 'package:timemanager/services/group_repository.dart';
 import 'package:timemanager/services/reward_repository.dart';
-import 'package:timemanager/widgets/loading_view.dart';
+import 'package:design_system/design_system.dart';
 
 class _FakeAuthService extends AuthService {
   _FakeAuthService({this.sessionExists = false});

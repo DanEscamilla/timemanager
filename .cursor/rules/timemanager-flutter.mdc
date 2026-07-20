@@ -13,7 +13,8 @@ Source layout (`lib/`):
 - `router/` — `go_router` config (`app_router.dart`, `app_routes.dart`, `auth_controller.dart`). Browser path syncs to shell tabs (`/overview`, `/activities`, `/calendar`) plus `/login`, `/groups`, `/settings`.
 - `screens/` — UI screens (`login_screen.dart`, `activities_screen.dart`, `activity_form_screen.dart`).
 - `services/` — `auth_service.dart` (SuperTokens FDI + header tokens), `graphql_client.dart` (Bearer GraphQL), repositories.
-- `widgets/` — shared UI helpers.
+- `theme/` — app-only theme helpers (e.g. `calendar_view` merge via `withCalendarTheme`).
+- `widgets/` — domain UI helpers. Shared design-system widgets come from `package:design_system` (`libs/design_system`).
 
 Auth: email/password + OAuth against `user-manager-api`. Tokens are stored via `shared_preferences` and sent as `Authorization: Bearer` (header mode). The official `supertokens_flutter` package is Android/iOS-only; this app targets Chrome, so FDI is called directly. `AuthController` bootstraps the session (including OAuth query params) and drives router redirects.
 

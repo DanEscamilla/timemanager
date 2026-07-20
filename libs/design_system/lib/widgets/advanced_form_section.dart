@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../l10n/app_localizations.dart';
 import '../theme/tokens/app_spacing.dart';
 import 'app_card.dart';
 
@@ -9,16 +8,22 @@ import 'app_card.dart';
 /// Children stay mounted so [Form] validators still run when collapsed.
 /// Call [AdvancedFormSectionState.expand] (via a [GlobalKey]) when validation
 /// fails so hidden errors become visible.
+///
+/// Callers supply localized [title] and [configuredBadgeLabel] strings.
 class AdvancedFormSection extends StatefulWidget {
   const AdvancedFormSection({
     super.key,
     required this.initiallyExpanded,
     required this.hasConfiguredValues,
+    required this.title,
+    required this.configuredBadgeLabel,
     required this.children,
   });
 
   final bool initiallyExpanded;
   final bool hasConfiguredValues;
+  final String title;
+  final String configuredBadgeLabel;
   final List<Widget> children;
 
   @override
@@ -58,7 +63,6 @@ class AdvancedFormSectionState extends State<AdvancedFormSection> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final showBadge = !_expanded && widget.hasConfiguredValues;
 
@@ -82,7 +86,7 @@ class AdvancedFormSectionState extends State<AdvancedFormSection> {
           shape: const Border(),
           collapsedShape: const Border(),
           title: Text(
-            l10n.formAdvanced,
+            widget.title,
             style: theme.textTheme.titleSmall,
           ),
           trailing: Row(
@@ -92,7 +96,7 @@ class AdvancedFormSectionState extends State<AdvancedFormSection> {
                 Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: Text(
-                    l10n.formAdvancedConfigured,
+                    widget.configuredBadgeLabel,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.primary,
                     ),

@@ -1,8 +1,6 @@
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:timemanager/l10n/app_localizations.dart';
-import 'package:timemanager/theme/app_theme.dart';
-import 'package:timemanager/widgets/advanced_form_section.dart';
 
 void main() {
   Future<void> pumpSection(
@@ -14,13 +12,13 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: buildLightTheme(),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: AdvancedFormSection(
             key: key,
             initiallyExpanded: initiallyExpanded,
             hasConfiguredValues: hasConfiguredValues,
+            title: 'Advanced',
+            configuredBadgeLabel: 'Configured',
             children: const [
               Text('advanced-child'),
             ],

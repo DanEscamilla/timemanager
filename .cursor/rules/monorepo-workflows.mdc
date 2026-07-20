@@ -16,8 +16,8 @@ Direct Nx usage: `nx serve <project>`, `nx build <project>`, `nx run-many -t <ta
 
 Project tags (in each `project.json`) — use for filtering and to understand scope:
 
-- `scope:*` — `scope:timemanager`, `scope:user-manager`
-- `type:*` — `type:app`, `type:api`, `type:infra`
+- `scope:*` — `scope:timemanager`, `scope:user-manager`, `scope:shared`
+- `type:*` — `type:app`, `type:api`, `type:infra`, `type:lib`
 - `runtime:*` — `runtime:flutter`, `runtime:deno`, `runtime:node`
 
 Notes:

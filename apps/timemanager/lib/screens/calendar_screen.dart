@@ -1,6 +1,7 @@
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/activity.dart';
@@ -10,15 +11,10 @@ import '../services/goal_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
 import '../services/reward_repository.dart';
-import '../theme/tokens/app_icon_sizes.dart';
-import '../theme/tokens/app_radius.dart';
-import '../theme/tokens/app_spacing.dart';
 import '../utils/calendar_event_mapper.dart';
 import '../utils/completion_lookup.dart';
 import '../utils/occurrence_expander.dart';
 import '../utils/recurrence_summary.dart';
-import '../widgets/error_state.dart';
-import '../widgets/loading_view.dart';
 import 'activity_form_screen.dart';
 
 enum CalendarViewMode { day, week, month }
@@ -693,6 +689,8 @@ class CalendarScreenState extends State<CalendarScreen> {
                 return ErrorState(
                   message: _errorMessage(snapshot.error, l10n),
                   onRetry: reload,
+                  title: l10n.errorCouldNotLoadActivities,
+                  retryLabel: l10n.errorRetry,
                 );
               }
 

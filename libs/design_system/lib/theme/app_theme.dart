@@ -1,17 +1,15 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'calendar_view_theme.dart';
 import 'tokens/app_colors.dart';
 import 'tokens/app_elevation.dart';
 import 'tokens/app_radius.dart';
 import 'tokens/app_spacing.dart';
 import 'tokens/app_typography.dart';
 
-/// Light Material 3 theme for Time Manager.
+/// Light Material 3 theme for the shared design system.
 ThemeData buildLightTheme() => _buildTheme(Brightness.light);
 
-/// Dark Material 3 theme for Time Manager.
+/// Dark Material 3 theme for the shared design system.
 ThemeData buildDarkTheme() => _buildTheme(Brightness.dark);
 
 /// @nodoc Kept for callers that still import the old name.
@@ -36,7 +34,6 @@ ThemeData _buildTheme(Brightness brightness) {
     brightness: brightness,
     extensions: [
       statusColors,
-      ...buildCalendarViewThemeExtensions(colorScheme),
     ],
     scaffoldBackgroundColor: colorScheme.surface,
     focusColor: colorScheme.primary.withValues(alpha: 0.12),

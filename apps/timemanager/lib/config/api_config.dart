@@ -35,7 +35,7 @@ class ApiConfig {
 
   static String get authBasePath => '/auth';
 
-  static String get graphqlEndpoint => '${apiBaseUrl}/graphql';
+  static String get graphqlEndpoint => '$apiBaseUrl/graphql';
 
   /// REST base for the GraphQL API host (e.g. asset upload at `/assets`).
   static String get apiBaseUrl {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
-import '../theme/tokens/group_palette.dart';
 
 class ActivityGroup {
   const ActivityGroup({

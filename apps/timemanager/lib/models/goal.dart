@@ -1,6 +1,6 @@
+import 'package:design_system/design_system.dart';
 import 'dart:ui';
 
-import '../theme/tokens/group_palette.dart';
 import '../utils/date_only.dart';
 
 enum GoalMetric { count, duration }

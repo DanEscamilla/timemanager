@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timemanager/services/theme_mode_preference_service.dart';
-import 'package:timemanager/theme/app_theme.dart';
+import 'package:design_system/design_system.dart';
 
 void main() {
   setUpAll(() {

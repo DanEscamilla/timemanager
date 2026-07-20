@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:design_system/design_system.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/reward.dart';
 import '../services/graphql_client.dart';
 import '../services/reward_repository.dart';
-import '../theme/tokens/app_spacing.dart';
-import 'app_card.dart';
 
 /// Lists reward rules for an activity/goal and supports attach/detach.
 class RewardRulesSection extends StatefulWidget {
