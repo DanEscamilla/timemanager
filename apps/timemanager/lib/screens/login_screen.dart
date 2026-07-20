@@ -25,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isSignUp = false;
   bool _busy = false;
+  bool _obscurePassword = true;
   String? _error;
 
   @override
@@ -145,10 +146,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _passwordController,
                             enabled: !_busy,
-                            obscureText: true,
+                            obscureText: _obscurePassword,
                             autofillHints: const [AutofillHints.password],
                             decoration: InputDecoration(
                               labelText: l10n.loginPassword,
+                              suffixIcon: IconButton(
+                                onPressed: _busy
+                                    ? null
+                                    : () => setState(() {
+                                          _obscurePassword = !_obscurePassword;
+                                        }),
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                                tooltip: _obscurePassword
+                                    ? l10n.loginShowPassword
+                                    : l10n.loginHidePassword,
+                              ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {

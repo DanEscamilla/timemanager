@@ -1037,6 +1037,18 @@ abstract class AppLocalizations {
   /// **'Use at least 8 characters'**
   String get loginPasswordTooShort;
 
+  /// No description provided for @loginShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get loginShowPassword;
+
+  /// No description provided for @loginHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get loginHidePassword;
+
   /// No description provided for @loginSignUp.
   ///
   /// In en, this message translates to:

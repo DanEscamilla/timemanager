@@ -72,4 +72,25 @@ void main() {
     expect(find.byType(SingleChildScrollView), findsOneWidget);
     expect(find.byType(TextFormField), findsNWidgets(2));
   });
+
+  testWidgets('password field toggles visibility', (WidgetTester tester) async {
+    await pumpLogin(tester);
+
+    EditableText passwordEditable() =>
+        tester.widget<EditableText>(find.byType(EditableText).last);
+
+    expect(passwordEditable().obscureText, isTrue);
+    expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.visibility_outlined));
+    await tester.pump();
+
+    expect(passwordEditable().obscureText, isFalse);
+    expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.visibility_off_outlined));
+    await tester.pump();
+
+    expect(passwordEditable().obscureText, isTrue);
+  });
 }

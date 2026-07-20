@@ -498,6 +498,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginPasswordTooShort => 'Usa al menos 8 caracteres';
 
   @override
+  String get loginShowPassword => 'Mostrar contraseña';
+
+  @override
+  String get loginHidePassword => 'Ocultar contraseña';
+
+  @override
   String get loginSignUp => 'Registrarse';
 
   @override

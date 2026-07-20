@@ -211,6 +211,8 @@
   "loginPassword": "Password",
   "loginPasswordRequired": "Password is required",
   "loginPasswordTooShort": "Use at least 8 characters",
+  "loginShowPassword": "Show password",
+  "loginHidePassword": "Hide password",
   "loginSignUp": "Sign up",
   "loginSignIn": "Sign in",
   "loginAlreadyHaveAccount": "Already have an account? Sign in",

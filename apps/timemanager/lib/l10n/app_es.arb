@@ -211,6 +211,8 @@
   "loginPassword": "Contraseña",
   "loginPasswordRequired": "La contraseña es obligatoria",
   "loginPasswordTooShort": "Usa al menos 8 caracteres",
+  "loginShowPassword": "Mostrar contraseña",
+  "loginHidePassword": "Ocultar contraseña",
   "loginSignUp": "Registrarse",
   "loginSignIn": "Iniciar sesión",
   "loginAlreadyHaveAccount": "¿Ya tienes una cuenta? Inicia sesión",
