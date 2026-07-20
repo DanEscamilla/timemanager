@@ -620,6 +620,7 @@ class CalendarScreenState extends State<CalendarScreen> {
           timeLineWidth: timeLineWidth,
           headerStyle: headerStyle,
           backgroundColor: colorScheme.surface,
+          weekTitleBackgroundColor: colorScheme.surfaceContainerLow,
           hourIndicatorSettings: HourIndicatorSettings(color: hourLineColor),
           liveTimeIndicatorSettings: LiveTimeIndicatorSettings(
             color: colorScheme.error,
@@ -643,8 +644,6 @@ class CalendarScreenState extends State<CalendarScreen> {
           ),
           monthViewThemeSettings: MonthViewThemeSettings(
             headerStyle: headerStyle,
-            weekDayBorderColor: colorScheme.outlineVariant,
-            weekDayBackgroundColor: colorScheme.surfaceContainerLow,
             weekDayTextStyle: textTheme.labelMedium?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),

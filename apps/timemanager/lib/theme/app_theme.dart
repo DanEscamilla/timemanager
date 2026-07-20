@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'calendar_view_theme.dart';
 import 'tokens/app_colors.dart';
 import 'tokens/app_elevation.dart';
 import 'tokens/app_radius.dart';
@@ -33,7 +34,10 @@ ThemeData _buildTheme(Brightness brightness) {
     textTheme: textTheme,
     useMaterial3: true,
     brightness: brightness,
-    extensions: [statusColors],
+    extensions: [
+      statusColors,
+      ...buildCalendarViewThemeExtensions(colorScheme),
+    ],
     scaffoldBackgroundColor: colorScheme.surface,
     focusColor: colorScheme.primary.withValues(alpha: 0.12),
     hoverColor: colorScheme.primary.withValues(alpha: 0.06),
