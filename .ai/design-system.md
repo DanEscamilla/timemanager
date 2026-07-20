@@ -3,8 +3,11 @@
 Source of truth for UI tokens and component usage across Flutter apps.
 Implementation lives in [`libs/design_system`](../libs/design_system).
 
-Today only `apps/timemanager` consumes it via a path dependency. Domain-specific
-widgets (activity tiles, goal cards, calendar_view theme) stay in the app.
+Consumers (path dependency): `apps/timemanager`, `apps/spendmanager`. Domain-specific
+widgets (activity tiles, goal cards, calendar_view theme, expense rows) stay in each app.
+
+Shared entity color helpers live next to the palette: `parseEntityColor` /
+`kEntityColorPalette` (aliases `parseGroupColor` / `kGroupColorPalette`).
 
 ## Principles
 
@@ -28,7 +31,7 @@ widgets (activity tiles, goal cards, calendar_view theme) stay in the app.
 | Text | Body / muted | `onSurface` / `onSurfaceVariant` |
 | Border | Dividers, outlines | `outline` / `outlineVariant` |
 
-Theme mode: Light / Dark / System via app `ThemeModePreferenceService` + shared `ThemeModeRadioGroup`.
+Theme mode: Light / Dark / System via `app_core` `ThemeModePreferenceService` + shared `ThemeModeRadioGroup`.
 
 ## Typography
 

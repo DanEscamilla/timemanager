@@ -98,21 +98,16 @@ class CategoriesScreenState extends State<CategoriesScreen> {
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const LoadingView();
         }
         if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(l10n.errorCouldNotLoad),
-                const SizedBox(height: AppSpacing.md),
-                FilledButton(
-                  onPressed: reload,
-                  child: Text(l10n.errorRetry),
-                ),
-              ],
-            ),
+          return ErrorState(
+            message: snapshot.error is GraphQLException
+                ? (snapshot.error! as GraphQLException).localize(l10n)
+                : l10n.errorCouldNotLoad,
+            onRetry: reload,
+            title: l10n.errorCouldNotLoad,
+            retryLabel: l10n.errorRetry,
           );
         }
 

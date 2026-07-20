@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:design_system/design_system.dart';
 import 'package:timemanager/models/activity.dart';
 import 'package:timemanager/models/group.dart';
 import 'package:timemanager/utils/calendar_event_mapper.dart';

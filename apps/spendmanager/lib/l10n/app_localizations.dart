@@ -593,29 +593,11 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get settingsThemeDark;
 
-  /// No description provided for @settingsLanguage.
+  /// No description provided for @settingsSignOut.
   ///
   /// In en, this message translates to:
-  /// **'Language'**
-  String get settingsLanguage;
-
-  /// No description provided for @settingsLanguageSystem.
-  ///
-  /// In en, this message translates to:
-  /// **'System'**
-  String get settingsLanguageSystem;
-
-  /// No description provided for @settingsLanguageEnglish.
-  ///
-  /// In en, this message translates to:
-  /// **'English'**
-  String get settingsLanguageEnglish;
-
-  /// No description provided for @settingsLanguageSpanish.
-  ///
-  /// In en, this message translates to:
-  /// **'Spanish'**
-  String get settingsLanguageSpanish;
+  /// **'Sign out'**
+  String get settingsSignOut;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

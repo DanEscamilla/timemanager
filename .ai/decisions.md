@@ -36,7 +36,9 @@ These were explicitly deferred in the migration. Treat as future direction, not 
 
 ## Shared libraries
 
-- **`libs/design_system`** — first shared Flutter package (Material 3 tokens, themes, UI kit). Apps depend via `path:` in `pubspec.yaml`, not pnpm. Tags: `scope:shared`, `type:lib`, `runtime:flutter`.
+- **`libs/design_system`** — Flutter Material 3 tokens, themes, UI kit. Apps depend via `path:` in `pubspec.yaml`, not pnpm. Tags: `scope:shared`, `type:lib`, `runtime:flutter`.
+- **`libs/app_core`** — Flutter product-app infrastructure (SuperTokens FDI auth, token stores, GraphQL client, idle session, locale/theme prefs, `AppEndpoints`). Path dep; apps keep thin `ApiConfig` + l10n exception mappers.
+- **`libs/deno_api_kit`** — Deno Pylon/Kysely API infrastructure (JWKS + CORS, SSL helpers, Kysely factory, `resolveLocalUser`, migrate/ensure DB, health + GraphQL auth middleware). Consumed via Deno import map `"deno_api_kit/": "../../libs/deno_api_kit/"`.
 
 ## Cloud (AWS)
 

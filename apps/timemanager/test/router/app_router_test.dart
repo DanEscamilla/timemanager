@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:timemanager/config/api_config.dart';
 import 'package:timemanager/l10n/app_localizations.dart';
 import 'package:timemanager/models/activity.dart';
 import 'package:timemanager/models/goal.dart';
@@ -33,6 +34,7 @@ class _FakeAuthService extends AuthService {
   @override
   Future<void> signOut() async {}
 }
+
 
 class _FakeActivityRepository extends ActivityRepository {
   @override
@@ -116,6 +118,7 @@ Widget _app(GoRouter router) {
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    ApiConfig.ensureConfigured();
   });
 
   testWidgets('signed-out user is redirected to login', (tester) async {

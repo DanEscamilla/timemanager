@@ -583,6 +583,7 @@ bootstrap_env_files() {
   local pairs=(
     "apps/user-manager-api/.env.example:apps/user-manager-api/.env"
     "apps/timemanager-api/.env.example:apps/timemanager-api/.env"
+    "apps/spendmanager-api/.env.example:apps/spendmanager-api/.env"
     "apps/user-manager-web/.env.example:apps/user-manager-web/.env"
   )
   local pair src dest
@@ -615,7 +616,16 @@ bootstrap_workspace() {
 
   if setup_have flutter; then
     setup_log "Fetching Flutter packages..."
-    (cd "$REPO_ROOT/apps/timemanager" && flutter pub get)
+    local flutter_pkgs=(
+      "libs/design_system"
+      "libs/app_core"
+      "apps/timemanager"
+      "apps/spendmanager"
+    )
+    local pkg
+    for pkg in "${flutter_pkgs[@]}"; do
+      (cd "$REPO_ROOT/$pkg" && flutter pub get)
+    done
   else
     setup_warn "flutter not on PATH; skip flutter pub get"
   fi

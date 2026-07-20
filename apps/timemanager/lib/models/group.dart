@@ -44,25 +44,3 @@ class ActivityGroup {
     return DateTime.now();
   }
 }
-
-/// Parses `#RRGGBB` (or `RRGGBB`) into a [Color].
-/// Falls back to the first palette color if the value is invalid.
-Color parseGroupColor(String hex) {
-  var value = hex.trim();
-  if (value.startsWith('#')) {
-    value = value.substring(1);
-  }
-  if (value.length == 6) {
-    final parsed = int.tryParse(value, radix: 16);
-    if (parsed != null) {
-      return Color(0xFF000000 | parsed);
-    }
-  }
-  return parseGroupColor(kGroupColorPalette.first);
-}
-
-/// Whether [hex] matches a value in the shared group palette (case-insensitive).
-bool isAllowedGroupColor(String hex) {
-  final normalized = hex.trim().toUpperCase();
-  return kGroupColorPalette.any((c) => c.toUpperCase() == normalized);
-}

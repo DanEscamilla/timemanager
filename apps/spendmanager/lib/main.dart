@@ -1,9 +1,11 @@
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 
 import 'l10n/app_localizations.dart';
+import 'config/api_config.dart';
 import 'router/app_router.dart';
 import 'router/auth_controller.dart';
 import 'services/locale_preference_service.dart';
@@ -11,6 +13,7 @@ import 'services/theme_mode_preference_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ApiConfig.ensureConfigured();
   usePathUrlStrategy();
   runApp(const SpendManagerApp());
 }
@@ -107,6 +110,24 @@ class _SpendManagerAppState extends State<SpendManagerApp>
           themeMode: themeMode,
           debugShowCheckedModeBanner: false,
           routerConfig: _router,
+          builder: (context, child) {
+            final content = child ?? const SizedBox.shrink();
+            return Listener(
+              behavior: HitTestBehavior.translucent,
+              onPointerDown: (_) => _auth.recordActivity(),
+              onPointerSignal: (_) => _auth.recordActivity(),
+              child: Focus(
+                autofocus: true,
+                onKeyEvent: (node, event) {
+                  if (event is KeyDownEvent || event is KeyRepeatEvent) {
+                    _auth.recordActivity();
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: content,
+              ),
+            );
+          },
         );
       },
     );

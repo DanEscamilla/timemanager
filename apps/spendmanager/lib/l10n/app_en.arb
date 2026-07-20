@@ -127,8 +127,5 @@
   "settingsThemeSystem": "System",
   "settingsThemeLight": "Light",
   "settingsThemeDark": "Dark",
-  "settingsLanguage": "Language",
-  "settingsLanguageSystem": "System",
-  "settingsLanguageEnglish": "English",
-  "settingsLanguageSpanish": "Spanish"
+  "settingsSignOut": "Sign out"
 }

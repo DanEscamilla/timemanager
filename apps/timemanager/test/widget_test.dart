@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:timemanager/config/api_config.dart';
 import 'package:timemanager/main.dart';
 import 'package:timemanager/screens/login_screen.dart';
 import 'package:timemanager/widgets/debug_menu.dart';
@@ -15,6 +16,7 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    ApiConfig.ensureConfigured();
   });
 
   testWidgets('boots to login with debug menu shell', (WidgetTester tester) async {

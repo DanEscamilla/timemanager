@@ -59,22 +59,13 @@ input ArgsInput_10 {
 	id: Number!
 }
 type Query {
-categories(args: ArgsInput): [Categories!]!
-category(args: ArgsInput_1!): Categories
-expenses(args: ArgsInput_2): [Expenses!]!
-expense(args: ArgsInput_3!): Expenses
-expenseTotals(args: ArgsInput_4!): [ExpenseTotals!]!
+categories(args: ArgsInput): Any!
+category(args: ArgsInput_1!): Any!
+expenses(args: ArgsInput_2): Any!
+expense(args: ArgsInput_3!): Expense
+expenseTotals(args: ArgsInput_4!): Any!
 }
-type Categories {
-user_id: Number!
-id: Number!
-name: String!
-color: String!
-archived_at: Date
-created_at: Date!
-updated_at: Date!
-}
-type Expenses {
+type Expense {
 amount_cents: Number!
 id: Number!
 user_id: Number!
@@ -85,29 +76,13 @@ note: String
 created_at: String!
 updated_at: String!
 }
-type ExpenseTotals {
-category_id: Number!
-category_name: String!
-category_color: String!
-currency: String!
-total_cents: Number!
-}
 type Mutation {
-createCategory(args: ArgsInput_5!): CreateCategory!
-updateCategory(args: ArgsInput_6!): CreateCategory!
-archiveCategory(args: ArgsInput_7!): Categories!
-createExpense(args: ArgsInput_8!): Expenses!
-updateExpense(args: ArgsInput_9!): Expenses!
+createCategory(args: ArgsInput_5!): Any!
+updateCategory(args: ArgsInput_6!): Any!
+archiveCategory(args: ArgsInput_7!): Any!
+createExpense(args: ArgsInput_8!): Expense!
+updateExpense(args: ArgsInput_9!): Expense!
 deleteExpense(args: ArgsInput_10!): Boolean!
-}
-type CreateCategory {
-user_id: Number!
-id: Number!
-name: String!
-color: String!
-archived_at: Date
-created_at: Date!
-updated_at: Date!
 }
 scalar ID
 scalar Int

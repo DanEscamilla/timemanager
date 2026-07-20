@@ -13,9 +13,12 @@ RUN apt-get update \
 RUN curl -fsSL https://deno.land/install.sh | sh
 ENV DENO_INSTALL=/root/.deno
 ENV PATH="${DENO_INSTALL}/bin:${PATH}"
-WORKDIR /app
-COPY apps/timemanager-api/package.json apps/timemanager-api/deno.json ./
-COPY apps/timemanager-api/deno.lock* ./
+# Keep monorepo-relative paths so deno_api_kit import map resolves.
+WORKDIR /workspace
+COPY apps/timemanager-api/package.json apps/timemanager-api/deno.json ./apps/timemanager-api/
+COPY apps/timemanager-api/deno.lock* ./apps/timemanager-api/
+COPY libs/deno_api_kit/ ./libs/deno_api_kit/
+WORKDIR /workspace/apps/timemanager-api
 RUN bun install
 COPY apps/timemanager-api/ ./
 RUN bunx pylon build
@@ -24,8 +27,8 @@ FROM oven/bun:1.2 AS runner
 COPY --from=build /root/.deno /root/.deno
 ENV DENO_INSTALL=/root/.deno
 ENV PATH="${DENO_INSTALL}/bin:${PATH}"
-WORKDIR /app
-COPY --from=build /app /app
+WORKDIR /workspace/apps/timemanager-api
+COPY --from=build /workspace /workspace
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000

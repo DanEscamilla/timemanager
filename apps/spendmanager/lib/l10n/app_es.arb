@@ -94,8 +94,5 @@
   "settingsThemeSystem": "Sistema",
   "settingsThemeLight": "Claro",
   "settingsThemeDark": "Oscuro",
-  "settingsLanguage": "Idioma",
-  "settingsLanguageSystem": "Sistema",
-  "settingsLanguageEnglish": "Inglés",
-  "settingsLanguageSpanish": "Español"
+  "settingsSignOut": "Cerrar sesión"
 }

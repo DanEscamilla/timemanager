@@ -72,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Icons.logout,
                   color: Theme.of(context).colorScheme.error,
                 ),
-                title: Text(l10n.tooltipSignOut),
+                title: Text(l10n.settingsSignOut),
                 onTap: () async {
                   Navigator.of(context).pop();
                   await widget.onSignedOut?.call();

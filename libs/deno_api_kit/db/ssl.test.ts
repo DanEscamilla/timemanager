@@ -5,8 +5,7 @@ import {
 
 Deno.test('sslForDatabaseUrl local is undefined', () => {
   if (
-    sslForDatabaseUrl('postgres://u:p@localhost:5432/spendmanager') !==
-      undefined
+    sslForDatabaseUrl('postgres://u:p@localhost:5432/app') !== undefined
   ) {
     throw new Error('expected undefined for localhost')
   }
@@ -14,7 +13,7 @@ Deno.test('sslForDatabaseUrl local is undefined', () => {
 
 Deno.test('sslForDatabaseUrl require enables tls', () => {
   const ssl = sslForDatabaseUrl(
-    'postgres://u:p@db.example:5432/spendmanager?sslmode=require',
+    'postgres://u:p@db.example:5432/app?sslmode=require',
   )
   if (ssl == null || typeof ssl === 'boolean' || ssl.rejectUnauthorized !== false) {
     throw new Error('expected rejectUnauthorized false')

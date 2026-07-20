@@ -1,16 +1,24 @@
 import 'dart:convert';
 
+import 'package:app_core/app_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timemanager/services/auth_service.dart';
-import 'package:timemanager/services/auth_token_store.dart';
 
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    AppEndpoints.configure(
+      AppEndpoints(
+        authApiBaseUrl: 'http://localhost:3001',
+        apiBaseUrl: 'http://localhost:3000',
+        oauthRedirectUri: 'http://localhost',
+      ),
+    );
   });
+
+  tearDown(AppEndpoints.resetForTest);
 
   test('remember on web writes tokens to persistent store only', () async {
     final persistent = MemoryTokenStore();

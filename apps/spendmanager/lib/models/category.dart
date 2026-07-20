@@ -22,7 +22,7 @@ class Category {
 
   bool get isArchived => archivedAt != null;
 
-  Color get colorValue => parseCategoryColor(color);
+  Color get colorValue => parseEntityColor(color);
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
@@ -50,16 +50,5 @@ class Category {
   }
 }
 
-Color parseCategoryColor(String hex) {
-  var value = hex.trim();
-  if (value.startsWith('#')) {
-    value = value.substring(1);
-  }
-  if (value.length == 6) {
-    final parsed = int.tryParse(value, radix: 16);
-    if (parsed != null) {
-      return Color(0xFF000000 | parsed);
-    }
-  }
-  return parseCategoryColor(kGroupColorPalette.first);
-}
+/// Alias for [parseEntityColor] used by spendmanager category UI.
+Color parseCategoryColor(String hex) => parseEntityColor(hex);

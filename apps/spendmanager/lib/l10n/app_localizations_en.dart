@@ -270,14 +270,5 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsThemeDark => 'Dark';
 
   @override
-  String get settingsLanguage => 'Language';
-
-  @override
-  String get settingsLanguageSystem => 'System';
-
-  @override
-  String get settingsLanguageEnglish => 'English';
-
-  @override
-  String get settingsLanguageSpanish => 'Spanish';
+  String get settingsSignOut => 'Sign out';
 }

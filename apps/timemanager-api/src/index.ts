@@ -4,7 +4,11 @@ import {
   corsMiddleware,
   unauthorizedResponse,
   verifyAccessToken,
-} from './auth/verify.ts'
+} from 'deno_api_kit/auth/verify.ts'
+import {
+  createGraphQLAuthMiddleware,
+  healthMiddleware,
+} from 'deno_api_kit/pylon/middleware.ts'
 import { resolveLocalUser } from './db/users.ts'
 import { db } from './db/database.ts'
 import {
@@ -14,20 +18,7 @@ import {
 import { MAX_ASSET_BYTES } from './assets/storage/types.ts'
 
 app.use(corsMiddleware)
-
-app.use(async (ctx, next) => {
-  const path = new URL(ctx.req.url).pathname
-  if (path === '/health' && ctx.req.method === 'GET') {
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    })
-  }
-  await next()
-})
+app.use(healthMiddleware)
 
 async function resolveUserIdFromRequest(
   authorization: string | undefined,
@@ -41,6 +32,7 @@ async function resolveUserIdFromRequest(
   return localUser.id
 }
 
+/** Authenticated REST for asset upload / download (not GraphQL). */
 app.use(async (ctx, next) => {
   if (ctx.req.method === 'OPTIONS') {
     await next()
@@ -49,7 +41,6 @@ app.use(async (ctx, next) => {
 
   const path = new URL(ctx.req.url).pathname
 
-  // Asset upload / download (authenticated REST, not GraphQL).
   if (path === '/assets' && ctx.req.method === 'POST') {
     const userId = await resolveUserIdFromRequest(
       ctx.req.header('Authorization'),
@@ -144,29 +135,10 @@ app.use(async (ctx, next) => {
     })
   }
 
-  if (path === '/health' || (path !== '/graphql' && !path.endsWith('/graphql'))) {
-    await next()
-    return
-  }
-
-  const verified = await verifyAccessToken(ctx.req.header('Authorization'))
-  if (!verified) {
-    return unauthorizedResponse()
-  }
-
-  const localUser = await resolveLocalUser({
-    authUserId: verified.authUserId,
-    email: verified.email,
-  })
-
-  ctx.set('authUserId', verified.authUserId)
-  if (verified.email) {
-    ctx.set('authEmail', verified.email)
-  }
-  ctx.set('userId', localUser.id)
-
   await next()
 })
+
+app.use(createGraphQLAuthMiddleware(resolveLocalUser))
 
 function jsonError(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), {

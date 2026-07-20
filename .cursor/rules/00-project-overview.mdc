@@ -16,6 +16,8 @@ Apps and infra:
 - `infra/timemanager-db` — Postgres `:5432` + pgAdmin `:8080` (docker-compose); hosts `timemanager` and `spendmanager` databases.
 - `infra/authentik` — Authentik auth (docker-compose).
 - `libs/design_system` — Shared Flutter Material 3 design system (`scope:shared`, `type:lib`).
+- `libs/app_core` — Shared Flutter auth / GraphQL / prefs (`scope:shared`, `type:lib`).
+- `libs/deno_api_kit` — Shared Deno Pylon/Kysely API infra (`scope:shared`, `type:lib`).
 - `libs/` — reserved for additional shared packages.
 
 Golden rules:

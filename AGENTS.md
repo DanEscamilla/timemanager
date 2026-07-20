@@ -17,7 +17,9 @@ Entrypoint for AI agents and humans. This is an **Nx + pnpm monorepo** with a mi
 | `infra/timemanager-db` | Postgres + pgAdmin (docker-compose) | docker | `:5432` / `:8080` | `type:infra` |
 | `infra/authentik` | Authentik auth (docker-compose) | docker | — | `type:infra` |
 | `libs/design_system` | Shared Flutter Material 3 design system | flutter | — | `scope:shared, type:lib, runtime:flutter` |
-| `libs/` | reserved for future shared code | — | — | — |
+| `libs/app_core` | Shared Flutter auth / GraphQL / prefs infra | flutter | — | `scope:shared, type:lib, runtime:flutter` |
+| `libs/deno_api_kit` | Shared Deno Pylon/Kysely API infra | deno | — | `scope:shared, type:lib, runtime:deno` |
+| `libs/` | reserved for additional shared packages | — | — | — |
 
 Data flow: Flutter apps authenticate via SuperTokens (`user-manager-api` `:3001`), then call their GraphQL APIs with a Bearer JWT. `timemanager-api` (`:3000`, DB `timemanager`) and `spendmanager-api` (`:3002`, DB `spendmanager`) share the same Postgres instance and JWKS verification. `user-manager-web` also uses the same SuperTokens API. See [`.ai/architecture.md`](.ai/architecture.md).
 
@@ -58,6 +60,7 @@ pnpm db:down          # stop the DB stack
 
 - [`.ai/architecture.md`](.ai/architecture.md) — system + data-flow diagram, how the apps relate
 - [`.ai/conventions.md`](.ai/conventions.md) — package managers, Nx tags, code style, testing, migrations
+- [`.ai/new-product-app.md`](.ai/new-product-app.md) — checklist for scaffolding another Flutter + Deno product
 - [`.ai/local-setup.md`](.ai/local-setup.md) — new-machine scripts, tool inventory, first run
 - [`.ai/workflows.md`](.ai/workflows.md) — run/build/seed/migrate + smoke checks
 - [`.ai/deploy-aws.md`](.ai/deploy-aws.md) — AWS Terraform, deploy scripts, CI/CD contract

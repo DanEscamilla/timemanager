@@ -84,7 +84,7 @@ class HomeScreen extends StatelessWidget {
 
     final body = navigationShell;
 
-    final scaffold = Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: Text(_title(l10n)),
         actions: [
@@ -143,11 +143,6 @@ class HomeScreen extends StatelessWidget {
               },
               destinations: destinations,
             ),
-    );
-
-    return Listener(
-      onPointerDown: (_) => authController.recordActivity(),
-      child: scaffold,
     );
   }
 }

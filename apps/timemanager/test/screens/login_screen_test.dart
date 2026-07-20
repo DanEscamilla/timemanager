@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:timemanager/config/api_config.dart';
 import 'package:timemanager/l10n/app_localizations.dart';
 import 'package:timemanager/screens/login_screen.dart';
 import 'package:timemanager/services/auth_service.dart';
@@ -17,6 +18,8 @@ class _FakeAuthService extends AuthService {
 }
 
 void main() {
+  setUp(ApiConfig.ensureConfigured);
+
   Future<void> pumpLogin(
     WidgetTester tester, {
     bool? showRememberDevice,

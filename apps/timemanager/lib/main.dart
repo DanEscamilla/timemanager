@@ -6,6 +6,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 
 import 'l10n/app_localizations.dart';
+import 'config/api_config.dart';
 import 'router/app_router.dart';
 import 'router/auth_controller.dart';
 import 'services/activity_notification_scheduler.dart';
@@ -16,6 +17,7 @@ import 'widgets/debug_menu.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ApiConfig.ensureConfigured();
   usePathUrlStrategy();
   await ActivityNotificationScheduler.instance.ensureInitialized();
   runApp(const TimeManagerApp());

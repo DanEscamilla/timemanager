@@ -69,6 +69,7 @@ Created from examples when missing:
 |------|---------------------|
 | `apps/user-manager-api/.env` | Recommended (defaults work for email/password) |
 | `apps/timemanager-api/.env` | Optional (code defaults match Docker Postgres) |
+| `apps/spendmanager-api/.env` | Optional (code defaults match Docker Postgres) |
 | `apps/user-manager-web/.env` | Optional (Vite defaults to localhost) |
 
 Never commit `.env` files.
