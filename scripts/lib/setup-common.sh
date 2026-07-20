@@ -619,6 +619,7 @@ bootstrap_workspace() {
     local flutter_pkgs=(
       "libs/design_system"
       "libs/app_core"
+      "libs/local_notifications"
       "apps/timemanager"
       "apps/spendmanager"
     )

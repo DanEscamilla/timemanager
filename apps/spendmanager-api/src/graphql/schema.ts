@@ -36,6 +36,36 @@ export const typeDefs = gql`
     total_cents: Int!
   }
 
+  type Budget {
+    id: ID!
+    user_id: ID!
+    name: String!
+    category_id: ID
+    amount_cents: Int!
+    currency: String!
+    interval_unit: String!
+    interval_count: Int!
+    anchor_date: String!
+    alert_percent: Int!
+    archived_at: String
+    created_at: String!
+    updated_at: String!
+  }
+
+  type BudgetStatus {
+    budget_id: ID!
+    budget_name: String!
+    category_id: ID
+    currency: String!
+    amount_cents: Int!
+    spent_cents: Int!
+    percent_used: Int!
+    alert_percent: Int!
+    alert_triggered: Boolean!
+    period_start: String
+    period_end_exclusive: String
+  }
+
   input CreateCategoryInput {
     name: String!
     color: String!
@@ -62,12 +92,37 @@ export const typeDefs = gql`
     note: String
   }
 
+  input CreateBudgetInput {
+    name: String!
+    amountCents: Int!
+    intervalUnit: String!
+    intervalCount: Int!
+    anchorDate: String!
+    alertPercent: Int!
+    categoryId: Int
+    currency: String
+  }
+
+  input UpdateBudgetInput {
+    name: String
+    amountCents: Int
+    intervalUnit: String
+    intervalCount: Int
+    anchorDate: String
+    alertPercent: Int
+    categoryId: Int
+    currency: String
+  }
+
   type Query {
     categories(includeArchived: Boolean): [Category!]!
     category(id: Int!): Category
     expenses(fromDate: String, toDate: String, categoryId: Int): [Expense!]!
     expense(id: Int!): Expense
     expenseTotals(fromDate: String!, toDate: String!): [ExpenseTotal!]!
+    budgets(includeArchived: Boolean): [Budget!]!
+    budget(id: Int!): Budget
+    budgetStatuses(asOf: String): [BudgetStatus!]!
   }
 
   type Mutation {
@@ -77,5 +132,8 @@ export const typeDefs = gql`
     createExpense(input: CreateExpenseInput!): Expense!
     updateExpense(id: Int!, input: UpdateExpenseInput!): Expense!
     deleteExpense(id: Int!): Boolean!
+    createBudget(input: CreateBudgetInput!): Budget!
+    updateBudget(id: Int!, input: UpdateBudgetInput!): Budget!
+    archiveBudget(id: Int!): Budget!
   }
 `

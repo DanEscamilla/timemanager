@@ -1,3 +1,5 @@
+import type { IntervalUnit } from '../budgets/period.ts'
+
 export class InvalidCategoryError extends Error {
   constructor(message: string) {
     super(message)
@@ -12,9 +14,17 @@ export class InvalidExpenseError extends Error {
   }
 }
 
+export class InvalidBudgetError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'InvalidBudgetError'
+  }
+}
+
 const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/
 const CURRENCY = /^[A-Z]{3}$/
+const INTERVAL_UNITS = new Set<IntervalUnit>(['day', 'week', 'month'])
 
 export function validateCategoryName(name: string): string {
   const trimmed = name.trim()
@@ -69,4 +79,58 @@ export function validateNote(note: string | null | undefined): string | null {
   if (note == null) return null
   const trimmed = note.trim()
   return trimmed.length === 0 ? null : trimmed
+}
+
+export function validateBudgetName(name: string): string {
+  const trimmed = name.trim()
+  if (!trimmed) {
+    throw new InvalidBudgetError('name is required')
+  }
+  if (trimmed.length > 255) {
+    throw new InvalidBudgetError('name is too long')
+  }
+  return trimmed
+}
+
+export function validateBudgetAmountCents(amountCents: number): number {
+  if (!Number.isFinite(amountCents) || !Number.isInteger(amountCents)) {
+    throw new InvalidBudgetError('amount_cents must be an integer')
+  }
+  if (amountCents <= 0) {
+    throw new InvalidBudgetError('amount_cents must be positive')
+  }
+  return amountCents
+}
+
+export function validateIntervalUnit(unit: string): IntervalUnit {
+  const trimmed = unit.trim().toLowerCase()
+  if (!INTERVAL_UNITS.has(trimmed as IntervalUnit)) {
+    throw new InvalidBudgetError('interval_unit must be day, week, or month')
+  }
+  return trimmed as IntervalUnit
+}
+
+export function validateIntervalCount(count: number): number {
+  if (!Number.isFinite(count) || !Number.isInteger(count) || count < 1) {
+    throw new InvalidBudgetError('interval_count must be an integer >= 1')
+  }
+  return count
+}
+
+export function validateAlertPercent(percent: number): number {
+  if (!Number.isFinite(percent) || !Number.isInteger(percent)) {
+    throw new InvalidBudgetError('alert_percent must be an integer')
+  }
+  if (percent < 1 || percent > 100) {
+    throw new InvalidBudgetError('alert_percent must be between 1 and 100')
+  }
+  return percent
+}
+
+export function validateAnchorDate(anchorDate: string): string {
+  try {
+    return validateSpentOn(anchorDate)
+  } catch {
+    throw new InvalidBudgetError('anchor_date must be YYYY-MM-DD')
+  }
 }

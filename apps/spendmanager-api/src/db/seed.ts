@@ -96,8 +96,43 @@ async function seed() {
     ])
     .execute()
 
+  const monthStart = `${new Date().toISOString().slice(0, 7)}-01`
+  await db
+    .insertInto('budgets')
+    .values([
+      {
+        user_id: user.id,
+        name: 'Monthly total',
+        category_id: null,
+        amount_cents: 100000,
+        currency: 'USD',
+        interval_unit: 'month',
+        interval_count: 1,
+        anchor_date: monthStart,
+        alert_percent: 80,
+        archived_at: null,
+        created_at: now,
+        updated_at: now,
+      },
+      {
+        user_id: user.id,
+        name: 'Groceries',
+        category_id: categories[0]!.id,
+        amount_cents: 30000,
+        currency: 'USD',
+        interval_unit: 'month',
+        interval_count: 1,
+        anchor_date: monthStart,
+        alert_percent: 80,
+        archived_at: null,
+        created_at: now,
+        updated_at: now,
+      },
+    ])
+    .execute()
+
   console.log(
-    `Seeded ${categories.length} categories and 2 sample expenses for user ${user.id}`,
+    `Seeded ${categories.length} categories, 2 sample expenses, and 2 budgets for user ${user.id}`,
   )
   console.log(
     'Sign in via SuperTokens to create/link a real user; auth_user_id is set on first GraphQL request.',

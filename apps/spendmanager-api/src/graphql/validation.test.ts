@@ -1,9 +1,16 @@
 import {
+  validateAlertPercent,
   validateAmountCents,
+  validateAnchorDate,
+  validateBudgetAmountCents,
+  validateBudgetName,
   validateCategoryColor,
   validateCategoryName,
   validateCurrency,
+  validateIntervalCount,
+  validateIntervalUnit,
   validateSpentOn,
+  InvalidBudgetError,
   InvalidCategoryError,
   InvalidExpenseError,
 } from './validation.ts'
@@ -59,4 +66,34 @@ Deno.test('validateCurrency and validateSpentOn', () => {
     threw = e instanceof InvalidExpenseError
   }
   if (!threw) throw new Error('expected invalid date')
+})
+
+Deno.test('validateBudgetName and amount', () => {
+  if (validateBudgetName('  Total  ') !== 'Total') throw new Error('name')
+  if (validateBudgetAmountCents(5000) !== 5000) throw new Error('amount')
+  let threw = false
+  try {
+    validateBudgetAmountCents(0)
+  } catch (e) {
+    threw = e instanceof InvalidBudgetError
+  }
+  if (!threw) throw new Error('expected InvalidBudgetError')
+})
+
+Deno.test('validateInterval and alertPercent', () => {
+  if (validateIntervalUnit('Month') !== 'month') throw new Error('unit')
+  if (validateIntervalCount(2) !== 2) throw new Error('count')
+  if (validateAlertPercent(80) !== 80) throw new Error('alert')
+  if (validateAnchorDate('2026-01-15') !== '2026-01-15') {
+    throw new Error('anchor')
+  }
+  for (const bad of [0, 101, 1.5]) {
+    let threw = false
+    try {
+      validateAlertPercent(bad)
+    } catch (e) {
+      threw = e instanceof InvalidBudgetError
+    }
+    if (!threw) throw new Error(`expected InvalidBudgetError for ${bad}`)
+  }
 })

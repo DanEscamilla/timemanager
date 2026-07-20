@@ -38,6 +38,8 @@ dependencies:
     path: ../../libs/design_system
   app_core:
     path: ../../libs/app_core
+  local_notifications:
+    path: ../../libs/local_notifications
   calendar_view: 2.0.0
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
@@ -48,10 +50,6 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   image_picker: ^1.1.2
-  flutter_local_notifications: ^19.0.0
-  timezone: ^0.10.0
-  flutter_timezone: ^4.1.0
-  web: ^1.1.0
 
 dev_dependencies:
   flutter_test:

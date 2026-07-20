@@ -18,6 +18,7 @@ Entrypoint for AI agents and humans. This is an **Nx + pnpm monorepo** with a mi
 | `infra/authentik` | Authentik auth (docker-compose) | docker | — | `type:infra` |
 | `libs/design_system` | Shared Flutter Material 3 design system | flutter | — | `scope:shared, type:lib, runtime:flutter` |
 | `libs/app_core` | Shared Flutter auth / GraphQL / prefs infra | flutter | — | `scope:shared, type:lib, runtime:flutter` |
+| `libs/local_notifications` | Shared local OS / in-session browser notifications | flutter | — | `scope:shared, type:lib, runtime:flutter` |
 | `libs/deno_api_kit` | Shared Deno Pylon/Kysely API infra | deno | — | `scope:shared, type:lib, runtime:deno` |
 | `libs/` | reserved for additional shared packages | — | — | — |
 

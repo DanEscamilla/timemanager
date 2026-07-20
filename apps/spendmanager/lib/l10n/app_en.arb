@@ -6,12 +6,14 @@
   "navOverview": "Overview",
   "navExpenses": "Expenses",
   "navCategories": "Categories",
+  "navBudgets": "Budgets",
 
   "tooltipRefresh": "Refresh",
   "tooltipSignOut": "Sign out",
   "tooltipSettings": "Settings",
   "tooltipAddExpense": "Add expense",
   "tooltipAddCategory": "Add category",
+  "tooltipAddBudget": "Add budget",
 
   "loginCreateAccount": "Create an account",
   "loginSignInContinue": "Sign in to continue",
@@ -121,6 +123,84 @@
   "overviewEmpty": "No spending in this range yet.",
   "overviewTotal": "Total",
   "overviewByCategory": "By category",
+  "overviewBudgets": "Budgets",
+  "overviewBudgetAlert": "Reached {percent}% of this budget",
+  "@overviewBudgetAlert": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+
+  "budgetsEmptyTitle": "No budgets yet",
+  "budgetsEmptyHint": "Set a total or per-category spending limit.",
+  "budgetsEmptyAction": "Add budget",
+  "budgetsArchiveTitle": "Archive budget?",
+  "budgetsArchiveConfirm": "Archive \"{name}\"?",
+  "@budgetsArchiveConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "budgetsFormNew": "New budget",
+  "budgetsFormEdit": "Edit budget",
+  "budgetsFormName": "Name",
+  "budgetsFormNameRequired": "Name is required",
+  "budgetsFormScope": "Scope",
+  "budgetsScopeTotal": "Total spending",
+  "budgetsScopeCategory": "Category",
+  "budgetsFormCategory": "Category",
+  "budgetsFormCategoryRequired": "Pick a category",
+  "budgetsFormAmount": "Amount",
+  "budgetsFormAmountRequired": "Enter an amount",
+  "budgetsFormAmountInvalid": "Enter a valid amount (e.g. 12.50)",
+  "budgetsFormInterval": "Repeats every",
+  "budgetsFormIntervalCount": "Count",
+  "budgetsFormIntervalCountInvalid": "Enter a whole number ≥ 1",
+  "budgetsFormIntervalUnit": "Unit",
+  "budgetsIntervalUnitDay": "Days",
+  "budgetsIntervalUnitWeek": "Weeks",
+  "budgetsIntervalUnitMonth": "Months",
+  "budgetsIntervalEveryDays": "Every {count} days",
+  "@budgetsIntervalEveryDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "budgetsIntervalEveryWeeks": "Every {count} weeks",
+  "@budgetsIntervalEveryWeeks": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "budgetsIntervalEveryMonths": "Every {count} months",
+  "@budgetsIntervalEveryMonths": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "budgetsFormAnchorDate": "Period start",
+  "budgetsFormAlertPercent": "Alert at",
+  "budgetsFormAlertPercentInvalid": "Enter a percent from 1 to 100",
+  "budgetsAlertAt": "Alert at {percent}%",
+  "@budgetsAlertAt": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "budgetAlertTitle": "Budget alert: {name}",
+  "@budgetAlertTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "budgetAlertBody": "{percent}% used ({spent} / {amount})",
+  "@budgetAlertBody": {
+    "placeholders": {
+      "percent": { "type": "int" },
+      "spent": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
 
   "settingsTitle": "Settings",
   "settingsTheme": "Theme",

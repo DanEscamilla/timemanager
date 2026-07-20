@@ -5,5 +5,6 @@ abstract final class AppRoutes {
   static const overview = '/overview';
   static const expenses = '/expenses';
   static const categories = '/categories';
+  static const budgets = '/budgets';
   static const settings = '/settings';
 }

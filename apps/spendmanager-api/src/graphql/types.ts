@@ -23,3 +23,25 @@ export interface UpdateExpenseInput {
   currency?: string
   note?: string | null
 }
+
+export interface CreateBudgetInput {
+  name: string
+  amountCents: number
+  intervalUnit: string
+  intervalCount: number
+  anchorDate: string
+  alertPercent: number
+  categoryId?: number | null
+  currency?: string
+}
+
+export interface UpdateBudgetInput {
+  name?: string
+  amountCents?: number
+  intervalUnit?: string
+  intervalCount?: number
+  anchorDate?: string
+  alertPercent?: number
+  categoryId?: number | null
+  currency?: string
+}

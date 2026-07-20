@@ -21,6 +21,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navCategories => 'Categories';
 
   @override
+  String get navBudgets => 'Budgets';
+
+  @override
   String get tooltipRefresh => 'Refresh';
 
   @override
@@ -34,6 +37,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tooltipAddCategory => 'Add category';
+
+  @override
+  String get tooltipAddBudget => 'Add budget';
 
   @override
   String get loginCreateAccount => 'Create an account';
@@ -253,6 +259,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get overviewByCategory => 'By category';
+
+  @override
+  String get overviewBudgets => 'Budgets';
+
+  @override
+  String overviewBudgetAlert(int percent) {
+    return 'Reached $percent% of this budget';
+  }
+
+  @override
+  String get budgetsEmptyTitle => 'No budgets yet';
+
+  @override
+  String get budgetsEmptyHint => 'Set a total or per-category spending limit.';
+
+  @override
+  String get budgetsEmptyAction => 'Add budget';
+
+  @override
+  String get budgetsArchiveTitle => 'Archive budget?';
+
+  @override
+  String budgetsArchiveConfirm(String name) {
+    return 'Archive \"$name\"?';
+  }
+
+  @override
+  String get budgetsFormNew => 'New budget';
+
+  @override
+  String get budgetsFormEdit => 'Edit budget';
+
+  @override
+  String get budgetsFormName => 'Name';
+
+  @override
+  String get budgetsFormNameRequired => 'Name is required';
+
+  @override
+  String get budgetsFormScope => 'Scope';
+
+  @override
+  String get budgetsScopeTotal => 'Total spending';
+
+  @override
+  String get budgetsScopeCategory => 'Category';
+
+  @override
+  String get budgetsFormCategory => 'Category';
+
+  @override
+  String get budgetsFormCategoryRequired => 'Pick a category';
+
+  @override
+  String get budgetsFormAmount => 'Amount';
+
+  @override
+  String get budgetsFormAmountRequired => 'Enter an amount';
+
+  @override
+  String get budgetsFormAmountInvalid => 'Enter a valid amount (e.g. 12.50)';
+
+  @override
+  String get budgetsFormInterval => 'Repeats every';
+
+  @override
+  String get budgetsFormIntervalCount => 'Count';
+
+  @override
+  String get budgetsFormIntervalCountInvalid => 'Enter a whole number ≥ 1';
+
+  @override
+  String get budgetsFormIntervalUnit => 'Unit';
+
+  @override
+  String get budgetsIntervalUnitDay => 'Days';
+
+  @override
+  String get budgetsIntervalUnitWeek => 'Weeks';
+
+  @override
+  String get budgetsIntervalUnitMonth => 'Months';
+
+  @override
+  String budgetsIntervalEveryDays(int count) {
+    return 'Every $count days';
+  }
+
+  @override
+  String budgetsIntervalEveryWeeks(int count) {
+    return 'Every $count weeks';
+  }
+
+  @override
+  String budgetsIntervalEveryMonths(int count) {
+    return 'Every $count months';
+  }
+
+  @override
+  String get budgetsFormAnchorDate => 'Period start';
+
+  @override
+  String get budgetsFormAlertPercent => 'Alert at';
+
+  @override
+  String get budgetsFormAlertPercentInvalid => 'Enter a percent from 1 to 100';
+
+  @override
+  String budgetsAlertAt(int percent) {
+    return 'Alert at $percent%';
+  }
+
+  @override
+  String budgetAlertTitle(String name) {
+    return 'Budget alert: $name';
+  }
+
+  @override
+  String budgetAlertBody(int percent, String spent, String amount) {
+    return '$percent% used ($spent / $amount)';
+  }
 
   @override
   String get settingsTitle => 'Settings';

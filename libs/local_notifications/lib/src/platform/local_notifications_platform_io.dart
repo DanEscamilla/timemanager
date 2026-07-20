@@ -8,16 +8,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
-import '../utils/activity_notification_plan.dart';
-
-const _channelId = 'activity_reminders';
-const _channelName = 'Activity reminders';
-const _cacheKey = 'activity_notification_plan_v1';
+import '../local_notification_config.dart';
+import '../models.dart';
 
 final FlutterLocalNotificationsPlugin _plugin =
     FlutterLocalNotificationsPlugin();
 
-Future<void> initializeNotifications() async {
+Future<void> initializeNotifications(LocalNotificationConfig config) async {
   tz_data.initializeTimeZones();
   try {
     final name = await FlutterTimezone.getLocalTimezone();
@@ -45,10 +42,10 @@ Future<void> initializeNotifications() async {
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(
-          const AndroidNotificationChannel(
-            _channelId,
-            _channelName,
-            description: 'Reminders for upcoming activities',
+          AndroidNotificationChannel(
+            config.androidChannelId,
+            config.androidChannelName,
+            description: config.androidChannelDescription,
             importance: Importance.high,
           ),
         );
@@ -85,37 +82,40 @@ Future<bool> requestNotificationPermission() async {
   return true;
 }
 
-Future<void> syncPlannedNotifications(List<PlannedNotification> planned) async {
+Future<void> syncScheduledNotifications(
+  List<ScheduledNotification> items,
+  LocalNotificationConfig config,
+) async {
   await _plugin.cancelAll();
-  await _cachePlan(planned);
+  await _cachePlan(items, config);
 
-  if (planned.isNotEmpty) {
+  if (items.isNotEmpty) {
     await requestNotificationPermission();
   }
 
-  const androidDetails = AndroidNotificationDetails(
-    _channelId,
-    _channelName,
-    channelDescription: 'Reminders for upcoming activities',
+  final androidDetails = AndroidNotificationDetails(
+    config.androidChannelId,
+    config.androidChannelName,
+    channelDescription: config.androidChannelDescription,
     importance: Importance.high,
     priority: Priority.high,
   );
   const darwinDetails = DarwinNotificationDetails();
-  const details = NotificationDetails(
+  final details = NotificationDetails(
     android: androidDetails,
     iOS: darwinDetails,
     macOS: darwinDetails,
   );
 
-  for (final item in planned) {
+  for (final item in items) {
     final scheduled = tz.TZDateTime.from(item.fireAt, tz.local);
     if (!scheduled.isAfter(tz.TZDateTime.now(tz.local))) continue;
 
     try {
       await _plugin.zonedSchedule(
         item.id,
-        item.activityTitle,
-        notificationBodyForOffset(item.offsetMinutes),
+        item.title,
+        item.body,
         scheduled,
         details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -126,8 +126,8 @@ Future<void> syncPlannedNotifications(List<PlannedNotification> planned) async {
       try {
         await _plugin.zonedSchedule(
           item.id,
-          item.activityTitle,
-          notificationBodyForOffset(item.offsetMinutes),
+          item.title,
+          item.body,
           scheduled,
           details,
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -139,52 +139,59 @@ Future<void> syncPlannedNotifications(List<PlannedNotification> planned) async {
   }
 }
 
-Future<void> cancelAllNotifications() async {
-  await _plugin.cancelAll();
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.remove(_cacheKey);
+Future<void> showImmediateNotification(
+  ImmediateNotification item,
+  LocalNotificationConfig config,
+) async {
+  await requestNotificationPermission();
+
+  final androidDetails = AndroidNotificationDetails(
+    config.androidChannelId,
+    config.androidChannelName,
+    channelDescription: config.androidChannelDescription,
+    importance: Importance.high,
+    priority: Priority.high,
+  );
+  const darwinDetails = DarwinNotificationDetails();
+  final details = NotificationDetails(
+    android: androidDetails,
+    iOS: darwinDetails,
+    macOS: darwinDetails,
+  );
+
+  await _plugin.show(item.id, item.title, item.body, details);
 }
 
-Future<void> _cachePlan(List<PlannedNotification> planned) async {
+Future<void> cancelAllNotifications(LocalNotificationConfig config) async {
+  await _plugin.cancelAll();
   final prefs = await SharedPreferences.getInstance();
-  final encoded = jsonEncode([
-    for (final item in planned)
-      {
-        'id': item.id,
-        'activityId': item.activityId,
-        'activityTitle': item.activityTitle,
-        'occurrenceDate': item.occurrenceDate.toIso8601String(),
-        'offsetMinutes': item.offsetMinutes,
-        'fireAt': item.fireAt.toIso8601String(),
-      },
-  ]);
-  await prefs.setString(_cacheKey, encoded);
+  await prefs.remove(config.cacheKey);
+}
+
+Future<void> _cachePlan(
+  List<ScheduledNotification> items,
+  LocalNotificationConfig config,
+) async {
+  final prefs = await SharedPreferences.getInstance();
+  final encoded = jsonEncode([for (final item in items) item.toJson()]);
+  await prefs.setString(config.cacheKey, encoded);
 }
 
 /// Re-schedules from the last cached plan (used after device reboot).
-Future<void> rescheduleFromCache() async {
-  await initializeNotifications();
+Future<void> rescheduleFromCache(LocalNotificationConfig config) async {
+  await initializeNotifications(config);
   final prefs = await SharedPreferences.getInstance();
-  final raw = prefs.getString(_cacheKey);
+  final raw = prefs.getString(config.cacheKey);
   if (raw == null || raw.isEmpty) return;
 
   final list = jsonDecode(raw) as List<dynamic>;
   final now = DateTime.now();
-  final planned = <PlannedNotification>[];
+  final planned = <ScheduledNotification>[];
   for (final entry in list) {
     final map = entry as Map<String, dynamic>;
-    final fireAt = DateTime.parse(map['fireAt'] as String);
-    if (!fireAt.isAfter(now)) continue;
-    planned.add(
-      PlannedNotification(
-        id: map['id'] as int,
-        activityId: map['activityId'] as int,
-        activityTitle: map['activityTitle'] as String,
-        occurrenceDate: DateTime.parse(map['occurrenceDate'] as String),
-        offsetMinutes: map['offsetMinutes'] as int,
-        fireAt: fireAt,
-      ),
-    );
+    final item = ScheduledNotification.fromJson(map);
+    if (!item.fireAt.isAfter(now)) continue;
+    planned.add(item);
   }
-  await syncPlannedNotifications(planned);
+  await syncScheduledNotifications(planned, config);
 }

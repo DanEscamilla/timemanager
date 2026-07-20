@@ -119,6 +119,12 @@ abstract class AppLocalizations {
   /// **'Categories'**
   String get navCategories;
 
+  /// No description provided for @navBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgets'**
+  String get navBudgets;
+
   /// No description provided for @tooltipRefresh.
   ///
   /// In en, this message translates to:
@@ -148,6 +154,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add category'**
   String get tooltipAddCategory;
+
+  /// No description provided for @tooltipAddBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Add budget'**
+  String get tooltipAddBudget;
 
   /// No description provided for @loginCreateAccount.
   ///
@@ -562,6 +574,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'By category'**
   String get overviewByCategory;
+
+  /// No description provided for @overviewBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgets'**
+  String get overviewBudgets;
+
+  /// No description provided for @overviewBudgetAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Reached {percent}% of this budget'**
+  String overviewBudgetAlert(int percent);
+
+  /// No description provided for @budgetsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No budgets yet'**
+  String get budgetsEmptyTitle;
+
+  /// No description provided for @budgetsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a total or per-category spending limit.'**
+  String get budgetsEmptyHint;
+
+  /// No description provided for @budgetsEmptyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add budget'**
+  String get budgetsEmptyAction;
+
+  /// No description provided for @budgetsArchiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive budget?'**
+  String get budgetsArchiveTitle;
+
+  /// No description provided for @budgetsArchiveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive \"{name}\"?'**
+  String budgetsArchiveConfirm(String name);
+
+  /// No description provided for @budgetsFormNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New budget'**
+  String get budgetsFormNew;
+
+  /// No description provided for @budgetsFormEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit budget'**
+  String get budgetsFormEdit;
+
+  /// No description provided for @budgetsFormName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get budgetsFormName;
+
+  /// No description provided for @budgetsFormNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required'**
+  String get budgetsFormNameRequired;
+
+  /// No description provided for @budgetsFormScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Scope'**
+  String get budgetsFormScope;
+
+  /// No description provided for @budgetsScopeTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total spending'**
+  String get budgetsScopeTotal;
+
+  /// No description provided for @budgetsScopeCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get budgetsScopeCategory;
+
+  /// No description provided for @budgetsFormCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get budgetsFormCategory;
+
+  /// No description provided for @budgetsFormCategoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a category'**
+  String get budgetsFormCategoryRequired;
+
+  /// No description provided for @budgetsFormAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get budgetsFormAmount;
+
+  /// No description provided for @budgetsFormAmountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount'**
+  String get budgetsFormAmountRequired;
+
+  /// No description provided for @budgetsFormAmountInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid amount (e.g. 12.50)'**
+  String get budgetsFormAmountInvalid;
+
+  /// No description provided for @budgetsFormInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeats every'**
+  String get budgetsFormInterval;
+
+  /// No description provided for @budgetsFormIntervalCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get budgetsFormIntervalCount;
+
+  /// No description provided for @budgetsFormIntervalCountInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number ≥ 1'**
+  String get budgetsFormIntervalCountInvalid;
+
+  /// No description provided for @budgetsFormIntervalUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get budgetsFormIntervalUnit;
+
+  /// No description provided for @budgetsIntervalUnitDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get budgetsIntervalUnitDay;
+
+  /// No description provided for @budgetsIntervalUnitWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Weeks'**
+  String get budgetsIntervalUnitWeek;
+
+  /// No description provided for @budgetsIntervalUnitMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Months'**
+  String get budgetsIntervalUnitMonth;
+
+  /// No description provided for @budgetsIntervalEveryDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {count} days'**
+  String budgetsIntervalEveryDays(int count);
+
+  /// No description provided for @budgetsIntervalEveryWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {count} weeks'**
+  String budgetsIntervalEveryWeeks(int count);
+
+  /// No description provided for @budgetsIntervalEveryMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {count} months'**
+  String budgetsIntervalEveryMonths(int count);
+
+  /// No description provided for @budgetsFormAnchorDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Period start'**
+  String get budgetsFormAnchorDate;
+
+  /// No description provided for @budgetsFormAlertPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert at'**
+  String get budgetsFormAlertPercent;
+
+  /// No description provided for @budgetsFormAlertPercentInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a percent from 1 to 100'**
+  String get budgetsFormAlertPercentInvalid;
+
+  /// No description provided for @budgetsAlertAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert at {percent}%'**
+  String budgetsAlertAt(int percent);
+
+  /// No description provided for @budgetAlertTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget alert: {name}'**
+  String budgetAlertTitle(String name);
+
+  /// No description provided for @budgetAlertBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% used ({spent} / {amount})'**
+  String budgetAlertBody(int percent, String spent, String amount);
 
   /// No description provided for @settingsTitle.
   ///

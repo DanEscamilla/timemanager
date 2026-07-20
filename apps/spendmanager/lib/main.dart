@@ -15,7 +15,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ApiConfig.ensureConfigured();
   usePathUrlStrategy();
-  runApp(const SpendManagerApp());
+  final auth = AuthController();
+  await auth.budgetAlertSync.ensureInitialized();
+  runApp(SpendManagerApp(authController: auth));
 }
 
 class SpendManagerApp extends StatefulWidget {
@@ -54,6 +56,11 @@ class _SpendManagerAppState extends State<SpendManagerApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _auth.localizationLookup = () {
+      final ctx = _rootNavigatorKey.currentContext;
+      if (ctx == null) return null;
+      return AppLocalizations.of(ctx);
+    };
     _router = createAppRouter(
       auth: _auth,
       rootNavigatorKey: _rootNavigatorKey,
@@ -77,6 +84,7 @@ class _SpendManagerAppState extends State<SpendManagerApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && _auth.isSignedIn) {
       _auth.recordActivity();
+      _auth.syncBudgetAlerts();
     }
   }
 

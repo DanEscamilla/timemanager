@@ -4,6 +4,7 @@ export interface Database {
   users: UsersTable
   categories: CategoriesTable
   expenses: ExpensesTable
+  budgets: BudgetsTable
 }
 
 export interface UsersTable {
@@ -55,3 +56,27 @@ export type CategoryUpdate = Updateable<CategoriesTable>
 export type Expense = Selectable<ExpensesTable>
 export type NewExpense = Insertable<ExpensesTable>
 export type ExpenseUpdate = Updateable<ExpensesTable>
+
+export interface BudgetsTable {
+  id: Generated<number>
+  user_id: number
+  name: string
+  /** Null = total budget; set = per-category budget. */
+  category_id: number | null
+  amount_cents: number
+  currency: string
+  /** 'day' | 'week' | 'month' */
+  interval_unit: string
+  interval_count: number
+  /** Start of period 0 (YYYY-MM-DD). */
+  anchor_date: string
+  /** Notify when spent >= this percent of amount (1–100). */
+  alert_percent: number
+  archived_at: ColumnType<Date | null, string | null | undefined, string | null>
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string, string>
+}
+
+export type Budget = Selectable<BudgetsTable>
+export type NewBudget = Insertable<BudgetsTable>
+export type BudgetUpdate = Updateable<BudgetsTable>

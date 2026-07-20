@@ -17,13 +17,22 @@ input ArgsInput_4 {
 	toDate: String!
 }
 input ArgsInput_5 {
+	includeArchived: Boolean
+}
+input ArgsInput_6 {
+	id: Number!
+}
+input ArgsInput_7 {
+	asOf: String
+}
+input ArgsInput_8 {
 	input: CreateCategoryInputInput!
 }
 input CreateCategoryInputInput {
 	name: String!
 	color: String!
 }
-input ArgsInput_6 {
+input ArgsInput_9 {
 	id: Number!
 	input: UpdateCategoryInputInput!
 }
@@ -31,10 +40,10 @@ input UpdateCategoryInputInput {
 	name: String
 	color: String
 }
-input ArgsInput_7 {
+input ArgsInput_10 {
 	id: Number!
 }
-input ArgsInput_8 {
+input ArgsInput_11 {
 	input: CreateExpenseInputInput!
 }
 input CreateExpenseInputInput {
@@ -44,7 +53,7 @@ input CreateExpenseInputInput {
 	currency: String
 	note: String
 }
-input ArgsInput_9 {
+input ArgsInput_12 {
 	id: Number!
 	input: UpdateExpenseInputInput!
 }
@@ -55,7 +64,37 @@ input UpdateExpenseInputInput {
 	currency: String
 	note: String
 }
-input ArgsInput_10 {
+input ArgsInput_13 {
+	id: Number!
+}
+input ArgsInput_14 {
+	input: CreateBudgetInputInput!
+}
+input CreateBudgetInputInput {
+	name: String!
+	amountCents: Number!
+	intervalUnit: String!
+	intervalCount: Number!
+	anchorDate: String!
+	alertPercent: Number!
+	categoryId: Number
+	currency: String
+}
+input ArgsInput_15 {
+	id: Number!
+	input: UpdateBudgetInputInput!
+}
+input UpdateBudgetInputInput {
+	name: String
+	amountCents: Number
+	intervalUnit: String
+	intervalCount: Number
+	anchorDate: String
+	alertPercent: Number
+	categoryId: Number
+	currency: String
+}
+input ArgsInput_16 {
 	id: Number!
 }
 type Query {
@@ -64,6 +103,9 @@ category(args: ArgsInput_1!): Any!
 expenses(args: ArgsInput_2): Any!
 expense(args: ArgsInput_3!): Expense
 expenseTotals(args: ArgsInput_4!): Any!
+budgets(args: ArgsInput_5): Any!
+budget(args: ArgsInput_6!): Budget
+budgetStatuses(args: ArgsInput_7): [BudgetStatusesOrBudgetStatuses_1!]!
 }
 type Expense {
 amount_cents: Number!
@@ -76,13 +118,66 @@ note: String
 created_at: String!
 updated_at: String!
 }
+type Budget {
+amount_cents: Number!
+id: Number!
+user_id: Number!
+name: String!
+category_id: Number
+currency: String!
+interval_unit: String!
+interval_count: Number!
+anchor_date: String!
+alert_percent: Number!
+archived_at: String
+created_at: String!
+updated_at: String!
+}
+type BudgetStatuses implements BudgetStatusesOrBudgetStatuses_1 {
+budget_id: Any!
+budget_name: Any!
+category_id: Any!
+currency: Any!
+amount_cents: Number!
+spent_cents: Number!
+percent_used: Number!
+alert_percent: Any!
+alert_triggered: Boolean!
+}
+type BudgetStatuses_1 implements BudgetStatusesOrBudgetStatuses_1 {
+budget_id: Any!
+budget_name: Any!
+category_id: Any!
+currency: Any!
+amount_cents: Number!
+spent_cents: Number!
+percent_used: Number!
+alert_percent: Any!
+alert_triggered: Boolean!
+period_start: String!
+period_end_exclusive: String!
+}
 type Mutation {
-createCategory(args: ArgsInput_5!): Any!
-updateCategory(args: ArgsInput_6!): Any!
-archiveCategory(args: ArgsInput_7!): Any!
-createExpense(args: ArgsInput_8!): Expense!
-updateExpense(args: ArgsInput_9!): Expense!
-deleteExpense(args: ArgsInput_10!): Boolean!
+createCategory(args: ArgsInput_8!): Any!
+updateCategory(args: ArgsInput_9!): Any!
+archiveCategory(args: ArgsInput_10!): Any!
+createExpense(args: ArgsInput_11!): Expense!
+updateExpense(args: ArgsInput_12!): Expense!
+deleteExpense(args: ArgsInput_13!): Boolean!
+createBudget(args: ArgsInput_14!): Budget!
+updateBudget(args: ArgsInput_15!): Budget!
+archiveBudget(args: ArgsInput_16!): Budget!
+}
+interface BudgetStatusesOrBudgetStatuses_1 {
+budget_id: Any!
+budget_name: Any!
+category_id: Any!
+currency: Any!
+amount_cents: Number!
+spent_cents: Number!
+percent_used: Number!
+alert_percent: Any!
+alert_triggered: Boolean!
 }
 scalar ID
 scalar Int

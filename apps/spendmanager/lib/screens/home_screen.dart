@@ -19,6 +19,7 @@ class HomeScreen extends StatelessWidget {
   static const _overviewIndex = 0;
   static const _expensesIndex = 1;
   static const _categoriesIndex = 2;
+  static const _budgetsIndex = 3;
 
   void _onFabPressed() {
     switch (navigationShell.currentIndex) {
@@ -26,6 +27,8 @@ class HomeScreen extends StatelessWidget {
         authController.expensesKey.currentState?.openCreateForm();
       case _categoriesIndex:
         authController.categoriesKey.currentState?.openCreateForm();
+      case _budgetsIndex:
+        authController.budgetsKey.currentState?.openCreateForm();
       default:
         authController.expensesKey.currentState?.openCreateForm();
         navigationShell.goBranch(_expensesIndex);
@@ -36,7 +39,16 @@ class HomeScreen extends StatelessWidget {
     return switch (navigationShell.currentIndex) {
       _overviewIndex => l10n.navOverview,
       _expensesIndex => l10n.navExpenses,
-      _ => l10n.navCategories,
+      _categoriesIndex => l10n.navCategories,
+      _ => l10n.navBudgets,
+    };
+  }
+
+  String _fabTooltip(AppLocalizations l10n, int index) {
+    return switch (index) {
+      _categoriesIndex => l10n.tooltipAddCategory,
+      _budgetsIndex => l10n.tooltipAddBudget,
+      _ => l10n.tooltipAddExpense,
     };
   }
 
@@ -62,6 +74,11 @@ class HomeScreen extends StatelessWidget {
         selectedIcon: const Icon(Icons.category),
         label: l10n.navCategories,
       ),
+      NavigationDestination(
+        icon: const Icon(Icons.account_balance_wallet_outlined),
+        selectedIcon: const Icon(Icons.account_balance_wallet),
+        label: l10n.navBudgets,
+      ),
     ];
 
     final railDestinations = [
@@ -79,6 +96,11 @@ class HomeScreen extends StatelessWidget {
         icon: const Icon(Icons.category_outlined),
         selectedIcon: const Icon(Icons.category),
         label: Text(l10n.navCategories),
+      ),
+      NavigationRailDestination(
+        icon: const Icon(Icons.account_balance_wallet_outlined),
+        selectedIcon: const Icon(Icons.account_balance_wallet),
+        label: Text(l10n.navBudgets),
       ),
     ];
 
@@ -107,9 +129,7 @@ class HomeScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _onFabPressed,
-        tooltip: index == _categoriesIndex
-            ? l10n.tooltipAddCategory
-            : l10n.tooltipAddExpense,
+        tooltip: _fabTooltip(l10n, index),
         child: const Icon(Icons.add),
       ),
       body: wide

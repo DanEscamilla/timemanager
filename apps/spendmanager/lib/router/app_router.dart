@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:design_system/design_system.dart';
 
+import '../screens/budgets_screen.dart';
 import '../screens/categories_screen.dart';
 import '../screens/expenses_screen.dart';
 import '../screens/home_screen.dart';
@@ -86,6 +87,7 @@ GoRouter createAppRouter({
                 builder: (context, state) => OverviewScreen(
                   key: auth.overviewKey,
                   expenseRepository: auth.expenseRepository,
+                  budgetRepository: auth.budgetRepository,
                 ),
               ),
             ],
@@ -110,6 +112,19 @@ GoRouter createAppRouter({
                 builder: (context, state) => CategoriesScreen(
                   key: auth.categoriesKey,
                   repository: auth.categoryRepository,
+                  onChanged: auth.reloadAll,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.budgets,
+                builder: (context, state) => BudgetsScreen(
+                  key: auth.budgetsKey,
+                  budgetRepository: auth.budgetRepository,
+                  categoryRepository: auth.categoryRepository,
                   onChanged: auth.reloadAll,
                 ),
               ),

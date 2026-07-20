@@ -1,36 +1,33 @@
+import 'package:local_notifications/local_notifications.dart';
+
 import '../models/activity.dart';
 import '../utils/activity_notification_plan.dart';
-import 'activity_notification_scheduler_stub.dart'
-    if (dart.library.html) 'activity_notification_scheduler_web.dart'
-    if (dart.library.io) 'activity_notification_scheduler_io.dart'
-    as impl;
+
+const kActivityNotificationConfig = LocalNotificationConfig(
+  androidChannelId: 'activity_reminders',
+  androidChannelName: 'Activity reminders',
+  androidChannelDescription: 'Reminders for upcoming activities',
+  cacheKey: 'activity_notification_plan_v1',
+);
 
 /// Schedules local activity reminders from synced activity data.
 ///
-/// Native platforms use OS local notifications; web fires in-session while
-/// the tab is open.
+/// Thin wrapper over [LocalNotificationService] that plans activity
+/// occurrences and maps them to generic scheduled notifications.
 class ActivityNotificationScheduler {
   ActivityNotificationScheduler._();
 
   static final ActivityNotificationScheduler instance =
       ActivityNotificationScheduler._();
 
-  bool _initialized = false;
+  final LocalNotificationService _service = LocalNotificationService.instance;
 
   /// Initializes timezone data and the platform notification plugin.
-  Future<void> ensureInitialized() async {
-    if (_initialized) return;
-    try {
-      await impl.initializeNotifications();
-      _initialized = true;
-    } catch (_) {
-      // Plugins may be unavailable in tests / unsupported platforms.
-      _initialized = true;
-    }
-  }
+  Future<void> ensureInitialized() =>
+      _service.ensureInitialized(kActivityNotificationConfig);
 
   /// Requests notification permission when the user enables reminders.
-  Future<bool> requestPermission() => impl.requestNotificationPermission();
+  Future<bool> requestPermission() => _service.requestPermission();
 
   /// Cancels all pending reminders and schedules [activities] for the next
   /// [kNotificationScheduleDays] days.
@@ -40,20 +37,17 @@ class ActivityNotificationScheduler {
       activities: activities,
       now: now ?? DateTime.now(),
     );
-    try {
-      await impl.syncPlannedNotifications(planned);
-    } catch (_) {
-      // Best-effort scheduling.
-    }
+    await _service.syncScheduled([
+      for (final item in planned)
+        ScheduledNotification(
+          id: item.id,
+          title: item.activityTitle,
+          body: notificationBodyForOffset(item.offsetMinutes),
+          fireAt: item.fireAt,
+        ),
+    ]);
   }
 
   /// Clears all scheduled / in-session reminders.
-  Future<void> cancelAll() async {
-    await ensureInitialized();
-    try {
-      await impl.cancelAllNotifications();
-    } catch (_) {
-      // Best-effort.
-    }
-  }
+  Future<void> cancelAll() => _service.cancelAll();
 }

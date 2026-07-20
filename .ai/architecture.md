@@ -35,8 +35,8 @@ flowchart TB
 
 - **`apps/timemanager` (Flutter/Dart):** cross-platform client with login (email/password + OAuth). Session tokens are header-based (`Authorization: Bearer`). Talks to GraphQL on `:3000` and auth on `:3001`. Feature code under `models/`, `screens/`, `services/`, `widgets/`.
 - **`apps/timemanager-api` (Deno + Pylon):** GraphQL API on `:3000`. Middleware verifies SuperTokens session JWTs (JWKS from `:3001`), maps `auth_user_id` → local `users.id`, and scopes activities by that user. Resolvers under `src/graphql/`; persistence via Kysely under `src/db/`. Database name: `timemanager`.
-- **`apps/spendmanager` (Flutter/Dart):** spending tracker client (expenses + categories). Same SuperTokens FDI auth pattern as timemanager. Talks to GraphQL on `:3002` and auth on `:3001`. Chrome web port `:4445`.
-- **`apps/spendmanager-api` (Deno + Pylon):** GraphQL API on `:3002`. Same JWKS auth as timemanager-api; scopes categories/expenses per local user. Shares the Postgres instance with a separate database `spendmanager`.
+- **`apps/spendmanager` (Flutter/Dart):** spending tracker client (expenses, categories, budgets + threshold alerts). Same SuperTokens FDI auth pattern as timemanager. Talks to GraphQL on `:3002` and auth on `:3001`. Chrome web port `:4445`.
+- **`apps/spendmanager-api` (Deno + Pylon):** GraphQL API on `:3002`. Same JWKS auth as timemanager-api; scopes categories/expenses/budgets per local user. Shares the Postgres instance with a separate database `spendmanager`.
 - **`apps/user-manager-web` (React + Vite):** SuperTokens demo UI; routes `/`, `/auth`, `/dashboard`. Cookie-based sessions against `:3001`.
 - **`apps/user-manager-api` (Express):** Shared SuperTokens SSO backend on `:3001` (`/auth/*`). Brokers auth to SuperTokens Core; issues JWTs for Flutter and cookies for React.
 - **`infra/timemanager-db`:** Postgres 15 + pgAdmin via docker-compose; hosts both `timemanager` and `spendmanager` databases. Init script creates `spendmanager` on fresh volumes; API migrate also ensures the DB exists.

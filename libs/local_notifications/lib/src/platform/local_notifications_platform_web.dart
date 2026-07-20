@@ -3,13 +3,14 @@ import 'dart:js_interop';
 
 import 'package:web/web.dart' as web;
 
-import '../utils/activity_notification_plan.dart';
+import '../local_notification_config.dart';
+import '../models.dart';
 
 Timer? _pollTimer;
-List<PlannedNotification> _pending = const [];
+List<ScheduledNotification> _pending = const [];
 final Set<int> _firedIds = {};
 
-Future<void> initializeNotifications() async {
+Future<void> initializeNotifications(LocalNotificationConfig config) async {
   // No OS plugin on web; polling starts on first sync.
 }
 
@@ -20,8 +21,11 @@ Future<bool> requestNotificationPermission() async {
   return result.toDart == 'granted';
 }
 
-Future<void> syncPlannedNotifications(List<PlannedNotification> planned) async {
-  _pending = List.unmodifiable(planned);
+Future<void> syncScheduledNotifications(
+  List<ScheduledNotification> items,
+  LocalNotificationConfig config,
+) async {
+  _pending = List.unmodifiable(items);
   _firedIds.removeWhere((id) => !_pending.any((p) => p.id == id));
   _pollTimer?.cancel();
   if (_pending.isEmpty) {
@@ -33,11 +37,27 @@ Future<void> syncPlannedNotifications(List<PlannedNotification> planned) async {
   _tick();
 }
 
-Future<void> cancelAllNotifications() async {
+Future<void> showImmediateNotification(
+  ImmediateNotification item,
+  LocalNotificationConfig config,
+) async {
+  await requestNotificationPermission();
+  if (web.Notification.permission != 'granted') return;
+  web.Notification(
+    item.title,
+    web.NotificationOptions(body: item.body),
+  );
+}
+
+Future<void> cancelAllNotifications(LocalNotificationConfig config) async {
   _pollTimer?.cancel();
   _pollTimer = null;
   _pending = const [];
   _firedIds.clear();
+}
+
+Future<void> rescheduleFromCache(LocalNotificationConfig config) async {
+  // Web has no persistent OS schedule; nothing to restore after reload.
 }
 
 void _tick() {
@@ -55,10 +75,8 @@ void _tick() {
     }
     _firedIds.add(item.id);
     web.Notification(
-      item.activityTitle,
-      web.NotificationOptions(
-        body: notificationBodyForOffset(item.offsetMinutes),
-      ),
+      item.title,
+      web.NotificationOptions(body: item.body),
     );
   }
 }
