@@ -3,14 +3,18 @@
 # Requires: aws CLI, flutter, pnpm/nx, terraform outputs (or env overrides).
 #
 # Usage (from repo root):
-#   export DOMAIN=example.com
 #   ./infra/aws/scripts/deploy-web.sh
+#
+# Set DOMAIN in infra/aws/.local.env (see .local.env.example), or export it.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$ROOT"
+# shellcheck source=load-local-env.sh
+source "${ROOT}/infra/aws/scripts/load-local-env.sh"
+_aws_scripts_load_local_env "${ROOT}"
 
-DOMAIN="${DOMAIN:?Set DOMAIN=example.com}"
+DOMAIN="${DOMAIN:?Set DOMAIN in infra/aws/.local.env (see .local.env.example) or export DOMAIN=example.com}"
 AUTH_API_BASE_URL="${AUTH_API_BASE_URL:-https://auth.${DOMAIN}}"
 API_BASE_URL="${API_BASE_URL:-https://api.${DOMAIN}}"
 VITE_API_DOMAIN="${VITE_API_DOMAIN:-https://auth.${DOMAIN}}"

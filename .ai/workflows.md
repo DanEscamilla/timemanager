@@ -118,5 +118,7 @@ Quick path (after `infra/aws` is configured):
 ```bash
 cd infra/aws && terraform apply
 ./infra/aws/scripts/deploy-apis.sh
-DOMAIN=example.com ./infra/aws/scripts/deploy-web.sh
+./infra/aws/scripts/deploy-web.sh          # DOMAIN via infra/aws/.local.env
+./infra/aws/scripts/check-health.sh        # or: nx run timemanager-aws:health
+./infra/aws/scripts/ecs-shell.sh           # or: nx run timemanager-aws:ecs-shell
 ```

@@ -3,10 +3,16 @@
 #
 # Usage (from repo root):
 #   ./infra/aws/scripts/deploy-apis.sh
+#
+# Optional env (infra/aws/.local.env or repo-root .local.env):
+#   AWS_REGION, AUTH_TAG, API_TAG
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$ROOT"
+# shellcheck source=load-local-env.sh
+source "${ROOT}/infra/aws/scripts/load-local-env.sh"
+_aws_scripts_load_local_env "${ROOT}"
 
 AWS_REGION="${AWS_REGION:-us-east-1}"
 AUTH_TAG="${AUTH_TAG:-latest}"
@@ -54,11 +60,13 @@ EXIT_CODE="$(aws ecs describe-tasks \
 if [[ "${EXIT_CODE}" != "0" ]]; then
   echo "Migration failed with exit code ${EXIT_CODE}" >&2
   echo "Recent migrate logs:" >&2
-  aws logs filter-log-events \
+  # filter-log-events often returns empty right after stop; read the task stream.
+  TASK_ID="${TASK_ARN##*/}"
+  aws logs get-log-events \
     --region "${AWS_REGION}" \
     --log-group-name "/ecs/${CLUSTER}/timemanager-api" \
-    --log-stream-name-prefix migrate \
-    --limit 40 \
+    --log-stream-name "migrate/migrate/${TASK_ID}" \
+    --limit 50 \
     --query 'events[*].message' \
     --output text >&2 || true
   exit 1

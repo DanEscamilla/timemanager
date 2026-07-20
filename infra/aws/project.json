@@ -38,6 +38,20 @@
         "command": "./infra/aws/scripts/deploy-web.sh",
         "cwd": "{workspaceRoot}"
       }
+    },
+    "health": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./infra/aws/scripts/check-health.sh",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "ecs-shell": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./infra/aws/scripts/ecs-shell.sh",
+        "cwd": "{workspaceRoot}"
+      }
     }
   }
 }

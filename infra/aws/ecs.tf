@@ -59,6 +59,26 @@ resource "aws_iam_role" "ecs_task" {
   tags = local.common_tags
 }
 
+# Required for ECS Exec (aws ecs execute-command / infra/aws/scripts/ecs-shell.sh).
+resource "aws_iam_role_policy" "ecs_task_exec" {
+  name = "${local.name_prefix}-ecs-task-exec"
+  role = aws_iam_role.ecs_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ssmmessages:CreateControlChannel",
+        "ssmmessages:CreateDataChannel",
+        "ssmmessages:OpenControlChannel",
+        "ssmmessages:OpenDataChannel",
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
 resource "aws_ecs_cluster" "main" {
   name = local.name_prefix
 
@@ -194,11 +214,12 @@ resource "aws_ecs_task_definition" "migrate" {
 }
 
 resource "aws_ecs_service" "auth" {
-  name            = "user-manager-api"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.auth.arn
-  desired_count   = var.desired_count
-  launch_type     = "FARGATE"
+  name                   = "user-manager-api"
+  cluster                = aws_ecs_cluster.main.id
+  task_definition        = aws_ecs_task_definition.auth.arn
+  desired_count          = var.desired_count
+  launch_type            = "FARGATE"
+  enable_execute_command = true
 
   network_configuration {
     subnets          = aws_subnet.private[*].id
@@ -222,11 +243,15 @@ resource "aws_ecs_service" "auth" {
 }
 
 resource "aws_ecs_service" "api" {
-  name            = "timemanager-api"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.api.arn
-  desired_count   = var.desired_count
-  launch_type     = "FARGATE"
+  name                   = "timemanager-api"
+  cluster                = aws_ecs_cluster.main.id
+  task_definition        = aws_ecs_task_definition.api.arn
+  desired_count          = var.desired_count
+  launch_type            = "FARGATE"
+  enable_execute_command = true
+
+  # Allow boot time before ALB /health failures count against the task.
+  health_check_grace_period_seconds = 120
 
   network_configuration {
     subnets          = aws_subnet.private[*].id

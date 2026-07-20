@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "pylon dev",
     "build": "pylon build",
-    "start": "pylon start"
+    "start": "bun run .pylon/index.js"
   },
   "dependencies": {
     "@getcronit/pylon": "latest",

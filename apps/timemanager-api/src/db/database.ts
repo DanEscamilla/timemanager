@@ -1,7 +1,10 @@
 import { Database } from './types/schema.ts'
 import { Pool, types } from 'pg'
 import { Kysely, PostgresDialect } from 'kysely'
-import { sslForDatabaseUrl } from './ssl.ts'
+import {
+  connectionStringWithoutSslParams,
+  sslForDatabaseUrl,
+} from './ssl.ts'
 
 // Keep Postgres `date` as `YYYY-MM-DD` strings. The default pg parser turns
 // them into JS Date objects, which GraphQL then stringifies as full timestamps
@@ -24,7 +27,8 @@ function poolConfigFromEnv(): ConstructorParameters<typeof Pool>[0] {
   if (databaseUrl) {
     const ssl = sslForDatabaseUrl(databaseUrl)
     return {
-      connectionString: databaseUrl,
+      // Strip sslmode so parse(connectionString) cannot overwrite `ssl` below.
+      connectionString: connectionStringWithoutSslParams(databaseUrl),
       max: 10,
       ...(ssl === undefined ? {} : { ssl }),
     }

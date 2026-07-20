@@ -57,7 +57,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalsEmptyTitle => 'No goals yet';
 
   @override
-  String get goalsEmptyHint => 'Create a goal to track completions and time toward a target.';
+  String get goalsEmptyHint =>
+      'Create a goal to track completions and time toward a target.';
 
   @override
   String get goalsEmptyAction => 'Add goal';
@@ -101,13 +102,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalsFormStartsAtCustom => 'Set a start date';
 
   @override
-  String get goalsFormStartsAtHint => 'Leave off to start immediately when created.';
+  String get goalsFormStartsAtHint =>
+      'Leave off to start immediately when created.';
 
   @override
   String get goalsStartsAtConfirmTitle => 'Move start later?';
 
   @override
-  String get goalsStartsAtConfirmBody => 'Moving the start date later may remove progress already counted. Continue?';
+  String get goalsStartsAtConfirmBody =>
+      'Moving the start date later may remove progress already counted. Continue?';
 
   @override
   String get goalsStartsAtConfirmAction => 'Move start';
@@ -244,7 +247,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalsCompositeWeighted => 'Weighted average';
 
   @override
-  String get goalsFormBlockUntilUnlocked => 'Block progress until dependencies met';
+  String get goalsFormBlockUntilUnlocked =>
+      'Block progress until dependencies met';
 
   @override
   String get goalsFormRecurrence => 'Recurrence';
@@ -356,7 +360,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupsEmptyTitle => 'No groups yet';
 
   @override
-  String get groupsEmptyHint => 'Create a group to organize your activities by color.';
+  String get groupsEmptyHint =>
+      'Create a group to organize your activities by color.';
 
   @override
   String get groupsEmptyAction => 'Add group';
@@ -549,10 +554,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get authAuthorisationUrlMissing => 'Authorisation URL missing from response';
+  String get authAuthorisationUrlMissing =>
+      'Authorisation URL missing from response';
 
   @override
-  String get authCouldNotGetAuthorisationUrl => 'Could not get authorisation URL';
+  String get authCouldNotGetAuthorisationUrl =>
+      'Could not get authorisation URL';
 
   @override
   String authCouldNotOpenLogin(String provider) {
@@ -711,7 +718,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get formSelectWeekday => 'Select at least one day of the week';
 
   @override
-  String get formSelectMonthDay => 'Select at least one day of the month, or last day';
+  String get formSelectMonthDay =>
+      'Select at least one day of the month, or last day';
 
   @override
   String get formIntervalInvalid => 'Interval must be an integer of at least 1';
@@ -720,7 +728,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get formNotifications => 'Notifications';
 
   @override
-  String get formNotificationsHint => 'Optional reminders before the activity starts';
+  String get formNotificationsHint =>
+      'Optional reminders before the activity starts';
 
   @override
   String get formNotifyAtStart => 'At start';
@@ -861,13 +870,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardsEmptyInventoryTitle => 'No rewards yet';
 
   @override
-  String get rewardsEmptyInventoryHint => 'Earn rewards by completing activities and goals, or create a catalog entry.';
+  String get rewardsEmptyInventoryHint =>
+      'Earn rewards by completing activities and goals, or create a catalog entry.';
 
   @override
   String get rewardsEmptyCatalogTitle => 'No reward definitions';
 
   @override
-  String get rewardsEmptyCatalogHint => 'Create rewards you can earn and spend.';
+  String get rewardsEmptyCatalogHint =>
+      'Create rewards you can earn and spend.';
 
   @override
   String get rewardsEmptyCatalogAction => 'Add reward';
@@ -876,7 +887,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardsEmptyHistoryTitle => 'No history yet';
 
   @override
-  String get rewardsEmptyHistoryHint => 'Earn and consume rewards to see them here.';
+  String get rewardsEmptyHistoryHint =>
+      'Earn and consume rewards to see them here.';
 
   @override
   String get rewardsFormNew => 'New reward';
@@ -1006,7 +1018,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardsRulesDetach => 'Detach';
 
   @override
-  String get rewardsRulesNoDefinitions => 'Create a reward in the catalog first.';
+  String get rewardsRulesNoDefinitions =>
+      'Create a reward in the catalog first.';
 
   @override
   String rewardsRulesQtyLabel(int quantity) {

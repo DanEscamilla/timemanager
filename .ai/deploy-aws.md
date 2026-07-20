@@ -67,6 +67,10 @@ In each OAuth provider console, add redirect / callback URLs for SuperTokens on 
 
 Pass provider client IDs/secrets via `oauth_secrets` in `terraform.tfvars` (merged into Secrets Manager).
 
+## Local env for scripts
+
+Copy [`infra/aws/.local.env.example`](../infra/aws/.local.env.example) → `infra/aws/.local.env` (gitignored). `deploy-apis.sh`, `deploy-web.sh`, `check-health.sh`, and `ecs-shell.sh` load it automatically. Already-exported shell vars win over the file. Override path with `LOCAL_ENV_FILE=/path/to/file`.
+
 ## Deploy APIs (images + migrate + ECS)
 
 ```bash
@@ -90,9 +94,9 @@ nx run timemanager-api:docker-build
 ## Deploy web (S3 + CloudFront)
 
 ```bash
-export DOMAIN=example.com
 ./infra/aws/scripts/deploy-web.sh
-# or: nx run user-manager-web:deploy-web   # same script; requires DOMAIN
+# or: nx run user-manager-web:deploy-web
+# DOMAIN from infra/aws/.local.env (or export DOMAIN=…)
 ```
 
 Builds:
@@ -102,7 +106,31 @@ Builds:
 
 Then syncs to the Terraform S3 buckets and invalidates CloudFront. SPA fallbacks (`403`/`404` → `/index.html`) are configured in Terraform.
 
+## Remote into an ECS task / live logs
+
+Lists ACTIVE services with running tasks, then either opens an interactive shell (ECS Exec) or tails CloudWatch logs:
+
+```bash
+./infra/aws/scripts/ecs-shell.sh
+# or: nx run timemanager-aws:ecs-shell
+# optional: --shell | --logs
+# optional: --service timemanager-api  --command /bin/bash
+```
+
+Shell mode requires the [Session Manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html). Terraform enables Exec (`enable_execute_command` + task-role `ssmmessages` policy); after apply, force a new deployment so existing tasks pick it up (`deploy-apis.sh` or `aws ecs update-service … --force-new-deployment`). Logs mode only needs the AWS CLI.
+
 ## Smoke checklist
+
+Automated (HTTP + ECS/ALB when AWS CLI is authenticated):
+
+```bash
+./infra/aws/scripts/check-health.sh
+# or: nx run timemanager-aws:health
+# flags: --http-only | --aws-only
+# DOMAIN from infra/aws/.local.env
+```
+
+Manual:
 
 1. `curl -sS https://auth.<domain>/hello` → `hello`
 2. `curl -sS https://auth.<domain>/auth/jwt/jwks.json` → JWKS JSON

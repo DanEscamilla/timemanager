@@ -39,5 +39,7 @@ resource "aws_db_instance" "main" {
 locals {
   # RDS Postgres requires TLS (rds.force_ssl). Without sslmode the client is
   # rejected with: no pg_hba.conf entry ... no encryption.
+  # The API strips sslmode and applies ssl:{rejectUnauthorized:false} — if left
+  # in the URL, node-pg overwrites that and fails with SELF_SIGNED_CERT_IN_CHAIN.
   database_url = "postgres://${var.db_username}:${random_password.db.result}@${aws_db_instance.main.address}:5432/${var.db_name}?sslmode=require"
 }

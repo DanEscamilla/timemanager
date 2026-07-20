@@ -35,6 +35,10 @@ build/
 .env.*
 !.env.example
 !**/.env.example
+.local.env
+**/.local.env
+!.local.env.example
+!**/.local.env.example
 
 # Local Flutter cloud API overrides (copy from *.example)
 apps/timemanager/config/cloud.dart-defines.json

@@ -26,8 +26,11 @@ ENV DENO_INSTALL=/root/.deno
 ENV PATH="${DENO_INSTALL}/bin:${PATH}"
 WORKDIR /app
 COPY --from=build /app /app
+ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
-# Default: GraphQL server. Override command for one-shot migrations:
-#   deno task migrate
-CMD ["bunx", "pylon", "start"]
+# Serve the prebuilt Hono app from `pylon build` (see .pylon/). Do not use
+# `pylon start` / `pylon dev` here — those rebuild the schema on every boot and
+# lose the ALB health-check race on small Fargate tasks.
+# Override command for one-shot migrations: deno task migrate
+CMD ["bun", "run", ".pylon/index.js"]

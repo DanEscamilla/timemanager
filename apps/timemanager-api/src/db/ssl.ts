@@ -22,3 +22,28 @@ export function sslForDatabaseUrl(
   // Non-local URLs (e.g. RDS) typically require TLS even if sslmode is omitted.
   return { rejectUnauthorized: false }
 }
+
+/**
+ * Strip SSL query params from a Postgres URL before passing it to `pg`.
+ *
+ * `pg` does `Object.assign({}, config, parse(connectionString))`, so
+ * `sslmode=require` overwrites an explicit `ssl: { rejectUnauthorized: false }`
+ * with `ssl: {}` (Node/Deno default = verify on) → SELF_SIGNED_CERT_IN_CHAIN.
+ */
+export function connectionStringWithoutSslParams(databaseUrl: string): string {
+  try {
+    const url = new URL(databaseUrl)
+    for (const key of [
+      'sslmode',
+      'ssl',
+      'sslrootcert',
+      'sslcert',
+      'sslkey',
+    ]) {
+      url.searchParams.delete(key)
+    }
+    return url.toString()
+  } catch {
+    return databaseUrl
+  }
+}

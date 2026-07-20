@@ -1,5 +1,8 @@
 import { assertEquals } from 'jsr:@std/assert'
-import { sslForDatabaseUrl } from './ssl.ts'
+import {
+  connectionStringWithoutSslParams,
+  sslForDatabaseUrl,
+} from './ssl.ts'
 
 Deno.test('sslForDatabaseUrl: localhost leaves ssl unset', () => {
   assertEquals(
@@ -28,5 +31,23 @@ Deno.test('sslForDatabaseUrl: remote host without sslmode enables tls', () => {
       'postgres://timemanager:secret@my-db.xxxx.us-east-1.rds.amazonaws.com:5432/timemanager',
     ),
     { rejectUnauthorized: false },
+  )
+})
+
+Deno.test('connectionStringWithoutSslParams: strips sslmode', () => {
+  assertEquals(
+    connectionStringWithoutSslParams(
+      'postgres://u:p@db.example:5432/tm?sslmode=require',
+    ),
+    'postgres://u:p@db.example:5432/tm',
+  )
+})
+
+Deno.test('connectionStringWithoutSslParams: preserves unrelated query params', () => {
+  assertEquals(
+    connectionStringWithoutSslParams(
+      'postgres://u:p@db.example:5432/tm?sslmode=require&application_name=api',
+    ),
+    'postgres://u:p@db.example:5432/tm?application_name=api',
   )
 })
