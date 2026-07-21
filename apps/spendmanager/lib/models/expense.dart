@@ -1,3 +1,5 @@
+import '../utils/json_dates.dart';
+
 class Expense {
   const Expense({
     required this.id,
@@ -30,8 +32,8 @@ class Expense {
       currency: json['currency'] as String,
       spentOn: DateTime.parse(json['spent_on'] as String),
       note: json['note'] as String?,
-      createdAt: _parseDate(json['created_at']),
-      updatedAt: _parseDate(json['updated_at']),
+      createdAt: parseJsonDate(json['created_at']),
+      updatedAt: parseJsonDate(json['updated_at']),
     );
   }
 
@@ -39,11 +41,6 @@ class Expense {
     if (value is int) return value;
     if (value is double) return value.toInt();
     return int.parse(value.toString());
-  }
-
-  static DateTime _parseDate(dynamic value) {
-    if (value is String) return DateTime.parse(value);
-    return DateTime.now();
   }
 }
 

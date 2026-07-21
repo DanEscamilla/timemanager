@@ -72,6 +72,66 @@ nx run timemanager:analyze  # flutter analyze
 
 Optional: `IDLE_SESSION_TIMEOUT_MINUTES` (default `30`) controls client-side idle logout; set to `0` to disable.
 
+### Spendmanager push notifications (optional FCM)
+
+Without Firebase credentials on the API, sends are a no-op (client falls back to local budget alerts when no FCM token). To enable server push:
+
+1. Create a Firebase project and download a **service account** JSON (Cloud Messaging enabled).
+2. In `apps/spendmanager-api/.env`, set either:
+   - `FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json` (gitignored), or
+   - `FIREBASE_SERVICE_ACCOUNT_JSON={...}` (raw JSON string).
+3. Client config comes from FlutterFire (`apps/spendmanager/lib/firebase_options.dart` + platform `google-services.json` / `GoogleService-Info.plist`). Re-run when apps change:
+
+```bash
+cd apps/spendmanager
+flutterfire configure --project=<firebase-project-id>
+```
+
+4. **Web (Chrome :4445):** keep `apps/spendmanager/web/firebase-messaging-sw.js` in sync with the web `FirebaseOptions` (and the JS SDK version in `firebase_core_web`). Create a **Web Push certificate** in Firebase Console → Project settings → Cloud Messaging, then put the public key in the local dart-defines file:
+
+```bash
+cp apps/spendmanager/config/local.dart-defines.json.example \
+   apps/spendmanager/config/local.dart-defines.json
+# edit FCM_VAPID_KEY=...
+```
+
+IDE launches (**spendmanager** / **spendmanager (macos)**) load that file via `--dart-define-from-file`. CLI:
+
+```bash
+flutter run -d chrome --web-port=4445 \
+  --dart-define-from-file=config/local.dart-defines.json
+```
+
+If you previously blocked notifications for `localhost:4445`, Chrome will not prompt again until you reset the site permission (lock icon → Site settings → Notifications → Allow / Reset).
+
+On sign-in the app registers an FCM token via `registerDeviceToken`. Expense/budget writes that newly cross `alert_percent` send a push (deduped per budget + period in `budget_alert_sends`).
+
+### Timemanager push notifications (optional FCM)
+
+Same credential + FlutterFire pattern as spendmanager, but **activity reminders stay local** (`ActivityNotificationScheduler`) until a server scheduler exists. FCM today is device registration plumbing so tokens are ready for future server sends.
+
+1. Service account in `apps/timemanager-api/.env`:
+   - `FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json` (gitignored `*-firebase-adminsdk-*.json`), or
+   - `FIREBASE_SERVICE_ACCOUNT_JSON={...}`.
+2. Client: `apps/timemanager/lib/firebase_options.dart` + platform Google service files from FlutterFire:
+
+```bash
+cd apps/timemanager
+flutterfire configure --project=<firebase-project-id>
+```
+
+3. **Web (Chrome :4444):** keep `apps/timemanager/web/firebase-messaging-sw.js` in sync with web `FirebaseOptions`. Set the Web Push public key:
+
+```bash
+cp apps/timemanager/config/local.dart-defines.json.example \
+   apps/timemanager/config/local.dart-defines.json
+# edit FCM_VAPID_KEY=...
+```
+
+On sign-in the app registers via `registerDeviceToken` / unregisters on sign-out. Without API credentials, the push sender is a no-op; without a registered token, only local reminders fire.
+
+Cloud Flutter builds/runs:
+
 ```bash
 # one-time: copy and edit (or rely on DOMAIN below)
 cp apps/timemanager/config/cloud.dart-defines.json.example \
@@ -94,7 +154,16 @@ DOMAIN=example.com nx run timemanager:serve-cloud-macos
 
 Resolution order for `with-cloud-apis.sh` / those targets: `AUTH_API_BASE_URL`+`API_BASE_URL` env → `config/cloud.dart-defines.json` → `DOMAIN`.
 
-IDE: **Run and Debug → timemanager (cloud)** / **(macos, cloud)** / **(ios, cloud)** / **(android, cloud)** (requires `config/cloud.dart-defines.json`). Auth CORS already allows `localhost` / `127.0.0.1`; native clients are not subject to browser CORS.
+IDE: **Run and Debug → timemanager (cloud)** / **(macos, cloud)** / **(ios, cloud)** / **(android, cloud)** / **(device, cloud)** (requires `config/cloud.dart-defines.json`). Auth CORS already allows `localhost` / `127.0.0.1`; native clients are not subject to browser CORS.
+
+### Flutter on a physical device (local APIs)
+
+Emulator defaults (`10.0.2.2` / `localhost`) do not reach your machine from a phone. Use:
+
+- **timemanager (device, local)** / **spendmanager (device, local)** — `preLaunchTask` runs [`scripts/update-local-dart-defines.sh`](../scripts/update-local-dart-defines.sh), which writes `AUTH_API_BASE_URL` / `API_BASE_URL` into each app’s gitignored `config/local.dart-defines.json` using the Mac’s current LAN IP (preserves other keys such as `FCM_VAPID_KEY`).
+- **timemanager (device, cloud)** / **spendmanager (device, cloud)** — same as other cloud launches; load `config/cloud.dart-defines.json` (no IP refresh).
+
+Prerequisites: APIs running (`pnpm timemanager` / `pnpm spendmanager`), phone and Mac on the same Wi‑Fi, allow any macOS firewall prompts for the API processes.
 
 ## Smoke checks (after structural changes)
 

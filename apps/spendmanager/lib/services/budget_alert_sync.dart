@@ -14,7 +14,11 @@ const kBudgetNotificationConfig = LocalNotificationConfig(
 
 const _firedPrefsKey = 'budget_alert_fired_v1';
 
-/// Syncs budget threshold alerts to local notifications (deduped per period).
+/// Syncs budget threshold alerts.
+///
+/// When [preferServerPush] is true (FCM configured + registered), local
+/// threshold `showNow` is skipped — the API sends pushes and the foreground
+/// bridge displays them. Otherwise falls back to client-side local alerts.
 class BudgetAlertSync {
   BudgetAlertSync({
     BudgetRepository? repository,
@@ -24,6 +28,9 @@ class BudgetAlertSync {
 
   BudgetRepository? _repository;
   final LocalNotificationService _notifications;
+
+  /// When true, skip client-side local threshold notifications.
+  bool preferServerPush = false;
 
   void attachRepository(BudgetRepository repository) {
     _repository = repository;
@@ -38,8 +45,8 @@ class BudgetAlertSync {
 
   Future<void> cancelAll() => _notifications.cancelAll();
 
-  /// Fetches current statuses and fires local notifications for newly crossed
-  /// thresholds (once per budget + period).
+  /// Fetches current statuses and optionally fires local notifications for
+  /// newly crossed thresholds (once per budget + period).
   Future<List<BudgetStatus>> sync({
     String? asOf,
     String Function(BudgetStatus status)? titleFor,
@@ -49,6 +56,10 @@ class BudgetAlertSync {
     if (repo == null) return const [];
 
     final statuses = await repo.fetchStatuses(asOf: asOf);
+    if (preferServerPush) {
+      return statuses;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final fired = prefs.getStringList(_firedPrefsKey)?.toSet() ?? <String>{};
 

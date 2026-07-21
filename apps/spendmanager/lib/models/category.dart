@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:design_system/design_system.dart';
 
+import '../utils/json_dates.dart';
+
 class Category {
   const Category({
     required this.id,
@@ -30,11 +32,9 @@ class Category {
       userId: _asInt(json['user_id']),
       name: json['name'] as String,
       color: json['color'] as String,
-      archivedAt: json['archived_at'] != null
-          ? DateTime.parse(json['archived_at'] as String)
-          : null,
-      createdAt: _parseDate(json['created_at']),
-      updatedAt: _parseDate(json['updated_at']),
+      archivedAt: parseJsonDateOrNull(json['archived_at']),
+      createdAt: parseJsonDate(json['created_at']),
+      updatedAt: parseJsonDate(json['updated_at']),
     );
   }
 
@@ -42,11 +42,6 @@ class Category {
     if (value is int) return value;
     if (value is double) return value.toInt();
     return int.parse(value.toString());
-  }
-
-  static DateTime _parseDate(dynamic value) {
-    if (value is String) return DateTime.parse(value);
-    return DateTime.now();
   }
 }
 

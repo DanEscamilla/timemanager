@@ -64,6 +64,27 @@
       ]
     },
     {
+      "name": "timemanager (device, local)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "preLaunchTask": "update-local-dart-defines",
+      "toolArgs": [
+        "--dart-define-from-file=config/local.dart-defines.json"
+      ]
+    },
+    {
+      "name": "timemanager (device, cloud)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "toolArgs": [
+        "--dart-define-from-file=config/cloud.dart-defines.json"
+      ]
+    },
+    {
       "name": "timemanager (profile)",
       "request": "launch",
       "type": "dart",

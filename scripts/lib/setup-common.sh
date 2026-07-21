@@ -585,6 +585,10 @@ bootstrap_env_files() {
     "apps/timemanager-api/.env.example:apps/timemanager-api/.env"
     "apps/spendmanager-api/.env.example:apps/spendmanager-api/.env"
     "apps/user-manager-web/.env.example:apps/user-manager-web/.env"
+    "apps/timemanager/config/local.dart-defines.json.example:apps/timemanager/config/local.dart-defines.json"
+    "apps/timemanager/config/cloud.dart-defines.json.example:apps/timemanager/config/cloud.dart-defines.json"
+    "apps/spendmanager/config/local.dart-defines.json.example:apps/spendmanager/config/local.dart-defines.json"
+    "apps/spendmanager/config/cloud.dart-defines.json.example:apps/spendmanager/config/cloud.dart-defines.json"
   )
   local pair src dest
   for pair in "${pairs[@]}"; do
@@ -620,6 +624,7 @@ bootstrap_workspace() {
       "libs/design_system"
       "libs/app_core"
       "libs/local_notifications"
+      "libs/push_notifications"
       "apps/timemanager"
       "apps/spendmanager"
     )
@@ -681,7 +686,9 @@ Next steps
      flutter run -d ios                    # macOS / Xcode
      flutter run -d android                # emulator or device
 4. Android emulator hosts: use 10.0.2.2 for localhost APIs (already handled in app config).
-5. Re-verify anytime:  ./scripts/setup-${SETUP_OS}.sh --check
+5. Physical device (same Wi-Fi): IDE → timemanager/spendmanager (device, local)
+   (preLaunchTask refreshes LAN IP into config/local.dart-defines.json).
+6. Re-verify anytime:  ./scripts/setup-${SETUP_OS}.sh --check
 
 See .ai/local-setup.md for manual steps (Xcode, Docker daemon, Android AVD) and
 how to update these scripts when adding a new local-dev tool.

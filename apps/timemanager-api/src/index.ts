@@ -1,4 +1,5 @@
 import { app } from '@getcronit/pylon'
+import { createPushSenderFromEnv } from 'deno_api_kit/push/mod.ts'
 import { resolvers } from './graphql/resolvers/resolvers.ts'
 import {
   corsMiddleware,
@@ -16,6 +17,10 @@ import {
   createDefaultAssetRepository,
 } from './assets/repository.ts'
 import { MAX_ASSET_BYTES } from './assets/storage/types.ts'
+import { setPushSender } from './push/sender.ts'
+
+const pushSender = await createPushSenderFromEnv()
+setPushSender(pushSender)
 
 app.use(corsMiddleware)
 app.use(healthMiddleware)

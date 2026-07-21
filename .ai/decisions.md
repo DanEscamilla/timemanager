@@ -39,7 +39,8 @@ These were explicitly deferred in the migration. Treat as future direction, not 
 - **`libs/design_system`** — Flutter Material 3 tokens, themes, UI kit. Apps depend via `path:` in `pubspec.yaml`, not pnpm. Tags: `scope:shared`, `type:lib`, `runtime:flutter`.
 - **`libs/app_core`** — Flutter product-app infrastructure (SuperTokens FDI auth, token stores, GraphQL client, idle session, locale/theme prefs, `AppEndpoints`). Path dep; apps keep thin `ApiConfig` + l10n exception mappers.
 - **`libs/local_notifications`** — Shared local OS notifications (`flutter_local_notifications`) and in-session browser notifications. Apps pass a `LocalNotificationConfig` (channel + cache key) and schedule/show domain-agnostic payloads; activity planning and budget alert policy stay in each app.
-- **`libs/deno_api_kit`** — Deno Pylon/Kysely API infrastructure (JWKS + CORS, SSL helpers, Kysely factory, `resolveLocalUser`, migrate/ensure DB, health + GraphQL auth middleware). Consumed via Deno import map `"deno_api_kit/": "../../libs/deno_api_kit/"`.
+- **`libs/push_notifications`** — Provider-agnostic push registration and message streams (`PushProvider` + `FirebasePushProvider`). Apps own when to register tokens with their product API. Full-stack use: spendmanager budget-threshold FCM via `device_tokens` + `budget_alert_sends` (server send; local alerts remain a fallback when no FCM token); timemanager registers `device_tokens` the same way while activity reminders stay local until a server scheduler exists.
+- **`libs/deno_api_kit`** — Deno Pylon/Kysely API infrastructure (JWKS + CORS, SSL helpers, Kysely factory, `resolveLocalUser`, migrate/ensure DB, health + GraphQL auth middleware, optional `push/` Firebase Admin sender). Consumed via Deno import map `"deno_api_kit/": "../../libs/deno_api_kit/"` and matching `tsconfig.json` `paths` (Pylon serves with Bun).
 
 ## Cloud (AWS)
 

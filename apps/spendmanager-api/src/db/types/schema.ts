@@ -5,6 +5,8 @@ export interface Database {
   categories: CategoriesTable
   expenses: ExpensesTable
   budgets: BudgetsTable
+  device_tokens: DeviceTokensTable
+  budget_alert_sends: BudgetAlertSendsTable
 }
 
 export interface UsersTable {
@@ -80,3 +82,26 @@ export interface BudgetsTable {
 export type Budget = Selectable<BudgetsTable>
 export type NewBudget = Insertable<BudgetsTable>
 export type BudgetUpdate = Updateable<BudgetsTable>
+
+export interface DeviceTokensTable {
+  id: Generated<number>
+  user_id: number
+  token: string
+  /** 'ios' | 'android' | 'web' */
+  platform: string
+  updated_at: ColumnType<Date, string | undefined, string>
+}
+
+export type DeviceToken = Selectable<DeviceTokensTable>
+export type NewDeviceToken = Insertable<DeviceTokensTable>
+export type DeviceTokenUpdate = Updateable<DeviceTokensTable>
+
+export interface BudgetAlertSendsTable {
+  budget_id: number
+  /** Period start date (YYYY-MM-DD). */
+  period_start: string
+  sent_at: ColumnType<Date, string | undefined, never>
+}
+
+export type BudgetAlertSend = Selectable<BudgetAlertSendsTable>
+export type NewBudgetAlertSend = Insertable<BudgetAlertSendsTable>

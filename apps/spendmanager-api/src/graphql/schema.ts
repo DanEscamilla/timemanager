@@ -135,5 +135,7 @@ export const typeDefs = gql`
     createBudget(input: CreateBudgetInput!): Budget!
     updateBudget(id: Int!, input: UpdateBudgetInput!): Budget!
     archiveBudget(id: Int!): Budget!
+    registerDeviceToken(token: String!, platform: String!): Boolean!
+    unregisterDeviceToken(token: String!): Boolean!
   }
 `

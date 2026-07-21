@@ -187,6 +187,8 @@ export const typeDefs = gql`
     archiveGoal(id: ID!): Goal!
     deleteGoal(id: ID!): Boolean!
     recomputeGoalProgress: RecomputeResult!
+    registerDeviceToken(token: String!, platform: String!): Boolean!
+    unregisterDeviceToken(token: String!): Boolean!
   }
 
   type RecomputeResult {

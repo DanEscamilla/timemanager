@@ -1,3 +1,5 @@
+import '../utils/json_dates.dart';
+
 class Budget {
   const Budget({
     required this.id,
@@ -46,11 +48,9 @@ class Budget {
       intervalCount: _asInt(json['interval_count']),
       anchorDate: DateTime.parse(json['anchor_date'] as String),
       alertPercent: _asInt(json['alert_percent']),
-      archivedAt: json['archived_at'] != null
-          ? DateTime.parse(json['archived_at'] as String)
-          : null,
-      createdAt: _parseDate(json['created_at']),
-      updatedAt: _parseDate(json['updated_at']),
+      archivedAt: parseJsonDateOrNull(json['archived_at']),
+      createdAt: parseJsonDate(json['created_at']),
+      updatedAt: parseJsonDate(json['updated_at']),
     );
   }
 
@@ -58,11 +58,6 @@ class Budget {
     if (value is int) return value;
     if (value is double) return value.toInt();
     return int.parse(value.toString());
-  }
-
-  static DateTime _parseDate(dynamic value) {
-    if (value is String) return DateTime.parse(value);
-    return DateTime.now();
   }
 }
 

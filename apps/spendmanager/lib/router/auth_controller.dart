@@ -15,6 +15,7 @@ import '../services/category_repository.dart';
 import '../services/expense_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/idle_session_monitor.dart';
+import '../services/push_registration_service.dart';
 import '../utils/money.dart';
 
 /// Session + GraphQL services for the signed-in shell.
@@ -25,13 +26,16 @@ class AuthController extends ChangeNotifier {
     ExpenseRepository? expenseRepository,
     BudgetRepository? budgetRepository,
     BudgetAlertSync? budgetAlertSync,
+    PushRegistrationService? pushRegistration,
     IdleSessionMonitor? idleSessionMonitor,
     Duration? idleSessionTimeout,
   })  : _auth = authService ?? AuthService(),
         _categoryRepository = categoryRepository,
         _expenseRepository = expenseRepository,
         _budgetRepository = budgetRepository,
-        _budgetAlertSync = budgetAlertSync ?? BudgetAlertSync() {
+        _budgetAlertSync = budgetAlertSync ?? BudgetAlertSync(),
+        _pushRegistration =
+            pushRegistration ?? PushRegistrationService() {
     _idleMonitor = idleSessionMonitor ??
         IdleSessionMonitor(
           timeout: idleSessionTimeout ?? ApiConfig.idleSessionTimeout,
@@ -42,6 +46,7 @@ class AuthController extends ChangeNotifier {
   final AuthService _auth;
   late final IdleSessionMonitor _idleMonitor;
   final BudgetAlertSync _budgetAlertSync;
+  final PushRegistrationService _pushRegistration;
 
   bool? _signedIn;
 
@@ -62,6 +67,8 @@ class AuthController extends ChangeNotifier {
   IdleSessionMonitor get idleSessionMonitor => _idleMonitor;
 
   BudgetAlertSync get budgetAlertSync => _budgetAlertSync;
+
+  PushRegistrationService get pushRegistration => _pushRegistration;
 
   bool get isLoading => _signedIn == null;
 
@@ -93,7 +100,7 @@ class AuthController extends ChangeNotifier {
         _signedIn = true;
         _idleMonitor.start();
         notifyListeners();
-        unawaited(syncBudgetAlerts());
+        unawaited(_afterSignIn());
         return;
       }
     } catch (_) {
@@ -104,7 +111,7 @@ class AuthController extends ChangeNotifier {
     if (exists) {
       _ensureSessionServices();
       _idleMonitor.start();
-      unawaited(syncBudgetAlerts());
+      unawaited(_afterSignIn());
     }
     _signedIn = exists;
     notifyListeners();
@@ -115,7 +122,7 @@ class AuthController extends ChangeNotifier {
     _signedIn = true;
     _idleMonitor.start();
     notifyListeners();
-    unawaited(syncBudgetAlerts());
+    unawaited(_afterSignIn());
   }
 
   void recordActivity() {
@@ -126,6 +133,9 @@ class AuthController extends ChangeNotifier {
   Future<void> signOut() async {
     _idleMonitor.stop();
     unawaited(_budgetAlertSync.cancelAll());
+    await _pushRegistration.stop();
+    _pushRegistration.clearClient();
+    _budgetAlertSync.preferServerPush = false;
     await _auth.signOut();
     _categoryRepository = null;
     _expenseRepository = null;
@@ -170,6 +180,12 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  Future<void> _afterSignIn() async {
+    await _pushRegistration.start();
+    _budgetAlertSync.preferServerPush = _pushRegistration.hasRegisteredToken;
+    await syncBudgetAlerts();
+  }
+
   void _ensureSessionServices() {
     if (_expenseRepository != null && _budgetRepository != null) return;
 
@@ -183,11 +199,13 @@ class AuthController extends ChangeNotifier {
     _expenseRepository ??= ExpenseRepository(client: client);
     _budgetRepository ??= BudgetRepository(client: client);
     _budgetAlertSync.attachRepository(_budgetRepository!);
+    _pushRegistration.attachClient(client);
   }
 
   @override
   void dispose() {
     _idleMonitor.stop();
+    unawaited(_pushRegistration.dispose());
     super.dispose();
   }
 }

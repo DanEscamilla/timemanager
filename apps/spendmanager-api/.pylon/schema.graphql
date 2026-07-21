@@ -97,29 +97,55 @@ input UpdateBudgetInputInput {
 input ArgsInput_16 {
 	id: Number!
 }
-type Query {
-categories(args: ArgsInput): Any!
-category(args: ArgsInput_1!): Any!
-expenses(args: ArgsInput_2): Any!
-expense(args: ArgsInput_3!): Expense
-expenseTotals(args: ArgsInput_4!): Any!
-budgets(args: ArgsInput_5): Any!
-budget(args: ArgsInput_6!): Budget
-budgetStatuses(args: ArgsInput_7): [BudgetStatusesOrBudgetStatuses_1!]!
+input ArgsInput_17 {
+	token: String!
+	platform: String!
 }
-type Expense {
+input ArgsInput_18 {
+	token: String!
+}
+type Query {
+categories(args: ArgsInput): [Categories!]!
+category(args: ArgsInput_1!): Categories
+expenses(args: ArgsInput_2): [Expenses!]!
+expense(args: ArgsInput_3!): Expenses
+expenseTotals(args: ArgsInput_4!): [ExpenseTotals!]!
+budgets(args: ArgsInput_5): [Budgets!]!
+budget(args: ArgsInput_6!): Budgets
+budgetStatuses(args: ArgsInput_7): [BudgetStatusRow!]!
+}
+type Categories {
+archived_at: String
+created_at: String!
+updated_at: String!
+id: Number!
+user_id: Number!
+name: String!
+color: String!
+}
+type Expenses {
 amount_cents: Number!
+created_at: String!
+updated_at: String!
 id: Number!
 user_id: Number!
 category_id: Number!
 currency: String!
 spent_on: String!
 note: String
+}
+type ExpenseTotals {
+category_id: Number!
+category_name: String!
+category_color: String!
+currency: String!
+total_cents: Number!
+}
+type Budgets {
+amount_cents: Number!
+archived_at: String
 created_at: String!
 updated_at: String!
-}
-type Budget {
-amount_cents: Number!
 id: Number!
 user_id: Number!
 name: String!
@@ -129,55 +155,32 @@ interval_unit: String!
 interval_count: Number!
 anchor_date: String!
 alert_percent: Number!
-archived_at: String
-created_at: String!
-updated_at: String!
 }
-type BudgetStatuses implements BudgetStatusesOrBudgetStatuses_1 {
-budget_id: Any!
-budget_name: Any!
-category_id: Any!
-currency: Any!
+type BudgetStatusRow {
+budget_id: Number!
+budget_name: String!
+category_id: Number
+currency: String!
 amount_cents: Number!
 spent_cents: Number!
 percent_used: Number!
-alert_percent: Any!
+alert_percent: Number!
 alert_triggered: Boolean!
-}
-type BudgetStatuses_1 implements BudgetStatusesOrBudgetStatuses_1 {
-budget_id: Any!
-budget_name: Any!
-category_id: Any!
-currency: Any!
-amount_cents: Number!
-spent_cents: Number!
-percent_used: Number!
-alert_percent: Any!
-alert_triggered: Boolean!
-period_start: String!
-period_end_exclusive: String!
+period_start: String
+period_end_exclusive: String
 }
 type Mutation {
-createCategory(args: ArgsInput_8!): Any!
-updateCategory(args: ArgsInput_9!): Any!
-archiveCategory(args: ArgsInput_10!): Any!
-createExpense(args: ArgsInput_11!): Expense!
-updateExpense(args: ArgsInput_12!): Expense!
+createCategory(args: ArgsInput_8!): Categories!
+updateCategory(args: ArgsInput_9!): Categories!
+archiveCategory(args: ArgsInput_10!): Categories!
+createExpense(args: ArgsInput_11!): Expenses!
+updateExpense(args: ArgsInput_12!): Expenses!
 deleteExpense(args: ArgsInput_13!): Boolean!
-createBudget(args: ArgsInput_14!): Budget!
-updateBudget(args: ArgsInput_15!): Budget!
-archiveBudget(args: ArgsInput_16!): Budget!
-}
-interface BudgetStatusesOrBudgetStatuses_1 {
-budget_id: Any!
-budget_name: Any!
-category_id: Any!
-currency: Any!
-amount_cents: Number!
-spent_cents: Number!
-percent_used: Number!
-alert_percent: Any!
-alert_triggered: Boolean!
+createBudget(args: ArgsInput_14!): Budgets!
+updateBudget(args: ArgsInput_15!): Budgets!
+archiveBudget(args: ArgsInput_16!): Budgets!
+registerDeviceToken(args: ArgsInput_17!): Boolean!
+unregisterDeviceToken(args: ArgsInput_18!): Boolean!
 }
 scalar ID
 scalar Int

@@ -19,6 +19,9 @@ dependencies:
     path: ../../libs/app_core
   local_notifications:
     path: ../../libs/local_notifications
+  push_notifications:
+    path: ../../libs/push_notifications
+  firebase_core: ^3.13.0
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
   http: ^1.2.2

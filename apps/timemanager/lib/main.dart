@@ -19,8 +19,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ApiConfig.ensureConfigured();
   usePathUrlStrategy();
+  final auth = AuthController();
   await ActivityNotificationScheduler.instance.ensureInitialized();
-  runApp(const TimeManagerApp());
+  await auth.pushRegistration.ensureInitialized();
+  runApp(TimeManagerApp(authController: auth));
 }
 
 class TimeManagerApp extends StatefulWidget {

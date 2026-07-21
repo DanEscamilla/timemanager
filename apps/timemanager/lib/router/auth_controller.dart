@@ -16,6 +16,7 @@ import '../services/goal_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/group_repository.dart';
 import '../services/idle_session_monitor.dart';
+import '../services/push_registration_service.dart';
 import '../services/reward_repository.dart';
 
 /// Session + GraphQL services for the signed-in shell.
@@ -30,6 +31,7 @@ class AuthController extends ChangeNotifier {
     CompletionRepository? completionRepository,
     RewardRepository? rewardRepository,
     AssetUploadService? assetUploadService,
+    PushRegistrationService? pushRegistration,
     IdleSessionMonitor? idleSessionMonitor,
     Duration? idleSessionTimeout,
   })  : _auth = authService ?? AuthService(),
@@ -38,7 +40,9 @@ class AuthController extends ChangeNotifier {
         _goalRepository = goalRepository,
         _completionRepository = completionRepository,
         _rewardRepository = rewardRepository,
-        _assetUploadService = assetUploadService {
+        _assetUploadService = assetUploadService,
+        _pushRegistration =
+            pushRegistration ?? PushRegistrationService() {
     _idleMonitor = idleSessionMonitor ??
         IdleSessionMonitor(
           timeout: idleSessionTimeout ?? ApiConfig.idleSessionTimeout,
@@ -48,6 +52,7 @@ class AuthController extends ChangeNotifier {
 
   final AuthService _auth;
   late final IdleSessionMonitor _idleMonitor;
+  final PushRegistrationService _pushRegistration;
 
   /// `null` while [bootstrap] is in progress.
   bool? _signedIn;
@@ -68,6 +73,8 @@ class AuthController extends ChangeNotifier {
   AuthService get authService => _auth;
 
   IdleSessionMonitor get idleSessionMonitor => _idleMonitor;
+
+  PushRegistrationService get pushRegistration => _pushRegistration;
 
   bool get isLoading => _signedIn == null;
 
@@ -117,7 +124,7 @@ class AuthController extends ChangeNotifier {
         _signedIn = true;
         _idleMonitor.start();
         notifyListeners();
-        unawaited(_syncNotifications());
+        unawaited(_afterSignIn());
         return;
       }
     } catch (_) {
@@ -132,7 +139,7 @@ class AuthController extends ChangeNotifier {
     _signedIn = exists;
     notifyListeners();
     if (exists) {
-      unawaited(_syncNotifications());
+      unawaited(_afterSignIn());
     }
   }
 
@@ -141,7 +148,7 @@ class AuthController extends ChangeNotifier {
     _signedIn = true;
     _idleMonitor.start();
     notifyListeners();
-    unawaited(_syncNotifications());
+    unawaited(_afterSignIn());
   }
 
   void recordActivity() {
@@ -151,6 +158,8 @@ class AuthController extends ChangeNotifier {
 
   Future<void> signOut() async {
     _idleMonitor.stop();
+    await _pushRegistration.stop();
+    _pushRegistration.clearClient();
     await _auth.signOut();
     _activityRepository = null;
     _groupRepository = null;
@@ -173,6 +182,11 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<void> syncNotifications() => _syncNotifications();
+
+  Future<void> _afterSignIn() async {
+    await _pushRegistration.start();
+    await _syncNotifications();
+  }
 
   Future<void> _syncNotifications() async {
     final repo = _activityRepository;
@@ -204,11 +218,13 @@ class AuthController extends ChangeNotifier {
         await signOut();
       },
     );
+    _pushRegistration.attachClient(client);
   }
 
   @override
   void dispose() {
     _idleMonitor.stop();
+    unawaited(_pushRegistration.dispose());
     super.dispose();
   }
 }

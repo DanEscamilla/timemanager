@@ -18,6 +18,7 @@ export interface Database {
   reward_rules: RewardRulesTable
   reward_inventory: RewardInventoryTable
   reward_transactions: RewardTransactionsTable
+  device_tokens: DeviceTokensTable
 }
 
 // Users table interface
@@ -411,3 +412,16 @@ export type RewardInventoryUpdate = Updateable<RewardInventoryTable>
 export type RewardTransaction = Selectable<RewardTransactionsTable>
 export type NewRewardTransaction = Insertable<RewardTransactionsTable>
 export type RewardTransactionUpdate = Updateable<RewardTransactionsTable>
+
+export interface DeviceTokensTable {
+  id: Generated<number>
+  user_id: number
+  token: string
+  /** 'ios' | 'android' | 'web' */
+  platform: string
+  updated_at: ColumnType<Date, string | undefined, string>
+}
+
+export type DeviceToken = Selectable<DeviceTokensTable>
+export type NewDeviceToken = Insertable<DeviceTokensTable>
+export type DeviceTokenUpdate = Updateable<DeviceTokensTable>

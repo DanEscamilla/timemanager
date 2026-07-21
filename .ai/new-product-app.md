@@ -10,7 +10,9 @@ Do **not** copy auth, JWKS, GraphQL client, or Kysely bootstrap from an existing
 |-----|---------|---------|
 | [`libs/design_system`](../libs/design_system) | Flutter | Themes, tokens, `LoginView`, list empty/error/loading |
 | [`libs/app_core`](../libs/app_core) | Flutter | AuthService, GraphQL client, idle monitor, locale/theme prefs, `AppEndpoints` |
-| [`libs/deno_api_kit`](../libs/deno_api_kit) | Deno | JWKS verify, CORS, Kysely factory, `resolveLocalUser`, migrate + ensure DB, GraphQL auth middleware |
+| [`libs/local_notifications`](../libs/local_notifications) | Flutter | Local OS / in-session browser notifications |
+| [`libs/push_notifications`](../libs/push_notifications) | Flutter | Opt-in push (`PushProvider` / Firebase); wire only if the product API stores tokens and sends |
+| [`libs/deno_api_kit`](../libs/deno_api_kit) | Deno | JWKS verify, CORS, Kysely factory, `resolveLocalUser`, migrate + ensure DB, GraphQL auth middleware, optional FCM sender |
 
 GraphQL codegen into `libs/` remains deferred — see [decisions.md](decisions.md).
 
@@ -20,7 +22,8 @@ GraphQL codegen into `libs/` remains deferred — see [decisions.md](decisions.m
    - Add an init SQL script under `infra/timemanager-db/init/` for fresh volumes (`CREATE DATABASE <name>;`).
    - Migrate bootstrap should call `ensureDatabase` (via `deno_api_kit`) so existing volumes get the DB too.
 2. **API** `apps/<name>-api` (Deno + Pylon + Kysely):
-   - Import map: `"deno_api_kit/": "../../libs/deno_api_kit/"`.
+   - Import map in `deno.json`: `"deno_api_kit/": "../../libs/deno_api_kit/"`.
+   - Matching `tsconfig.json` `paths` (Pylon serves with Bun, which does not read Deno's import map): `"deno_api_kit/*": ["../../libs/deno_api_kit/*"]` plus `"baseUrl": "."`.
    - Thin `database.ts` via `createKysely`, thin `users.ts` wrapping kit `resolveLocalUser`, thin `index.ts` with `cors` + `health` + `createGraphQLAuthMiddleware`.
    - Own schema types, migrations, seed, GraphQL resolvers/validation.
    - Pick a free port (avoid `:3000` / `:3001` / `:3002`).

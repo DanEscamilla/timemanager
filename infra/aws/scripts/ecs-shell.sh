@@ -111,8 +111,11 @@ pick_task() {
     return
   fi
 
-  local task_rows i idx task_arn last_status started_at container_name
-  mapfile -t task_rows < <(aws ecs describe-tasks \
+  # Bash 3.2 (macOS default) has no mapfile; read lines into the array.
+  local task_rows=() i idx task_arn last_status started_at container_name line
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    task_rows+=("${line}")
+  done < <(aws ecs describe-tasks \
     --region "${AWS_REGION}" \
     --cluster "${CLUSTER}" \
     --tasks "${TASK_ARNS[@]}" \
@@ -272,7 +275,10 @@ fi
 CLUSTER="$(resolve_cluster)"
 echo "Cluster: ${CLUSTER} (${AWS_REGION})"
 
-mapfile -t SERVICE_ARNS < <(aws ecs list-services \
+SERVICE_ARNS=()
+while IFS= read -r line || [[ -n "${line}" ]]; do
+  SERVICE_ARNS+=("${line}")
+done < <(aws ecs list-services \
   --region "${AWS_REGION}" \
   --cluster "${CLUSTER}" \
   --query 'serviceArns[]' \
@@ -288,7 +294,10 @@ for arn in "${SERVICE_ARNS[@]}"; do
   SERVICE_NAMES+=("${arn##*/}")
 done
 
-mapfile -t SERVICE_ROWS < <(aws ecs describe-services \
+SERVICE_ROWS=()
+while IFS= read -r line || [[ -n "${line}" ]]; do
+  SERVICE_ROWS+=("${line}")
+done < <(aws ecs describe-services \
   --region "${AWS_REGION}" \
   --cluster "${CLUSTER}" \
   --services "${SERVICE_NAMES[@]}" \
@@ -358,7 +367,10 @@ if [[ -z "${MODE}" ]]; then
   esac
 fi
 
-mapfile -t TASK_ARNS < <(aws ecs list-tasks \
+TASK_ARNS=()
+while IFS= read -r line || [[ -n "${line}" ]]; do
+  TASK_ARNS+=("${line}")
+done < <(aws ecs list-tasks \
   --region "${AWS_REGION}" \
   --cluster "${CLUSTER}" \
   --service-name "${SELECTED_SERVICE}" \

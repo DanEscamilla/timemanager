@@ -40,8 +40,11 @@ build/
 !.local.env.example
 !**/.local.env.example
 
-# Local Flutter cloud API overrides (copy from *.example)
+# Local Flutter dart-define overrides (copy from *.example)
+apps/timemanager/config/local.dart-defines.json
 apps/timemanager/config/cloud.dart-defines.json
+apps/spendmanager/config/local.dart-defines.json
+apps/spendmanager/config/cloud.dart-defines.json
 
 # Terraform
 **/.terraform/

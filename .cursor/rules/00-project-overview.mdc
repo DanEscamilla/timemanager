@@ -18,6 +18,7 @@ Apps and infra:
 - `libs/design_system` — Shared Flutter Material 3 design system (`scope:shared`, `type:lib`).
 - `libs/app_core` — Shared Flutter auth / GraphQL / prefs (`scope:shared`, `type:lib`).
 - `libs/local_notifications` — Shared local OS / in-session browser notifications (`scope:shared`, `type:lib`).
+- `libs/push_notifications` — Provider-agnostic push / Firebase FCM (`scope:shared`, `type:lib`).
 - `libs/deno_api_kit` — Shared Deno Pylon/Kysely API infra (`scope:shared`, `type:lib`).
 - `libs/` — reserved for additional shared packages.
 

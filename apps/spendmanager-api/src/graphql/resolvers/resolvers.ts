@@ -1,8 +1,15 @@
 import { getContext } from '@getcronit/pylon'
 import { sql } from 'kysely'
-import { currentPeriod, type IntervalUnit } from '../../budgets/period.ts'
+import { maybeSendBudgetAlertPushes } from '../../budgets/alert_push.ts'
+import { computeBudgetStatuses } from '../../budgets/status.ts'
 import { db } from '../../db/database.ts'
-import type { NewBudget, NewCategory, NewExpense } from '../../db/types/schema.ts'
+import type {
+  NewBudget,
+  NewCategory,
+  NewDeviceToken,
+  NewExpense,
+} from '../../db/types/schema.ts'
+import { asIsoTimestamp, asIsoTimestampOrNull } from '../timestamps.ts'
 import {
   CreateBudgetInput,
   CreateCategoryInput,
@@ -51,6 +58,23 @@ function todayUtc(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
+function mapCategory(row: {
+  id: number
+  user_id: number
+  name: string
+  color: string
+  archived_at: Date | string | null
+  created_at: Date | string
+  updated_at: Date | string
+}) {
+  return {
+    ...row,
+    archived_at: asIsoTimestampOrNull(row.archived_at),
+    created_at: asIsoTimestamp(row.created_at),
+    updated_at: asIsoTimestamp(row.updated_at),
+  }
+}
+
 function mapExpense(row: {
   id: number
   user_id: number
@@ -65,6 +89,8 @@ function mapExpense(row: {
   return {
     ...row,
     amount_cents: asNumber(row.amount_cents),
+    created_at: asIsoTimestamp(row.created_at),
+    updated_at: asIsoTimestamp(row.updated_at),
   }
 }
 
@@ -86,7 +112,28 @@ function mapBudget(row: {
   return {
     ...row,
     amount_cents: asNumber(row.amount_cents),
+    archived_at: asIsoTimestampOrNull(row.archived_at),
+    created_at: asIsoTimestamp(row.created_at),
+    updated_at: asIsoTimestamp(row.updated_at),
   }
+}
+
+const DEVICE_PLATFORMS = new Set(['ios', 'android', 'web'])
+
+function validateDevicePlatform(platform: string): string {
+  const normalized = platform.trim().toLowerCase()
+  if (!DEVICE_PLATFORMS.has(normalized)) {
+    throw new Error('platform must be ios, android, or web')
+  }
+  return normalized
+}
+
+function validateDeviceToken(token: string): string {
+  const trimmed = token.trim()
+  if (trimmed.length < 8 || trimmed.length > 4096) {
+    throw new Error('invalid device token')
+  }
+  return trimmed
 }
 
 async function fetchOwnedCategory(categoryId: number, userId: number) {
@@ -107,29 +154,6 @@ async function fetchOwnedBudget(budgetId: number, userId: number) {
     .executeTakeFirst()
 }
 
-async function sumExpensesInPeriod(args: {
-  userId: number
-  categoryId: number | null
-  currency: string
-  fromDate: string
-  toDateExclusive: string
-}): Promise<number> {
-  let query = db
-    .selectFrom('expenses')
-    .where('user_id', '=', args.userId)
-    .where('currency', '=', args.currency)
-    .where('spent_on', '>=', args.fromDate)
-    .where('spent_on', '<', args.toDateExclusive)
-    .select(sql<string>`coalesce(sum(amount_cents), 0)`.as('total_cents'))
-
-  if (args.categoryId != null) {
-    query = query.where('category_id', '=', args.categoryId)
-  }
-
-  const row = await query.executeTakeFirstOrThrow()
-  return asNumber(row.total_cents)
-}
-
 export const Query = {
   categories: async (args?: { includeArchived?: boolean }) => {
     const userId = requireUserId()
@@ -143,19 +167,19 @@ export const Query = {
       query = query.where('archived_at', 'is', null)
     }
 
-    return await query.execute()
+    const rows = await query.execute()
+    return rows.map(mapCategory)
   },
 
   category: async (args: { id: number }) => {
     const userId = requireUserId()
-    return (
-      await db
-        .selectFrom('categories')
-        .where('id', '=', args.id)
-        .where('user_id', '=', userId)
-        .selectAll()
-        .executeTakeFirst()
-    ) ?? null
+    const row = await db
+      .selectFrom('categories')
+      .where('id', '=', args.id)
+      .where('user_id', '=', userId)
+      .selectAll()
+      .executeTakeFirst()
+    return row ? mapCategory(row) : null
   },
 
   expenses: async (args?: {
@@ -257,70 +281,7 @@ export const Query = {
   budgetStatuses: async (args?: { asOf?: string }) => {
     const userId = requireUserId()
     const asOf = args?.asOf != null ? validateSpentOn(args.asOf) : todayUtc()
-
-    const budgets = await db
-      .selectFrom('budgets')
-      .where('user_id', '=', userId)
-      .where('archived_at', 'is', null)
-      .orderBy('name', 'asc')
-      .selectAll()
-      .execute()
-
-    const statuses = []
-    for (const budget of budgets) {
-      const amountCents = asNumber(budget.amount_cents)
-      const period = currentPeriod({
-        anchorDate: budget.anchor_date,
-        intervalUnit: budget.interval_unit as IntervalUnit,
-        intervalCount: budget.interval_count,
-        asOf,
-      })
-
-      if (!period) {
-        statuses.push({
-          budget_id: budget.id,
-          budget_name: budget.name,
-          category_id: budget.category_id,
-          currency: budget.currency,
-          amount_cents: amountCents,
-          spent_cents: 0,
-          percent_used: 0,
-          alert_percent: budget.alert_percent,
-          alert_triggered: false,
-          period_start: null,
-          period_end_exclusive: null,
-        })
-        continue
-      }
-
-      const spentCents = await sumExpensesInPeriod({
-        userId,
-        categoryId: budget.category_id,
-        currency: budget.currency,
-        fromDate: period.start,
-        toDateExclusive: period.endExclusive,
-      })
-      const percentUsed = amountCents > 0
-        ? Math.floor((spentCents * 100) / amountCents)
-        : 0
-      const alertTriggered = percentUsed >= budget.alert_percent
-
-      statuses.push({
-        budget_id: budget.id,
-        budget_name: budget.name,
-        category_id: budget.category_id,
-        currency: budget.currency,
-        amount_cents: amountCents,
-        spent_cents: spentCents,
-        percent_used: percentUsed,
-        alert_percent: budget.alert_percent,
-        alert_triggered: alertTriggered,
-        period_start: period.start,
-        period_end_exclusive: period.endExclusive,
-      })
-    }
-
-    return statuses
+    return await computeBudgetStatuses(userId, asOf)
   },
 }
 
@@ -332,7 +293,7 @@ export const Mutation = {
     const now = new Date().toISOString()
 
     try {
-      return await db
+      const row = await db
         .insertInto('categories')
         .values({
           user_id: userId,
@@ -344,6 +305,7 @@ export const Mutation = {
         } as NewCategory)
         .returningAll()
         .executeTakeFirstOrThrow()
+      return mapCategory(row)
     } catch (err) {
       const message = err instanceof Error ? err.message : ''
       if (message.includes('categories_user_id_lower_name_active_unique')) {
@@ -371,7 +333,7 @@ export const Mutation = {
       : existing.color
 
     try {
-      return await db
+      const row = await db
         .updateTable('categories')
         .set({
           name,
@@ -382,6 +344,7 @@ export const Mutation = {
         .where('user_id', '=', userId)
         .returningAll()
         .executeTakeFirstOrThrow()
+      return mapCategory(row)
     } catch (err) {
       const message = err instanceof Error ? err.message : ''
       if (message.includes('categories_user_id_lower_name_active_unique')) {
@@ -398,10 +361,10 @@ export const Mutation = {
       throw new InvalidCategoryError('category not found')
     }
     if (existing.archived_at != null) {
-      return existing
+      return mapCategory(existing)
     }
 
-    return await db
+    const row = await db
       .updateTable('categories')
       .set({
         archived_at: new Date().toISOString(),
@@ -411,6 +374,7 @@ export const Mutation = {
       .where('user_id', '=', userId)
       .returningAll()
       .executeTakeFirstOrThrow()
+    return mapCategory(row)
   },
 
   createExpense: async (args: { input: CreateExpenseInput }) => {
@@ -441,6 +405,7 @@ export const Mutation = {
       .returningAll()
       .executeTakeFirstOrThrow()
 
+    await maybeSendBudgetAlertPushes(userId, todayUtc())
     return mapExpense(row)
   },
 
@@ -494,6 +459,7 @@ export const Mutation = {
       .returningAll()
       .executeTakeFirstOrThrow()
 
+    await maybeSendBudgetAlertPushes(userId, todayUtc())
     return mapExpense(row)
   },
 
@@ -547,6 +513,7 @@ export const Mutation = {
       .returningAll()
       .executeTakeFirstOrThrow()
 
+    await maybeSendBudgetAlertPushes(userId, todayUtc())
     return mapBudget(row)
   },
 
@@ -613,6 +580,7 @@ export const Mutation = {
       .returningAll()
       .executeTakeFirstOrThrow()
 
+    await maybeSendBudgetAlertPushes(userId, todayUtc())
     return mapBudget(row)
   },
 
@@ -638,6 +606,44 @@ export const Mutation = {
       .executeTakeFirstOrThrow()
 
     return mapBudget(row)
+  },
+
+  registerDeviceToken: async (args: { token: string; platform: string }) => {
+    const userId = requireUserId()
+    const token = validateDeviceToken(args.token)
+    const platform = validateDevicePlatform(args.platform)
+    const now = new Date().toISOString()
+
+    await db
+      .insertInto('device_tokens')
+      .values({
+        user_id: userId,
+        token,
+        platform,
+        updated_at: now,
+      } as NewDeviceToken)
+      .onConflict((oc) =>
+        oc.column('token').doUpdateSet({
+          user_id: userId,
+          platform,
+          updated_at: now,
+        })
+      )
+      .execute()
+
+    return true
+  },
+
+  unregisterDeviceToken: async (args: { token: string }) => {
+    const userId = requireUserId()
+    const token = validateDeviceToken(args.token)
+    const result = await db
+      .deleteFrom('device_tokens')
+      .where('user_id', '=', userId)
+      .where('token', '=', token)
+      .execute()
+
+    return result.length > 0 && Number(result[0]?.numDeletedRows ?? 0) > 0
   },
 }
 

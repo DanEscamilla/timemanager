@@ -17,6 +17,7 @@ Future<void> main() async {
   usePathUrlStrategy();
   final auth = AuthController();
   await auth.budgetAlertSync.ensureInitialized();
+  await auth.pushRegistration.ensureInitialized();
   runApp(SpendManagerApp(authController: auth));
 }
 
@@ -56,6 +57,9 @@ class _SpendManagerAppState extends State<SpendManagerApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Global key observer avoids Focus.autofocus layout races on web
+    // (focus traversal reading semanticBounds before first layout).
+    HardwareKeyboard.instance.addHandler(_onHardwareKey);
     _auth.localizationLookup = () {
       final ctx = _rootNavigatorKey.currentContext;
       if (ctx == null) return null;
@@ -73,11 +77,19 @@ class _SpendManagerAppState extends State<SpendManagerApp>
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onHardwareKey);
     WidgetsBinding.instance.removeObserver(this);
     _themeMode.dispose();
     _router.dispose();
     _auth.dispose();
     super.dispose();
+  }
+
+  bool _onHardwareKey(KeyEvent event) {
+    if (event is KeyDownEvent || event is KeyRepeatEvent) {
+      _auth.recordActivity();
+    }
+    return false;
   }
 
   @override
@@ -119,21 +131,11 @@ class _SpendManagerAppState extends State<SpendManagerApp>
           debugShowCheckedModeBanner: false,
           routerConfig: _router,
           builder: (context, child) {
-            final content = child ?? const SizedBox.shrink();
             return Listener(
               behavior: HitTestBehavior.translucent,
               onPointerDown: (_) => _auth.recordActivity(),
               onPointerSignal: (_) => _auth.recordActivity(),
-              child: Focus(
-                autofocus: true,
-                onKeyEvent: (node, event) {
-                  if (event is KeyDownEvent || event is KeyRepeatEvent) {
-                    _auth.recordActivity();
-                  }
-                  return KeyEventResult.ignored;
-                },
-                child: content,
-              ),
+              child: child ?? const SizedBox.shrink(),
             );
           },
         );

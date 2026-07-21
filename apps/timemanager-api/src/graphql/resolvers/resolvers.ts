@@ -7,11 +7,16 @@ import type {
   Group as GroupRow,
   NewActivity,
   NewActivityCompletion,
+  NewDeviceToken,
   NewGoalEvent,
   NewGroup,
   NewRecurrencePattern,
   RecurrencePattern as RecurrencePatternRow,
 } from "../../db/types/schema.ts";
+import {
+  validateDevicePlatform,
+  validateDeviceToken,
+} from "../../push/device_token_validation.ts";
 import { recomputeAffectedCycles } from "../../goals/progress.ts";
 import {
   CompleteActivityInput,
@@ -635,6 +640,44 @@ export const Mutation = {
 
   ...GoalMutation,
   ...RewardMutation,
+
+  registerDeviceToken: async (args: { token: string; platform: string }) => {
+    const userId = requireUserId();
+    const token = validateDeviceToken(args.token);
+    const platform = validateDevicePlatform(args.platform);
+    const now = new Date().toISOString();
+
+    await db
+      .insertInto("device_tokens")
+      .values({
+        user_id: userId,
+        token,
+        platform,
+        updated_at: now,
+      } as NewDeviceToken)
+      .onConflict((oc) =>
+        oc.column("token").doUpdateSet({
+          user_id: userId,
+          platform,
+          updated_at: now,
+        })
+      )
+      .execute();
+
+    return true;
+  },
+
+  unregisterDeviceToken: async (args: { token: string }) => {
+    const userId = requireUserId();
+    const token = validateDeviceToken(args.token);
+    const result = await db
+      .deleteFrom("device_tokens")
+      .where("user_id", "=", userId)
+      .where("token", "=", token)
+      .execute();
+
+    return result.length > 0 && Number(result[0]?.numDeletedRows ?? 0) > 0;
+  },
 };
 
 export const resolvers = {

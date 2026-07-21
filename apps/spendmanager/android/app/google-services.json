@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "607753279046",
+    "project_id": "spendmanager-341f8",
+    "storage_bucket": "spendmanager-341f8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:607753279046:android:15c8f692434ff2c49e5c47",
+        "android_client_info": {
+          "package_name": "com.spendmanager.spendmanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9y0cmBf9K5zxYUho5F_eqbUoO5-fdWrc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -60,6 +60,7 @@ PATH updates are appended to your login shell rc (`~/.zshrc`, `~/.bashrc`, or `~
 | Create an **Android AVD** (or use a device) | both | cmdline-tools alone do not create an emulator image UI; use Android Studio Device Manager or `avdmanager` |
 | Accept remaining **flutter doctor** prompts | both | Re-run `flutter doctor` after Xcode / licenses |
 | OAuth provider secrets | optional | Edit `apps/user-manager-api/.env` — email/password works with defaults + SuperTokens playground |
+| **Firebase / FCM** (spendmanager + timemanager push) | optional | Create a Firebase project per product; set `FIREBASE_SERVICE_ACCOUNT_JSON` or `_PATH` in the product API `.env`; run `flutterfire configure` in the Flutter app; set `FCM_VAPID_KEY` in that app’s `config/local.dart-defines.json` for web (see [workflows.md](workflows.md)). Without the API service account, sends no-op. Spendmanager: budget alerts fall back to local when no FCM token. Timemanager: activity reminders stay local; FCM registers device tokens for future server sends. |
 
 ## Env files
 
@@ -71,8 +72,12 @@ Created from examples when missing:
 | `apps/timemanager-api/.env` | Optional (code defaults match Docker Postgres) |
 | `apps/spendmanager-api/.env` | Optional (code defaults match Docker Postgres) |
 | `apps/user-manager-web/.env` | Optional (Vite defaults to localhost) |
+| `apps/spendmanager/config/local.dart-defines.json` | Optional (set `FCM_VAPID_KEY` for web push; device local launches also write API URLs) |
+| `apps/timemanager/config/local.dart-defines.json` | Optional (set `FCM_VAPID_KEY` for web push; `(device, local)` launches also write LAN API URLs) |
+| `apps/timemanager/config/cloud.dart-defines.json` | Only for cloud IDE/CLI launches |
+| `apps/spendmanager/config/cloud.dart-defines.json` | Only for cloud IDE/CLI launches |
 
-Never commit `.env` files.
+Never commit `.env` files or filled-in `*.dart-defines.json` (gitignored; keep `*.example`).
 
 ## First run
 
@@ -89,6 +94,7 @@ flutter run -d android               # emulator or device
 
 - GraphQL: `http://localhost:3000` — Auth: `http://localhost:3001` — Flutter web: `:4444`
 - Android emulator: host loopback is `10.0.2.2` (already handled in app config)
+- Physical device (same Wi‑Fi as the Mac): **Run and Debug → timemanager (device, local)** or **spendmanager (device, local)** — a preLaunchTask runs `scripts/update-local-dart-defines.sh` to point APIs at your LAN IP. Use **(device, cloud)** with `config/cloud.dart-defines.json` for staging/production.
 - Do not run `pnpm user-manager` and `pnpm timemanager` together without changing ports — both default web/GraphQL surfaces use `:3000`
 
 More detail: [workflows.md](workflows.md).
