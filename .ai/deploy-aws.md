@@ -198,21 +198,55 @@ Manual:
 
 ## Manual order (CI/CD contract)
 
-Map future pipeline jobs 1:1 to this sequence:
+Map pipeline jobs 1:1 to this sequence:
 
-1. **PR** — `nx test` / `flutter analyze` / `deno test` (no deploy)
-2. **main** — `terraform plan/apply` (infra changes only when `infra/aws/**` changes)
+1. **PR** — `nx test` / `flutter analyze` / `deno test` (no deploy; not wired yet)
+2. **Infra** — `terraform plan/apply` locally (or a future main-only job) when `infra/aws/**` changes
 3. Build/push ECR images (`deploy-apis.sh` steps 1–2)
 4. ECS migrate task
 5. ECS service update
 6. Build/sync static sites + CloudFront invalidation (`deploy-web.sh`)
 7. Smoke checks above
 
-### Recommended later CI (not implemented yet)
+## GitHub Actions: staging app deploy
 
-- GitHub Actions + **OIDC → AWS** (no long-lived access keys)
-- Path filters so Flutter-only PRs skip API image builds
-- Optional Nx affected / Nx Cloud (still deferred in decisions)
+Workflow: [`.github/workflows/deploy-staging.yml`](../.github/workflows/deploy-staging.yml).
+
+On every push to **`staging`** (and `workflow_dispatch` from that branch), CI assumes an AWS IAM role via **GitHub OIDC** and runs:
+
+1. `./infra/aws/scripts/deploy-apis.sh`
+2. `./infra/aws/scripts/deploy-web.sh`
+3. `./infra/aws/scripts/check-health.sh --http-only`
+
+No `terraform apply` and no hibernate/wake in CI. **Prerequisite:** the staging stack must already be applied and **awake** (`hibernating=false`, ALB/CloudFront present). If hibernated, run `nx run timemanager-aws:up` locally before relying on the workflow.
+
+Spendmanager is not in this AWS stack yet and is not deployed by this workflow.
+
+### One-time OIDC bootstrap
+
+1. Set `github_repository` in `infra/aws/terraform.tfvars` (default `DanEscamilla/timemanager`). If the account already has a GitHub OIDC provider, set `create_github_oidc_provider = false`.
+2. Apply the main stack so the deploy role exists:
+
+   ```bash
+   cd infra/aws
+   terraform apply
+   terraform output -raw github_actions_deploy_role_arn
+   ```
+
+3. Create the `staging` branch (protect it if you want).
+4. In the GitHub repo → **Settings → Secrets and variables → Actions**, add:
+
+| Name | Type | Purpose |
+|------|------|---------|
+| `AWS_ROLE_ARN` | **Secret** | Value of `github_actions_deploy_role_arn` |
+| `DOMAIN` | **Variable** | Apex domain (e.g. `example.com`) for web build URLs + health |
+| `AWS_REGION` | **Variable** | Optional; defaults to `us-east-1` in the workflow |
+
+5. Push to `staging` (or run the workflow manually from that branch) and confirm ECS + `https://app.<domain>` / `https://account.<domain>`.
+
+Runtime app secrets (`DATABASE_URL`, OAuth, SuperTokens URI, CORS domains) stay in **Secrets Manager** / Terraform — they are **not** GitHub secrets. CI never needs long-lived AWS access keys.
+
+Still deferred: PR test workflows, path-filtered API builds, Nx Cloud, infra apply from CI.
 
 ## Local config reference
 

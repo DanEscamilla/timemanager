@@ -111,3 +111,15 @@ variable "budget_alert_email" {
   description = "Email for budget notifications (must confirm the SNS subscription once)."
   type        = string
 }
+
+variable "github_repository" {
+  description = "GitHub repo (OWNER/REPO) allowed to assume the staging deploy role via OIDC."
+  type        = string
+  default     = "DanEscamilla/timemanager"
+}
+
+variable "create_github_oidc_provider" {
+  description = "Create the GitHub Actions OIDC provider. Set false if the account already has token.actions.githubusercontent.com."
+  type        = bool
+  default     = true
+}

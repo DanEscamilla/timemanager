@@ -1,0 +1,85 @@
+# Deploy APIs + web to the AWS staging stack on every push to `staging`.
+# Prerequisites: stack applied and awake; GitHub secrets/vars configured (see .ai/deploy-aws.md).
+name: Deploy staging
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  DOMAIN: ${{ vars.DOMAIN }}
+
+jobs:
+  deploy:
+    name: Deploy APIs and web
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Require DOMAIN
+        run: |
+          if [[ -z "${DOMAIN}" ]]; then
+            echo "Set repository variable DOMAIN (apex domain, e.g. example.com)" >&2
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: apps/timemanager
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+          terraform_wrapper: false
+
+      - name: Terraform init
+        working-directory: infra/aws
+        run: terraform init -input=false
+
+      - name: Deploy APIs
+        run: ./infra/aws/scripts/deploy-apis.sh
+
+      - name: Deploy web
+        run: ./infra/aws/scripts/deploy-web.sh
+
+      - name: Health check (HTTP)
+        run: ./infra/aws/scripts/check-health.sh --http-only

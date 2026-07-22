@@ -29,7 +29,7 @@ These were explicitly deferred in the migration. Treat as future direction, not 
 
 - GraphQL codegen into `libs/`.
 - Wiring Authentik into SuperTokens or Flutter auth (the Authentik stack currently stands alone; SuperTokens covers multi-app SSO without it).
-- Implementing CI pipelines / Nx Cloud (infra and deploy scripts are CI-ready; workflows not shipped yet).
+- Broader CI (PR test gates, infra apply from CI, path filters) / Nx Cloud. Staging **app** deploy via GitHub Actions + OIDC is shipped (`.github/workflows/deploy-staging.yml`); see [deploy-aws.md](deploy-aws.md).
 - Renaming the workspace folder away from `flutter`.
 - Self-hosting SuperTokens Core (currently `try.supertokens.com` for local/dev and first AWS staging; cloud hosts use env `SUPERTOKENS_CONNECTION_URI`).
 - Web/CSS token mirror of `libs/design_system` for React apps.
@@ -48,4 +48,4 @@ Settled for the first cloud environment (see [`.ai/deploy-aws.md`](deploy-aws.md
 
 - **AWS** with ECS Fargate (APIs), RDS Postgres 15, S3 + CloudFront (Flutter web + `user-manager-web`), ALB host routing, Terraform under `infra/aws/`.
 - Hostnames: `auth.` / `api.` / `app.` / `account.` under a single apex domain.
-- Deploy scripts under `infra/aws/scripts/` are the contract for a future GitHub Actions + OIDC pipeline.
+- Deploy scripts under `infra/aws/scripts/` are the contract for CI; staging pushes run them via GitHub Actions + OIDC (no long-lived AWS keys in GitHub).

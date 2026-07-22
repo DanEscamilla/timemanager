@@ -192,7 +192,7 @@ nx run authentik:up         # optional, independent stack
 
 ## AWS cloud deploy
 
-See [`.ai/deploy-aws.md`](deploy-aws.md) for Terraform bootstrap, API/web deploy scripts, auth hostnames, OAuth callbacks, smoke checks, and the CI/CD job mapping.
+See [`.ai/deploy-aws.md`](deploy-aws.md) for Terraform bootstrap, API/web deploy scripts, auth hostnames, OAuth callbacks, smoke checks, and CI/CD (including the `staging` branch GitHub Actions deploy).
 
 Quick path (after `infra/aws` is configured):
 

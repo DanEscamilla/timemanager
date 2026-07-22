@@ -78,3 +78,8 @@ output "hibernating_parameter_name" {
 output "budget_sns_topic_arn" {
   value = aws_sns_topic.budget_alerts.arn
 }
+
+output "github_actions_deploy_role_arn" {
+  description = "IAM role ARN for GitHub Actions staging deploys (set as AWS_ROLE_ARN secret)."
+  value       = aws_iam_role.github_actions_deploy.arn
+}
