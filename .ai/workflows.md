@@ -26,6 +26,7 @@ pnpm mailbox                # nx run-many -t serve -p mailbox-api,mailbox-worker
 
 # internal AI gateway (REST :3004; backends only)
 pnpm ai                     # nx serve ai-api
+pnpm ai:cli                 # guided HTTP CLI against a running ai-api
 
 # Flutter clients — Run and Debug in the IDE
 # timemanager → Chrome :4444; spendmanager → Chrome :4445
@@ -41,6 +42,7 @@ nx serve spendmanager-api   # deno task dev on :3002 (migrate → DB + user-mana
 nx serve mailbox-api        # deno task dev on :3003 (migrate → DB + user-manager-api)
 nx serve mailbox-worker     # poll / extract loop (depends on mailbox-api:migrate)
 nx serve ai-api             # deno task dev on :3004 (service key; no auth/DB deps)
+nx run ai-api:cli           # interactive use-case CLI (requires serve)
 nx serve user-manager-web   # vite dev server
 nx serve user-manager-api   # express server
 ```

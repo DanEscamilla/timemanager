@@ -5,6 +5,7 @@
   "tasks": {
     "dev": "deno run --allow-net --allow-env --allow-read --env-file=.env --watch src/main.ts",
     "start": "deno run --allow-net --allow-env --allow-read --env-file=.env src/main.ts",
+    "cli": "deno run --allow-net --allow-env --allow-read --env-file=.env src/cli/main.ts",
     "test": "deno test --allow-env --allow-read --allow-net src"
   },
   "compilerOptions": {

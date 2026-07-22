@@ -16,5 +16,13 @@ curl -s -H "Authorization: Bearer $AI_SERVICE_KEY" http://localhost:3004/v1/use-
 curl -s -X POST http://localhost:3004/v1/use-cases/summarize_text/run \
   -H "Authorization: Bearer $AI_SERVICE_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"input":{"text":"Hello from the monorepo."}}'
+  -d '{"input":{"text":"Hello from the monorepo."},"model":"gemini-2.0-flash"}'
+```
+
+Optional top-level `model` overrides the provider default for that request.
+
+Interactive guided CLI (server must already be running):
+
+```bash
+pnpm ai:cli    # nx run ai-api:cli
 ```

@@ -14,6 +14,21 @@ export type SummarizeTextOutput = {
 export const summarizeTextUseCase: UseCase<SummarizeTextInput, SummarizeTextOutput> = {
   id: 'summarize_text',
   description: 'Summarize plain text into a short paragraph',
+  inputFields: [
+    {
+      name: 'text',
+      description: 'Plain text to summarize',
+      type: 'string',
+      required: true,
+    },
+    {
+      name: 'maxSentences',
+      description: 'Maximum sentence count hint for the model',
+      type: 'number',
+      required: false,
+      default: 2,
+    },
+  ],
 
   parseInput(raw: unknown): SummarizeTextInput {
     if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
@@ -37,12 +52,13 @@ export const summarizeTextUseCase: UseCase<SummarizeTextInput, SummarizeTextOutp
     return { text: obj.text, maxSentences }
   },
 
-  async run(input, provider: AiProvider): Promise<SummarizeTextOutput> {
+  async run(input, provider: AiProvider, options): Promise<SummarizeTextOutput> {
     const lengthHint = input.maxSentences
       ? `Use at most ${input.maxSentences} sentences.`
       : 'Keep it to 2-3 sentences.'
 
     const result = await provider.complete({
+      model: options?.model,
       system: `You summarize text clearly and concisely. ${lengthHint} Reply with only the summary.`,
       messages: [{ role: 'user', content: input.text }],
       temperature: 0.2,

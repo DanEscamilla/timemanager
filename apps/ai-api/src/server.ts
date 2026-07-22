@@ -59,10 +59,22 @@ async function handleRun(
     return json({ error: 'request body must be an object' }, 400)
   }
 
-  const input = (body as { input?: unknown }).input
+  const { input, model: modelRaw } = body as {
+    input?: unknown
+    model?: unknown
+  }
+
+  let model: string | undefined
+  if (modelRaw !== undefined) {
+    if (typeof modelRaw !== 'string' || !modelRaw.trim()) {
+      return json({ error: 'model must be a non-empty string when provided' }, 400)
+    }
+    model = modelRaw.trim()
+  }
+
   try {
     const parsed = useCase.parseInput(input)
-    const output = await useCase.run(parsed, provider)
+    const output = await useCase.run(parsed, provider, { model })
     return json({ output })
   } catch (err) {
     if (err instanceof UseCaseInputError) {
