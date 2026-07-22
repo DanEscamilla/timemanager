@@ -45,7 +45,10 @@ resource "aws_iam_role" "github_actions_deploy" {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
         }
         StringLike = {
+          # Jobs using environment: staging get the environment subject.
+          # Keep the branch ref subject for tooling that assumes without an environment.
           "token.actions.githubusercontent.com:sub" = [
+            "repo:${var.github_repository}:environment:staging",
             "repo:${var.github_repository}:ref:refs/heads/staging",
           ]
         }

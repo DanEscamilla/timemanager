@@ -1,5 +1,5 @@
 # Deploy APIs + web to the AWS staging stack on every push to `staging`.
-# Prerequisites: stack applied and awake; GitHub secrets/vars configured (see .ai/deploy-aws.md).
+# Uses the GitHub Environment named `staging` for secrets/vars (see .ai/deploy-aws.md).
 name: Deploy staging
 
 on:
@@ -15,15 +15,15 @@ permissions:
   id-token: write
   contents: read
 
-env:
-  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
-  DOMAIN: ${{ vars.DOMAIN }}
-
 jobs:
   deploy:
     name: Deploy APIs and web
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    environment: staging
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+      DOMAIN: ${{ vars.DOMAIN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
       - name: Require DOMAIN
         run: |
           if [[ -z "${DOMAIN}" ]]; then
-            echo "Set repository variable DOMAIN (apex domain, e.g. example.com)" >&2
+            echo "Set DOMAIN on the GitHub Environment 'staging' (apex domain, e.g. example.com)" >&2
             exit 1
           fi
 

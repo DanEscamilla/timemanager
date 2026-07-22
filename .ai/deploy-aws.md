@@ -222,10 +222,10 @@ No `terraform apply` and no hibernate/wake in CI. **Prerequisite:** the staging 
 
 Spendmanager is not in this AWS stack yet and is not deployed by this workflow.
 
-### One-time OIDC bootstrap
+### One-time OIDC + GitHub Environment bootstrap
 
 1. Set `github_repository` in `infra/aws/terraform.tfvars` (default `DanEscamilla/timemanager`). If the account already has a GitHub OIDC provider, set `create_github_oidc_provider = false`.
-2. Apply the main stack so the deploy role exists:
+2. Apply the main stack so the deploy role exists (trust includes `environment:staging` and `ref:refs/heads/staging`):
 
    ```bash
    cd infra/aws
@@ -233,14 +233,16 @@ Spendmanager is not in this AWS stack yet and is not deployed by this workflow.
    terraform output -raw github_actions_deploy_role_arn
    ```
 
-3. Create the `staging` branch (protect it if you want).
-4. In the GitHub repo → **Settings → Secrets and variables → Actions**, add:
+3. Create the `staging` git branch (protect it if you want).
+4. In GitHub → **Settings → Environments → `staging`** (name must be exactly `staging`), configure:
 
 | Name | Type | Purpose |
 |------|------|---------|
-| `AWS_ROLE_ARN` | **Secret** | Value of `github_actions_deploy_role_arn` |
-| `DOMAIN` | **Variable** | Apex domain (e.g. `example.com`) for web build URLs + health |
-| `AWS_REGION` | **Variable** | Optional; defaults to `us-east-1` in the workflow |
+| `AWS_ROLE_ARN` | **Environment secret** | Value of `github_actions_deploy_role_arn` |
+| `DOMAIN` | **Environment variable** | Apex domain (e.g. `example.com`) for web build URLs + health |
+| `AWS_REGION` | **Environment variable** | Optional; defaults to `us-east-1` in the workflow |
+
+   Recommended on that environment: **Deployment branches** → Selected branches → `staging` only.
 
 5. Push to `staging` (or run the workflow manually from that branch) and confirm ECS + `https://app.<domain>` / `https://account.<domain>`.
 
