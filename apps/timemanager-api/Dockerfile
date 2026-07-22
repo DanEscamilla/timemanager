@@ -19,7 +19,8 @@ RUN bun install
 COPY apps/timemanager-api/ ./
 RUN bunx pylon build
 
-FROM denoland/deno:2.1.4 AS deno
+# Match local Deno (lockfile v5 needs >= 2.3; repo uses 2.9.x).
+FROM denoland/deno:2.9.3 AS deno
 
 FROM oven/bun:1.2 AS runner
 COPY --from=deno /usr/bin/deno /usr/local/bin/deno
