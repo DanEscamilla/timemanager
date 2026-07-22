@@ -133,6 +133,7 @@ check_http() {
   local auth="https://auth.${domain}"
   local api="https://api.${domain}"
   local app="https://app.${domain}"
+  local spend="https://spend.${domain}"
   local account="https://account.${domain}"
 
   echo "==> HTTP endpoints (${domain})"
@@ -141,7 +142,8 @@ check_http() {
   http_expect "api /health" "${api}/health" "200" '"ok"'
   http_post_expect "api GraphQL (unauth → 401)" "${api}/graphql" \
     '{"query":"{__typename}"}' "401"
-  http_expect "app (Flutter web)" "${app}/" "200"
+  http_expect "app (timemanager web)" "${app}/" "200"
+  http_expect "spend (spendmanager web)" "${spend}/" "200"
   http_expect "account (user-manager-web)" "${account}/" "200"
 }
 

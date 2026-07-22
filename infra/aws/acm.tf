@@ -14,7 +14,7 @@ resource "aws_acm_certificate" "web" {
   provider = aws.us_east_1
 
   domain_name               = local.app_hostname
-  subject_alternative_names = [local.account_hostname]
+  subject_alternative_names = [local.account_hostname, local.spend_hostname]
   validation_method         = "DNS"
 
   tags = local.common_tags

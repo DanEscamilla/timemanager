@@ -10,8 +10,11 @@ Hostnames (replace `<domain>`):
 |------|---------|
 | `auth.<domain>` | `user-manager-api` (SuperTokens) |
 | `api.<domain>` | `timemanager-api` (GraphQL) |
-| `app.<domain>` | Flutter web |
+| `app.<domain>` | timemanager Flutter web |
+| `spend.<domain>` | spendmanager Flutter web |
 | `account.<domain>` | `user-manager-web` |
+
+`spend-api.<domain>` is reserved for when `spendmanager-api` joins the ECS stack (not deployed yet).
 
 Infra lives in [`infra/aws/`](../infra/aws/). Local Docker Postgres (`infra/timemanager-db`) remains the day-to-day dev database.
 
@@ -80,14 +83,14 @@ Terraform sets Secrets Manager + ECS env from hostnames:
 
 - `API_DOMAIN` = `https://auth.<domain>`
 - `WEBSITE_DOMAIN` = `https://account.<domain>`
-- `ALLOWED_ORIGINS` = `https://app.<domain>,https://account.<domain>`
+- `ALLOWED_ORIGINS` = `https://app.<domain>,https://spend.<domain>,https://account.<domain>`
 - `AUTH_API_DOMAIN` (GraphQL) = `https://auth.<domain>`
 - `SUPERTOKENS_CONNECTION_URI` defaults to `https://try.supertokens.com` (self-host later)
 
 In each OAuth provider console, add redirect / callback URLs for SuperTokens on the auth host, typically:
 
 - `https://auth.<domain>/auth/callback/google` (and github / apple / twitter as enabled)
-- Flutter web origin `https://app.<domain>` where the provider allows authorized JavaScript origins
+- Flutter web origins `https://app.<domain>` and `https://spend.<domain>` where the provider allows authorized JavaScript origins
 - `user-manager-web` origin `https://account.<domain>`
 
 Pass provider client IDs/secrets via `oauth_secrets` in `terraform.tfvars` (merged into Secrets Manager).
@@ -158,10 +161,13 @@ nx run timemanager-api:docker-build
 
 Builds:
 
-- Flutter web with `--dart-define=AUTH_API_BASE_URL` / `API_BASE_URL`
+- timemanager Flutter web with `--dart-define=AUTH_API_BASE_URL` / `API_BASE_URL` (`https://api.<domain>`)
+- spendmanager Flutter web with `--dart-define=AUTH_API_BASE_URL` / `API_BASE_URL` (`https://spend-api.<domain>` via `SPENDMANAGER_API_BASE_URL`)
 - `user-manager-web` with `VITE_API_DOMAIN` / `VITE_WEBSITE_DOMAIN`
 
 Then syncs to the Terraform S3 buckets and invalidates CloudFront. SPA fallbacks (`403`/`404` → `/index.html`) are configured in Terraform.
+
+> **Note:** `spendmanager-api` is not in the AWS ECS stack yet. The spendmanager web build still points at the reserved `spend-api.<domain>` hostname so CORS/OAuth and static hosting are ready; GraphQL will only work once that API is deployed.
 
 ## Remote into an ECS task / live logs
 
@@ -194,7 +200,8 @@ Manual:
 3. `curl -sS https://api.<domain>/health` → `{"ok":true}`
 4. `curl -sS -X POST https://api.<domain>/graphql -H 'content-type: application/json' -d '{"query":"{__typename}"}'` → `401` without Bearer
 5. Open `https://app.<domain>` → sign in → GraphQL calls succeed
-6. Open `https://account.<domain>` → SuperTokens cookie session works
+6. Open `https://spend.<domain>` → static shell loads (GraphQL needs `spendmanager-api` on AWS)
+7. Open `https://account.<domain>` → SuperTokens cookie session works
 
 ## Manual order (CI/CD contract)
 
@@ -220,7 +227,7 @@ On every push to **`staging`** (and `workflow_dispatch` from that branch), CI as
 
 No `terraform apply` and no hibernate/wake in CI. **Prerequisite:** the staging stack must already be applied and **awake** (`hibernating=false`, ALB/CloudFront present). If hibernated, run `nx run timemanager-aws:up` locally before relying on the workflow.
 
-Spendmanager is not in this AWS stack yet and is not deployed by this workflow.
+`deploy-web.sh` builds and publishes timemanager (`app.`), spendmanager (`spend.`), and `user-manager-web` (`account.`). `spendmanager-api` remains local-only until it is added to the ECS stack.
 
 ### One-time OIDC + GitHub Environment bootstrap
 
@@ -244,7 +251,7 @@ Spendmanager is not in this AWS stack yet and is not deployed by this workflow.
 
    Recommended on that environment: **Deployment branches** → Selected branches → `staging` only.
 
-5. Push to `staging` (or run the workflow manually from that branch) and confirm ECS + `https://app.<domain>` / `https://account.<domain>`.
+5. Push to `staging` (or run the workflow manually from that branch) and confirm ECS + `https://app.<domain>` / `https://spend.<domain>` / `https://account.<domain>`.
 
 Runtime app secrets (`DATABASE_URL`, OAuth, SuperTokens URI, CORS domains) stay in **Secrets Manager** / Terraform — they are **not** GitHub secrets. CI never needs long-lived AWS access keys.
 
@@ -257,6 +264,7 @@ Still deferred: PR test workflows, path-filtered API builds, Nx Cloud, infra app
 | `user-manager-api` | `API_DOMAIN`, `WEBSITE_DOMAIN`, `ALLOWED_ORIGINS`, `PORT`, `SUPERTOKENS_CONNECTION_URI` — see `.env.example` |
 | `timemanager-api` | `DATABASE_URL` or `PG*`, `AUTH_API_DOMAIN` — see `.env.example` |
 | `user-manager-web` | `VITE_API_DOMAIN`, `VITE_WEBSITE_DOMAIN` |
-| Flutter | `--dart-define=AUTH_API_BASE_URL=...` `--dart-define=API_BASE_URL=...` (via `DOMAIN=… nx run timemanager:build-web` or `config/cloud.dart-defines.json`) |
+| Flutter (timemanager) | `--dart-define=AUTH_API_BASE_URL=...` `--dart-define=API_BASE_URL=https://api.<domain>` |
+| Flutter (spendmanager) | `--dart-define=AUTH_API_BASE_URL=...` `--dart-define=API_BASE_URL=https://spend-api.<domain>` |
 
 Nx targets: `timemanager:build-web|build-macos|build-ios|build-ipa|build-apk|build-appbundle|…`, `timemanager:serve-cloud`, `user-manager-api:docker-build`, `timemanager-api:docker-build`, `timemanager-aws:plan|apply|up|down|health|deploy-apis|deploy-web`.

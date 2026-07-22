@@ -37,6 +37,19 @@ resource "aws_route53_record" "app" {
   }
 }
 
+resource "aws_route53_record" "spend" {
+  count   = var.hosted_zone_id != "" && local.edge_enabled ? 1 : 0
+  zone_id = var.hosted_zone_id
+  name    = local.spend_hostname
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.spendmanager_web[0].domain_name
+    zone_id                = aws_cloudfront_distribution.spendmanager_web[0].hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
 resource "aws_route53_record" "account" {
   count   = var.hosted_zone_id != "" && local.edge_enabled ? 1 : 0
   zone_id = var.hosted_zone_id

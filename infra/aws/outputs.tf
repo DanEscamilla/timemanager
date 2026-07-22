@@ -34,6 +34,10 @@ output "flutter_web_bucket" {
   value = aws_s3_bucket.flutter_web.bucket
 }
 
+output "spendmanager_web_bucket" {
+  value = aws_s3_bucket.spendmanager_web.bucket
+}
+
 output "user_manager_web_bucket" {
   value = aws_s3_bucket.user_manager_web.bucket
 }
@@ -42,16 +46,22 @@ output "flutter_web_distribution_id" {
   value = local.edge_enabled ? aws_cloudfront_distribution.flutter_web[0].id : null
 }
 
+output "spendmanager_web_distribution_id" {
+  value = local.edge_enabled ? aws_cloudfront_distribution.spendmanager_web[0].id : null
+}
+
 output "user_manager_web_distribution_id" {
   value = local.edge_enabled ? aws_cloudfront_distribution.user_manager_web[0].id : null
 }
 
 output "hostnames" {
   value = {
-    auth    = local.auth_hostname
-    api     = local.api_hostname
-    app     = local.app_hostname
-    account = local.account_hostname
+    auth      = local.auth_hostname
+    api       = local.api_hostname
+    app       = local.app_hostname
+    spend     = local.spend_hostname
+    spend_api = local.spend_api_hostname
+    account   = local.account_hostname
   }
 }
 

@@ -17,7 +17,7 @@ variable "environment" {
 }
 
 variable "domain_name" {
-  description = "Apex domain (e.g. example.com). Used for auth/api/app/account hostnames."
+  description = "Apex domain (e.g. example.com). Used for auth/api/app/spend/account hostnames."
   type        = string
 }
 

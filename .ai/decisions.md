@@ -47,5 +47,5 @@ These were explicitly deferred in the migration. Treat as future direction, not 
 Settled for the first cloud environment (see [`.ai/deploy-aws.md`](deploy-aws.md)):
 
 - **AWS** with ECS Fargate (APIs), RDS Postgres 15, S3 + CloudFront (Flutter web + `user-manager-web`), ALB host routing, Terraform under `infra/aws/`.
-- Hostnames: `auth.` / `api.` / `app.` / `account.` under a single apex domain.
+- Hostnames: `auth.` / `api.` / `app.` / `spend.` / `account.` under a single apex domain (`spend-api.` reserved for future spendmanager GraphQL).
 - Deploy scripts under `infra/aws/scripts/` are the contract for CI; staging pushes run them via GitHub Actions + OIDC (no long-lived AWS keys in GitHub).

@@ -65,6 +65,6 @@ flowchart TB
 
 ## Cloud (AWS)
 
-Staging/production packaging is documented in [`.ai/deploy-aws.md`](deploy-aws.md): ECS Fargate for the two APIs, RDS for Postgres, S3 + CloudFront for Flutter web and `user-manager-web`, with hostnames `auth.` / `api.` / `app.` / `account.` under one apex domain.
+Staging/production packaging is documented in [`.ai/deploy-aws.md`](deploy-aws.md): ECS Fargate for the APIs currently in AWS (`user-manager-api`, `timemanager-api`), RDS for Postgres, S3 + CloudFront for timemanager / spendmanager Flutter web and `user-manager-web`, with hostnames `auth.` / `api.` / `app.` / `spend.` / `account.` under one apex domain (`spend-api.` reserved for future spendmanager GraphQL).
 
 Full vs simplified (API-only) layouts, networking tradeoffs, and cost comparison: [`aws-architecture.md`](aws-architecture.md).

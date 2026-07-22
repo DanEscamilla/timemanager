@@ -4,7 +4,7 @@ import 'package:app_core/app_core.dart';
 ///
 /// Defaults to localhost (`:3001` auth, `:3002` GraphQL). Override for cloud:
 /// `--dart-define=AUTH_API_BASE_URL=https://auth.example.com`
-/// `--dart-define=API_BASE_URL=https://api.example.com`
+/// `--dart-define=API_BASE_URL=https://spend-api.example.com`
 /// `--dart-define=IDLE_SESSION_TIMEOUT_MINUTES=30` (use `0` to disable)
 ///
 /// Call [ensureConfigured] once at startup (see `main.dart`).

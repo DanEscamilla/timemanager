@@ -148,6 +148,7 @@ resource "aws_iam_role_policy" "github_actions_deploy" {
         ]
         Resource = [
           aws_s3_bucket.flutter_web.arn,
+          aws_s3_bucket.spendmanager_web.arn,
           aws_s3_bucket.user_manager_web.arn,
         ]
       },
@@ -161,6 +162,7 @@ resource "aws_iam_role_policy" "github_actions_deploy" {
         ]
         Resource = [
           "${aws_s3_bucket.flutter_web.arn}/*",
+          "${aws_s3_bucket.spendmanager_web.arn}/*",
           "${aws_s3_bucket.user_manager_web.arn}/*",
         ]
       },

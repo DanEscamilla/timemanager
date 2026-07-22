@@ -61,9 +61,13 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter pub get
+      - name: Flutter pub get (timemanager)
         run: flutter pub get
         working-directory: apps/timemanager
+
+      - name: Flutter pub get (spendmanager)
+        run: flutter pub get
+        working-directory: apps/spendmanager
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3

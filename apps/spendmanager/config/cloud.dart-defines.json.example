@@ -1,6 +1,6 @@
 {
   "AUTH_API_BASE_URL": "https://auth.example.com",
-  "API_BASE_URL": "https://api.example.com",
+  "API_BASE_URL": "https://spend-api.example.com",
   "IDLE_SESSION_TIMEOUT_MINUTES": "30",
   "FCM_VAPID_KEY": ""
 }

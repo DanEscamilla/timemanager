@@ -46,7 +46,7 @@ flowchart LR
 
 ## Full stack architecture
 
-This is the layout encoded in Terraform today: **four hostnames**, **private Fargate**, **NAT Gateway**, and **S3 + CloudFront** for web.
+This is the layout encoded in Terraform today: **five public web/API hostnames** (`spend-api.` reserved), **private Fargate**, **NAT Gateway**, and **S3 + CloudFront** for web.
 
 ### Hostnames
 
@@ -54,7 +54,8 @@ This is the layout encoded in Terraform today: **four hostnames**, **private Far
 |------|---------|
 | `auth.<domain>` | `user-manager-api` (SuperTokens) |
 | `api.<domain>` | `timemanager-api` (GraphQL) |
-| `app.<domain>` | Flutter web (S3 + CloudFront) |
+| `app.<domain>` | timemanager Flutter web (S3 + CloudFront) |
+| `spend.<domain>` | spendmanager Flutter web (S3 + CloudFront) |
 | `account.<domain>` | `user-manager-web` (S3 + CloudFront) |
 
 ### High-level diagram
@@ -66,12 +67,14 @@ flowchart TB
 
   subgraph edge [Edge]
     CF1["CloudFront app.*"]
+    CFSpend["CloudFront spend.*"]
     CF2["CloudFront account.*"]
     ALB["ALB auth.* + api.*"]
   end
 
   subgraph storage [Object storage]
-    S3a["S3 Flutter web"]
+    S3a["S3 timemanager web"]
+    S3spend["S3 spendmanager web"]
     S3b["S3 user-manager-web"]
   end
 
@@ -93,6 +96,7 @@ flowchart TB
 
   Users --> R53
   R53 --> CF1 --> S3a
+  R53 --> CFSpend --> S3spend
   R53 --> CF2 --> S3b
   R53 --> ALB --> ALBnode
   ALBnode --> Auth
@@ -112,7 +116,7 @@ flowchart TB
 #### Route 53 and ACM
 
 - Apex domain is assumed to already have a hosted zone.
-- Records point `auth` / `api` at the ALB, and `app` / `account` at their CloudFront distributions.
+- Records point `auth` / `api` at the ALB, and `app` / `spend` / `account` at their CloudFront distributions.
 - ACM certificates (API region for ALB; typically `us-east-1` for CloudFront) are DNS-validated via Route 53.
 
 #### Application Load Balancer
@@ -151,7 +155,7 @@ flowchart TB
 
 #### S3 + CloudFront (web)
 
-- Two private S3 buckets (Flutter web + `user-manager-web`).
+- Three private S3 buckets (timemanager web, spendmanager web, `user-manager-web`).
 - CloudFront with Origin Access Control (OAC); buckets are not public.
 - SPA fallbacks (`403`/`404` → `/index.html`) configured in Terraform.
 - Deployed via `deploy-web.sh` (build + sync + invalidation).
@@ -189,7 +193,7 @@ Private tasks never accept direct internet connections. The NAT is for **outboun
 
 **Flutter web / account web:**
 
-1. Browser → `https://app.<domain>` or `https://account.<domain>`
+1. Browser → `https://app.<domain>`, `https://spend.<domain>`, or `https://account.<domain>`
 2. CloudFront → S3 object
 3. Browser JS then calls auth/API hostnames as above (CORS / `ALLOWED_ORIGINS` include web origins)
 
