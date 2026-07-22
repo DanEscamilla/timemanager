@@ -71,6 +71,8 @@ Created from examples when missing:
 | `apps/user-manager-api/.env` | Recommended (defaults work for email/password) |
 | `apps/timemanager-api/.env` | Optional (code defaults match Docker Postgres) |
 | `apps/spendmanager-api/.env` | Optional (code defaults match Docker Postgres) |
+| `apps/mailbox-api/.env` | Optional (code defaults match Docker Postgres) |
+| `apps/mailbox-worker/.env` | Optional (same DB as mailbox-api; `POLL_INTERVAL_MS`) |
 | `apps/user-manager-web/.env` | Optional (Vite defaults to localhost) |
 | `apps/spendmanager/config/local.dart-defines.json` | Optional (set `FCM_VAPID_KEY` for web push; device local launches also write API URLs) |
 | `apps/timemanager/config/local.dart-defines.json` | Optional (set `FCM_VAPID_KEY` for web push; `(device, local)` launches also write LAN API URLs) |

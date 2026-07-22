@@ -1,0 +1,48 @@
+{
+  "name": "mailbox-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/mailbox-api/src",
+  "tags": ["scope:mailbox", "type:api", "runtime:deno"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": ["migrate", "user-manager-api:serve"],
+      "options": {
+        "command": "deno task dev",
+        "cwd": "apps/mailbox-api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "deno task build",
+        "cwd": "apps/mailbox-api"
+      }
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["timemanager-db:up"],
+      "options": {
+        "command": "deno task migrate",
+        "cwd": "apps/mailbox-api"
+      }
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["migrate"],
+      "options": {
+        "command": "deno task seed",
+        "cwd": "apps/mailbox-api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "deno test --allow-env --allow-read src",
+        "cwd": "apps/mailbox-api"
+      }
+    }
+  }
+}

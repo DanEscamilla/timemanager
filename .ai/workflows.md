@@ -21,6 +21,9 @@ pnpm timemanager            # nx serve timemanager-api
 # spendmanager APIs (GraphQL :3002 + auth; also starts DB via migrate)
 pnpm spendmanager           # nx serve spendmanager-api
 
+# mailbox email ingest (GraphQL :3003 + poll worker + auth + DB)
+pnpm mailbox                # nx run-many -t serve -p mailbox-api,mailbox-worker
+
 # Flutter clients — Run and Debug in the IDE
 # timemanager → Chrome :4444; spendmanager → Chrome :4445
 
@@ -32,11 +35,13 @@ nx serve timemanager        # flutter run -d chrome --web-port=4444 (also starts
 nx serve spendmanager       # flutter run -d chrome --web-port=4445 (also starts user-manager-api)
 nx serve timemanager-api    # deno task dev on :3000 (migrate → DB + user-manager-api)
 nx serve spendmanager-api   # deno task dev on :3002 (migrate → DB + user-manager-api)
+nx serve mailbox-api        # deno task dev on :3003 (migrate → DB + user-manager-api)
+nx serve mailbox-worker     # poll / extract loop (depends on mailbox-api:migrate)
 nx serve user-manager-web   # vite dev server
 nx serve user-manager-api   # express server
 ```
 
-`pnpm timemanager` starts GraphQL on `:3000`, SuperTokens on `:3001`, and Postgres. `pnpm spendmanager` starts GraphQL on `:3002` (same auth + DB stack). Launch Flutter from the IDE (**spendmanager** / **timemanager**).
+`pnpm timemanager` starts GraphQL on `:3000`, SuperTokens on `:3001`, and Postgres. `pnpm spendmanager` starts GraphQL on `:3002` (same auth + DB stack). `pnpm mailbox` starts GraphQL on `:3003` plus the poll worker. Launch Flutter from the IDE (**spendmanager** / **timemanager**).
 
 ## Database
 
@@ -45,11 +50,13 @@ pnpm db:up                  # start Postgres + pgAdmin, then run timemanager mig
 pnpm db:down                # stop the DB stack
 nx run timemanager-api:migrate
 nx run spendmanager-api:migrate  # also CREATE DATABASE spendmanager if missing
+nx run mailbox-api:migrate       # also CREATE DATABASE mailbox if missing
 nx run timemanager-api:seed
 nx run spendmanager-api:seed
+nx run mailbox-api:seed
 ```
 
-pgAdmin: `http://localhost:8080` (default creds in `infra/timemanager-db/docker-compose.yml`). Databases on the same instance: `timemanager`, `spendmanager`.
+pgAdmin: `http://localhost:8080` (default creds in `infra/timemanager-db/docker-compose.yml`). Databases on the same instance: `timemanager`, `spendmanager`, `mailbox`.
 
 ## Migrations
 
@@ -176,6 +183,8 @@ cd apps/spendmanager && flutter pub get && cd -
 nx run timemanager-db:up
 nx serve timemanager-api    # confirm GraphQL responds on :3000 (requires Bearer JWT)
 nx serve spendmanager-api   # confirm GraphQL responds on :3002 (requires Bearer JWT)
+nx serve mailbox-api        # confirm GraphQL responds on :3003 (requires Bearer JWT)
+nx serve mailbox-worker     # confirm poll loop logs sync for fixture mailbox after seed
 nx serve user-manager-api   # :3001 SuperTokens SSO
 nx serve timemanager        # Flutter login → GraphQL with Authorization header
 nx serve spendmanager       # Chrome :4445 → categories/expenses CRUD

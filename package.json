@@ -6,6 +6,7 @@
   "scripts": {
     "timemanager": "nx serve timemanager-api",
     "spendmanager": "nx serve spendmanager-api",
+    "mailbox": "nx run-many -t serve -p mailbox-api,mailbox-worker",
     "user-manager": "nx run-many -t serve -p user-manager-web,user-manager-api",
     "db:up": "nx run timemanager-api:migrate",
     "db:down": "nx run timemanager-db:down"

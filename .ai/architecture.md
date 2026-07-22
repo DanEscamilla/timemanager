@@ -1,6 +1,6 @@
 # Architecture
 
-This monorepo hosts product areas — **timemanager** and **spendmanager** (Flutter + GraphQL APIs) and **user-manager** (React web app + Express SuperTokens API) — plus dockerized infrastructure. SuperTokens (`user-manager-api`) is the shared SSO hub for Flutter and future apps.
+This monorepo hosts product areas — **timemanager** and **spendmanager** (Flutter + GraphQL APIs), **mailbox** (email ingest GraphQL + worker), and **user-manager** (React web app + Express SuperTokens API) — plus dockerized infrastructure. SuperTokens (`user-manager-api`) is the shared SSO hub for Flutter and future apps.
 
 ## System diagram
 
@@ -11,6 +11,8 @@ flowchart TB
     TMA["timemanager-api (Deno + Pylon)"]
     SM["spendmanager (Flutter)"]
     SMA["spendmanager-api (Deno + Pylon)"]
+    MBA["mailbox-api (Deno + Pylon)"]
+    MBW["mailbox-worker (Deno)"]
     UMW["user-manager-web (React + Vite)"]
     UMA["user-manager-api (Express + SuperTokens)"]
   end
@@ -27,6 +29,9 @@ flowchart TB
   SM -->|"GraphQL :3002 + Bearer JWT"| SMA
   SMA -->|"verify JWT via JWKS"| UMA
   SMA -->|"Kysely / pg DB spendmanager"| DB
+  MBA -->|"verify JWT via JWKS"| UMA
+  MBA -->|"Kysely / pg DB mailbox"| DB
+  MBW -->|"poll extract write"| DB
   UMW -->|"HTTP :3001"| UMA
   UMA --> STC
 ```
@@ -37,9 +42,12 @@ flowchart TB
 - **`apps/timemanager-api` (Deno + Pylon):** GraphQL API on `:3000`. Middleware verifies SuperTokens session JWTs (JWKS from `:3001`), maps `auth_user_id` → local `users.id`, and scopes activities by that user. Resolvers under `src/graphql/`; persistence via Kysely under `src/db/`. Database name: `timemanager`.
 - **`apps/spendmanager` (Flutter/Dart):** spending tracker client (expenses, categories, budgets + threshold alerts). Same SuperTokens FDI auth pattern as timemanager. Talks to GraphQL on `:3002` and auth on `:3001`. Chrome web port `:4445`.
 - **`apps/spendmanager-api` (Deno + Pylon):** GraphQL API on `:3002`. Same JWKS auth as timemanager-api; scopes categories/expenses/budgets per local user. Shares the Postgres instance with a separate database `spendmanager`.
+- **`apps/mailbox-api` (Deno + Pylon):** GraphQL API on `:3003` for mailboxes, optional domain filters, messages, extraction artifacts, and sync runs. Database name: `mailbox`. Independent from spendmanager; spending is one extractor kind (`spending.candidate`).
+- **`apps/mailbox-worker` (Deno):** Polls enabled mailboxes via `libs/mailbox_kit` providers (fixture / Gmail), applies domain filters, runs extractors, persists messages and artifacts.
+- **`libs/mailbox_kit` (Deno):** Shared `MailboxProvider`, domain filter, `Extractor` pipeline, `SpendingExtractor`, `ExpenseSink` interface (for a future spendmanager bridge).
 - **`apps/user-manager-web` (React + Vite):** SuperTokens demo UI; routes `/`, `/auth`, `/dashboard`. Cookie-based sessions against `:3001`.
 - **`apps/user-manager-api` (Express):** Shared SuperTokens SSO backend on `:3001` (`/auth/*`). Brokers auth to SuperTokens Core; issues JWTs for Flutter and cookies for React.
-- **`infra/timemanager-db`:** Postgres 15 + pgAdmin via docker-compose; hosts both `timemanager` and `spendmanager` databases. Init script creates `spendmanager` on fresh volumes; API migrate also ensures the DB exists.
+- **`infra/timemanager-db`:** Postgres 15 + pgAdmin via docker-compose; hosts `timemanager`, `spendmanager`, and `mailbox` databases. Init scripts create extra DBs on fresh volumes; API migrate also ensures each DB exists.
 - **`infra/authentik`:** Authentik stack (independent; not wired — see [`decisions.md`](decisions.md)).
 
 ## Auth flow (Flutter apps)
@@ -56,6 +64,7 @@ flowchart TB
 | `user-manager-web` dev server | `:3000` (Vite) |
 | `user-manager-api` | `:3001` |
 | `spendmanager-api` GraphQL | `:3002` |
+| `mailbox-api` GraphQL | `:3003` |
 | Postgres | `:5432` |
 | pgAdmin | `:8080` |
 | `timemanager` Flutter web | `:4444` |

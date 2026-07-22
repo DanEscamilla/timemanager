@@ -584,6 +584,8 @@ bootstrap_env_files() {
     "apps/user-manager-api/.env.example:apps/user-manager-api/.env"
     "apps/timemanager-api/.env.example:apps/timemanager-api/.env"
     "apps/spendmanager-api/.env.example:apps/spendmanager-api/.env"
+    "apps/mailbox-api/.env.example:apps/mailbox-api/.env"
+    "apps/mailbox-worker/.env.example:apps/mailbox-worker/.env"
     "apps/user-manager-web/.env.example:apps/user-manager-web/.env"
     "apps/timemanager/config/local.dart-defines.json.example:apps/timemanager/config/local.dart-defines.json"
     "apps/timemanager/config/cloud.dart-defines.json.example:apps/timemanager/config/cloud.dart-defines.json"
