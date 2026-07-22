@@ -5,14 +5,10 @@
 # Migrate:   docker run --env-file ... timemanager-api:local deno task migrate
 #
 # Use the Debian-based Bun image (not Alpine): Deno's official binary is
-# glibc-linked and fails with exit 127 on musl.
+# glibc-linked and fails with exit 127 on musl. Deno itself is copied from
+# the official image (needed only for migrate/seed at runtime — pylon build
+# uses Bun).
 FROM oven/bun:1.2 AS build
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends curl unzip ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
-RUN curl -fsSL https://deno.land/install.sh | sh
-ENV DENO_INSTALL=/root/.deno
-ENV PATH="${DENO_INSTALL}/bin:${PATH}"
 # Keep monorepo-relative paths so deno_api_kit import map resolves.
 WORKDIR /workspace
 COPY apps/timemanager-api/package.json apps/timemanager-api/deno.json ./apps/timemanager-api/
@@ -23,10 +19,10 @@ RUN bun install
 COPY apps/timemanager-api/ ./
 RUN bunx pylon build
 
+FROM denoland/deno:2.1.4 AS deno
+
 FROM oven/bun:1.2 AS runner
-COPY --from=build /root/.deno /root/.deno
-ENV DENO_INSTALL=/root/.deno
-ENV PATH="${DENO_INSTALL}/bin:${PATH}"
+COPY --from=deno /usr/bin/deno /usr/local/bin/deno
 WORKDIR /workspace/apps/timemanager-api
 COPY --from=build /workspace /workspace
 ENV NODE_ENV=production
