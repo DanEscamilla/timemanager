@@ -38,6 +38,38 @@ export interface SpendingCandidatePayload {
   note: string | null
   sourceSubject: string
   sourceFrom: string
+  /** Set when published to spendmanager. */
+  publishedExpenseId?: number | null
+  /** Parsing template id when extracted via a template. */
+  templateId?: number | null
 }
 
 export const SPENDING_CANDIDATE_KIND = 'spending.candidate' as const
+
+/** Deterministic field extractor used by parsing templates. */
+export type FieldExtractor =
+  | {
+    source: 'subject' | 'text' | 'html_text'
+    regex: string
+    group: number
+  }
+  | { source: 'from_domain' }
+  | { source: 'constant'; value: string }
+
+/** Field map stored in `parsing_templates.extractors` JSONB. */
+export type SpendTemplateExtractors = {
+  amount: FieldExtractor
+  currency?: FieldExtractor | null
+  spentOn?: FieldExtractor | null
+  merchant?: FieldExtractor | null
+  note?: FieldExtractor | null
+}
+
+/** Runtime definition for a mailbox parsing template. */
+export type SpendParsingTemplate = {
+  id: number
+  matchFromPattern: string
+  matchSubjectRegex?: string | null
+  extractors: SpendTemplateExtractors
+  enabled?: boolean
+}

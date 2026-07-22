@@ -1,3 +1,4 @@
+import { generateEmailSpendTemplateUseCase } from './generate_email_spend_template.ts'
 import { summarizeTextUseCase } from './summarize_text.ts'
 import type { UseCase, UseCaseInputField } from './types.ts'
 
@@ -5,6 +6,7 @@ import type { UseCase, UseCaseInputField } from './types.ts'
 // deno-lint-ignore no-explicit-any
 const useCases: UseCase<any, any>[] = [
   summarizeTextUseCase,
+  generateEmailSpendTemplateUseCase,
 ]
 
 const byId = new Map(useCases.map((uc) => [uc.id, uc]))

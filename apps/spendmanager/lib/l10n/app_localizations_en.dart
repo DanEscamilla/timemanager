@@ -126,10 +126,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get authAuthorisationUrlMissing => 'Authorisation URL missing from response';
+  String get authAuthorisationUrlMissing =>
+      'Authorisation URL missing from response';
 
   @override
-  String get authCouldNotGetAuthorisationUrl => 'Could not get authorisation URL';
+  String get authCouldNotGetAuthorisationUrl =>
+      'Could not get authorisation URL';
 
   @override
   String authCouldNotOpenLogin(String provider) {
@@ -398,4 +400,129 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSignOut => 'Sign out';
+
+  @override
+  String get settingsEmailImport => 'Email import';
+
+  @override
+  String get settingsEmailImportSubtitle =>
+      'Connect mailboxes, templates, and review spending';
+
+  @override
+  String get emailImportTitle => 'Email import';
+
+  @override
+  String get emailImportTabSetup => 'Setup';
+
+  @override
+  String get emailImportTabTemplates => 'Templates';
+
+  @override
+  String get emailImportTabReview => 'Review';
+
+  @override
+  String get emailImportSetupBlurb =>
+      'Connect a mailbox, allow sender domains (wildcards supported), sync mail, then generate AI parsing templates once per sender type.';
+
+  @override
+  String get emailImportAddFixture => 'Add demo mailbox';
+
+  @override
+  String get emailImportConnectGmail => 'Connect Gmail';
+
+  @override
+  String get emailImportFixtureLabel => 'Demo mailbox';
+
+  @override
+  String get emailImportGmailLabel => 'Gmail';
+
+  @override
+  String get emailImportGmailTokenHint =>
+      'Paste OAuth tokens with gmail.readonly scope (from Google Cloud OAuth).';
+
+  @override
+  String get emailImportAccessToken => 'Access token';
+
+  @override
+  String get emailImportRefreshToken => 'Refresh token (optional)';
+
+  @override
+  String get emailImportCancel => 'Cancel';
+
+  @override
+  String get emailImportSave => 'Save';
+
+  @override
+  String get emailImportNoMailbox =>
+      'No mailbox yet. Add a demo mailbox or connect Gmail.';
+
+  @override
+  String get emailImportMailbox => 'Mailbox';
+
+  @override
+  String get emailImportDomainFilters => 'Sender domain allowlist';
+
+  @override
+  String get emailImportDomainFiltersHint =>
+      'One pattern per line, e.g. amazon.com, *.uber.com, *@shop.com';
+
+  @override
+  String get emailImportNoFilters => 'No filters (all senders)';
+
+  @override
+  String get emailImportTriggerSync => 'Sync now';
+
+  @override
+  String get emailImportSyncQueued => 'Sync requested. Refresh in a moment.';
+
+  @override
+  String get emailImportMessages => 'Recent messages';
+
+  @override
+  String get emailImportNoMessages => 'No messages yet. Sync after connecting.';
+
+  @override
+  String get emailImportGenerateTemplate => 'Generate template with AI';
+
+  @override
+  String get emailImportTemplateGenerated =>
+      'Template generated. You can edit it on the Templates tab.';
+
+  @override
+  String get emailImportNoTemplates =>
+      'No templates yet. Generate one from a sample message on the Setup tab.';
+
+  @override
+  String get emailImportEditTemplate => 'Edit template';
+
+  @override
+  String get emailImportTemplateName => 'Name';
+
+  @override
+  String get emailImportMatchFrom => 'Match from pattern';
+
+  @override
+  String get emailImportMatchSubject => 'Match subject regex (optional)';
+
+  @override
+  String get emailImportExtractorsJson => 'Extractors JSON';
+
+  @override
+  String get emailImportNoPending => 'No pending spending candidates.';
+
+  @override
+  String get emailImportAcceptTitle => 'Accept as expense';
+
+  @override
+  String get emailImportCategory => 'Category';
+
+  @override
+  String get emailImportAccept => 'Accept';
+
+  @override
+  String get emailImportReject => 'Reject';
+
+  @override
+  String get emailImportNeedCategory =>
+      'Create a category before accepting expenses.';
 }

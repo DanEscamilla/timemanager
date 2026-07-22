@@ -16,6 +16,8 @@ export interface SetDomainFiltersInput {
 export interface UpdateArtifactStatusInput {
   artifactId: number
   status: string
+  /** Required when accepting a spending.candidate. */
+  categoryId?: number | null
 }
 
 export interface ConnectGmailInput {
@@ -23,4 +25,29 @@ export interface ConnectGmailInput {
   accessToken: string
   refreshToken?: string | null
   expiresAtMs?: number | null
+}
+
+export interface CreateParsingTemplateInput {
+  mailboxId: number
+  name: string
+  matchFromPattern: string
+  matchSubjectRegex?: string | null
+  extractorsJson: string
+  enabled?: boolean | null
+  sourceMessageId?: number | null
+}
+
+export interface UpdateParsingTemplateInput {
+  id: number
+  name?: string | null
+  matchFromPattern?: string | null
+  matchSubjectRegex?: string | null
+  extractorsJson?: string | null
+  enabled?: boolean | null
+}
+
+export interface GenerateParsingTemplateInput {
+  messageId: number
+  name?: string | null
+  hints?: string | null
 }

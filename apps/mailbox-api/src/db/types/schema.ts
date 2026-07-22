@@ -7,6 +7,7 @@ export interface Database {
   messages: MessagesTable
   extraction_artifacts: ExtractionArtifactsTable
   sync_runs: SyncRunsTable
+  parsing_templates: ParsingTemplatesTable
 }
 
 export interface UsersTable {
@@ -54,6 +55,8 @@ export interface MessagesTable {
   subject: string
   received_at: ColumnType<Date, string | undefined, string>
   body_hash: string | null
+  text_body: string | null
+  html_body: string | null
   created_at: ColumnType<Date, string | undefined, never>
 }
 
@@ -65,6 +68,23 @@ export interface ExtractionArtifactsTable {
   confidence: number
   /** 'pending' | 'accepted' | 'rejected' */
   status: string
+  /** spendmanager expense id after accept+publish */
+  published_expense_id: number | null
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string, string>
+}
+
+export interface ParsingTemplatesTable {
+  id: Generated<number>
+  mailbox_id: number
+  user_id: number
+  name: string
+  enabled: boolean
+  match_from_pattern: string
+  match_subject_regex: string | null
+  extractors: ColumnType<unknown, string | unknown, string | unknown>
+  source_message_id: number | null
+  version: number
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string, string>
 }
@@ -87,3 +107,5 @@ export type Message = Selectable<MessagesTable>
 export type ExtractionArtifact = Selectable<ExtractionArtifactsTable>
 export type SyncRun = Selectable<SyncRunsTable>
 export type NewSyncRun = Insertable<SyncRunsTable>
+export type ParsingTemplate = Selectable<ParsingTemplatesTable>
+export type NewParsingTemplate = Insertable<ParsingTemplatesTable>

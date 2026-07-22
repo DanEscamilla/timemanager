@@ -3,13 +3,16 @@ import type { Mailbox } from 'mailbox_api/db/types/schema.ts'
 import {
   ExtractorPipeline,
   SpendingExtractor,
+  TemplateSpendingExtractor,
   filterMessagesByDomain,
+  parseSpendTemplateExtractors,
   type ExtractionArtifact,
   type MailboxProvider,
+  type SpendParsingTemplate,
 } from 'mailbox_kit/mod.ts'
 import { createProviderForMailbox } from './provider_factory.ts'
 
-const DEFAULT_PIPELINE = new ExtractorPipeline([new SpendingExtractor()])
+const HEURISTIC = new SpendingExtractor()
 
 export interface SyncMailboxResult {
   fetched: number
@@ -41,7 +44,8 @@ export async function syncMailbox(
 
   try {
     const provider = options?.provider ?? createProviderForMailbox(mailbox)
-    const pipeline = options?.pipeline ?? DEFAULT_PIPELINE
+    const pipeline = options?.pipeline ??
+      (await buildPipelineForMailbox(mailbox.id))
 
     const patterns = (
       await db
@@ -78,6 +82,8 @@ export async function syncMailbox(
           subject: msg.subject,
           received_at: msg.receivedAt.toISOString(),
           body_hash: bodyHash,
+          text_body: truncateBody(msg.textBody),
+          html_body: truncateBody(msg.htmlBody),
         })
         .returningAll()
         .executeTakeFirstOrThrow()
@@ -119,6 +125,36 @@ export async function syncMailbox(
   return { fetched, extracted, error: errorText }
 }
 
+async function buildPipelineForMailbox(
+  mailboxId: number,
+): Promise<ExtractorPipeline> {
+  const rows = await db
+    .selectFrom('parsing_templates')
+    .selectAll()
+    .where('mailbox_id', '=', mailboxId)
+    .where('enabled', '=', true)
+    .orderBy('id', 'asc')
+    .execute()
+
+  const templateExtractors: TemplateSpendingExtractor[] = []
+  for (const row of rows) {
+    const extractors = parseSpendTemplateExtractors(row.extractors)
+    if (!extractors) continue
+    const template: SpendParsingTemplate = {
+      id: row.id,
+      matchFromPattern: row.match_from_pattern,
+      matchSubjectRegex: row.match_subject_regex,
+      extractors,
+      enabled: row.enabled,
+    }
+    templateExtractors.push(new TemplateSpendingExtractor(template))
+  }
+
+  return new ExtractorPipeline([...templateExtractors, HEURISTIC], {
+    firstMatchOnly: true,
+  })
+}
+
 async function insertArtifact(
   messageId: number,
   art: ExtractionArtifact,
@@ -132,10 +168,17 @@ async function insertArtifact(
       payload: art.payload,
       confidence: art.confidence,
       status: 'pending',
+      published_expense_id: null,
       created_at: now,
       updated_at: now,
     })
     .execute()
+}
+
+function truncateBody(body: string | null): string | null {
+  if (!body) return null
+  const max = 50_000
+  return body.length > max ? body.slice(0, max) : body
 }
 
 async function hashBody(body: string): Promise<string> {

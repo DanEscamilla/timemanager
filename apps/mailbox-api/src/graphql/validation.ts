@@ -25,6 +25,11 @@ export function validateLabel(label: string): string {
   return trimmed
 }
 
+/**
+ * Allowed patterns:
+ * - `user@shop.com`, `*@shop.com`, `*@*.shop.com`
+ * - `shop.com`, `*.shop.com`
+ */
 export function validateDomainPatterns(patterns: string[]): string[] {
   const out: string[] = []
   const seen = new Set<string>()
@@ -34,7 +39,7 @@ export function validateDomainPatterns(patterns: string[]): string[] {
     if (p.length > 255) {
       throw new InvalidMailboxError('domain filter pattern is too long')
     }
-    if (!p.includes('.') && !p.includes('@')) {
+    if (!isValidFromPattern(p)) {
       throw new InvalidMailboxError(
         `invalid domain filter pattern: ${raw}`,
       )
@@ -46,6 +51,35 @@ export function validateDomainPatterns(patterns: string[]): string[] {
   return out
 }
 
+export function isValidFromPattern(pattern: string): boolean {
+  const p = pattern.trim().toLowerCase()
+  if (!p || p.length > 255) return false
+
+  if (p.includes('@')) {
+    const at = p.lastIndexOf('@')
+    if (at <= 0 || at === p.length - 1) return false
+    const local = p.slice(0, at)
+    const domain = p.slice(at + 1)
+    if (local !== '*' && (local.includes('*') || local.includes('@'))) {
+      return false
+    }
+    return isValidDomainPattern(domain)
+  }
+  return isValidDomainPattern(p)
+}
+
+function isValidDomainPattern(domain: string): boolean {
+  if (domain.startsWith('*.')) {
+    const rest = domain.slice(2)
+    if (!rest || rest.includes('*') || !rest.includes('.')) return false
+    return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
+      .test(rest)
+  }
+  if (domain.includes('*')) return false
+  return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
+    .test(domain)
+}
+
 export function validateArtifactStatus(status: string): string {
   const trimmed = status.trim().toLowerCase()
   if (!ARTIFACT_STATUSES.has(trimmed)) {
@@ -54,4 +88,48 @@ export function validateArtifactStatus(status: string): string {
     )
   }
   return trimmed
+}
+
+export function validateTemplateName(name: string): string {
+  const trimmed = name.trim()
+  if (!trimmed) throw new InvalidMailboxError('template name is required')
+  if (trimmed.length > 255) {
+    throw new InvalidMailboxError('template name is too long')
+  }
+  return trimmed
+}
+
+export function validateMatchFromPattern(pattern: string): string {
+  const p = pattern.trim().toLowerCase()
+  if (!isValidFromPattern(p)) {
+    throw new InvalidMailboxError(`invalid matchFromPattern: ${pattern}`)
+  }
+  return p
+}
+
+export function validateSubjectRegex(
+  regex: string | null | undefined,
+): string | null {
+  if (regex === null || regex === undefined) return null
+  const trimmed = regex.trim()
+  if (!trimmed) return null
+  try {
+    new RegExp(trimmed, 'i')
+  } catch {
+    throw new InvalidMailboxError('matchSubjectRegex is not a valid regexp')
+  }
+  return trimmed
+}
+
+export function validateCategoryId(categoryId: unknown): number {
+  if (
+    typeof categoryId !== 'number' ||
+    !Number.isInteger(categoryId) ||
+    categoryId < 1
+  ) {
+    throw new InvalidMailboxError(
+      'categoryId is required when accepting a spending candidate',
+    )
+  }
+  return categoryId
 }

@@ -62,7 +62,8 @@ import 'app_localizations_es.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,17 +84,18 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('es')
+    Locale('es'),
   ];
 
   /// No description provided for @appTitle.
@@ -820,9 +823,244 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out'**
   String get settingsSignOut;
+
+  /// No description provided for @settingsEmailImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Email import'**
+  String get settingsEmailImport;
+
+  /// No description provided for @settingsEmailImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect mailboxes, templates, and review spending'**
+  String get settingsEmailImportSubtitle;
+
+  /// No description provided for @emailImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email import'**
+  String get emailImportTitle;
+
+  /// No description provided for @emailImportTabSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup'**
+  String get emailImportTabSetup;
+
+  /// No description provided for @emailImportTabTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'Templates'**
+  String get emailImportTabTemplates;
+
+  /// No description provided for @emailImportTabReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get emailImportTabReview;
+
+  /// No description provided for @emailImportSetupBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect a mailbox, allow sender domains (wildcards supported), sync mail, then generate AI parsing templates once per sender type.'**
+  String get emailImportSetupBlurb;
+
+  /// No description provided for @emailImportAddFixture.
+  ///
+  /// In en, this message translates to:
+  /// **'Add demo mailbox'**
+  String get emailImportAddFixture;
+
+  /// No description provided for @emailImportConnectGmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Gmail'**
+  String get emailImportConnectGmail;
+
+  /// No description provided for @emailImportFixtureLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo mailbox'**
+  String get emailImportFixtureLabel;
+
+  /// No description provided for @emailImportGmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gmail'**
+  String get emailImportGmailLabel;
+
+  /// No description provided for @emailImportGmailTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste OAuth tokens with gmail.readonly scope (from Google Cloud OAuth).'**
+  String get emailImportGmailTokenHint;
+
+  /// No description provided for @emailImportAccessToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Access token'**
+  String get emailImportAccessToken;
+
+  /// No description provided for @emailImportRefreshToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh token (optional)'**
+  String get emailImportRefreshToken;
+
+  /// No description provided for @emailImportCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get emailImportCancel;
+
+  /// No description provided for @emailImportSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get emailImportSave;
+
+  /// No description provided for @emailImportNoMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'No mailbox yet. Add a demo mailbox or connect Gmail.'**
+  String get emailImportNoMailbox;
+
+  /// No description provided for @emailImportMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Mailbox'**
+  String get emailImportMailbox;
+
+  /// No description provided for @emailImportDomainFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Sender domain allowlist'**
+  String get emailImportDomainFilters;
+
+  /// No description provided for @emailImportDomainFiltersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One pattern per line, e.g. amazon.com, *.uber.com, *@shop.com'**
+  String get emailImportDomainFiltersHint;
+
+  /// No description provided for @emailImportNoFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'No filters (all senders)'**
+  String get emailImportNoFilters;
+
+  /// No description provided for @emailImportTriggerSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get emailImportTriggerSync;
+
+  /// No description provided for @emailImportSyncQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync requested. Refresh in a moment.'**
+  String get emailImportSyncQueued;
+
+  /// No description provided for @emailImportMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent messages'**
+  String get emailImportMessages;
+
+  /// No description provided for @emailImportNoMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet. Sync after connecting.'**
+  String get emailImportNoMessages;
+
+  /// No description provided for @emailImportGenerateTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate template with AI'**
+  String get emailImportGenerateTemplate;
+
+  /// No description provided for @emailImportTemplateGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'Template generated. You can edit it on the Templates tab.'**
+  String get emailImportTemplateGenerated;
+
+  /// No description provided for @emailImportNoTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates yet. Generate one from a sample message on the Setup tab.'**
+  String get emailImportNoTemplates;
+
+  /// No description provided for @emailImportEditTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit template'**
+  String get emailImportEditTemplate;
+
+  /// No description provided for @emailImportTemplateName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get emailImportTemplateName;
+
+  /// No description provided for @emailImportMatchFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Match from pattern'**
+  String get emailImportMatchFrom;
+
+  /// No description provided for @emailImportMatchSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Match subject regex (optional)'**
+  String get emailImportMatchSubject;
+
+  /// No description provided for @emailImportExtractorsJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Extractors JSON'**
+  String get emailImportExtractorsJson;
+
+  /// No description provided for @emailImportNoPending.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending spending candidates.'**
+  String get emailImportNoPending;
+
+  /// No description provided for @emailImportAcceptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept as expense'**
+  String get emailImportAcceptTitle;
+
+  /// No description provided for @emailImportCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get emailImportCategory;
+
+  /// No description provided for @emailImportAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get emailImportAccept;
+
+  /// No description provided for @emailImportReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get emailImportReject;
+
+  /// No description provided for @emailImportNeedCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a category before accepting expenses.'**
+  String get emailImportNeedCategory;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -831,25 +1069,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'es'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'es'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'es': return AppLocalizationsEs();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

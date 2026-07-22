@@ -19,6 +19,15 @@ Deno.test('validateDomainPatterns normalizes', () => {
   assertThrows(() => validateDomainPatterns(['nodot']), InvalidMailboxError)
 })
 
+Deno.test('validateDomainPatterns accepts wildcards', () => {
+  assertEquals(
+    validateDomainPatterns(['*.shop.com', '*@shop.com', '*@*.shop.com']),
+    ['*.shop.com', '*@shop.com', '*@*.shop.com'],
+  )
+  assertThrows(() => validateDomainPatterns(['*.com']), InvalidMailboxError)
+  assertThrows(() => validateDomainPatterns(['*@*']), InvalidMailboxError)
+})
+
 Deno.test('validateArtifactStatus', () => {
   assertEquals(validateArtifactStatus('Accepted'), 'accepted')
   assertThrows(() => validateArtifactStatus('done'), InvalidMailboxError)

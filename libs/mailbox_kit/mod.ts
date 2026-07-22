@@ -2,7 +2,10 @@ export type {
   ArtifactStatus,
   EmailMessage,
   ExtractionArtifact,
+  FieldExtractor,
   ListMessagesResult,
+  SpendParsingTemplate,
+  SpendTemplateExtractors,
   SpendingCandidatePayload,
   SyncCursor,
 } from './types.ts'
@@ -13,6 +16,8 @@ export type { ListMessagesOptions, MailboxProvider } from './provider.ts'
 export {
   filterMessagesByDomain,
   matchesDomainFilter,
+  matchesFromPattern,
+  normalizeFrom,
 } from './domain_filter.ts'
 
 export type { Extractor } from './extractor.ts'
@@ -22,6 +27,10 @@ export type { ExpenseSink } from './expense_sink.ts'
 export { NoopExpenseSink } from './expense_sink.ts'
 
 export { SpendingExtractor } from './extractors/spending_extractor.ts'
+export {
+  TemplateSpendingExtractor,
+  parseSpendTemplateExtractors,
+} from './extractors/template_spending_extractor.ts'
 
 export {
   FIXTURE_RECEIPT_MESSAGES,

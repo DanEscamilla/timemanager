@@ -49,6 +49,8 @@ nx serve user-manager-api   # express server
 
 `pnpm timemanager` starts GraphQL on `:3000`, SuperTokens on `:3001`, and Postgres. `pnpm spendmanager` starts GraphQL on `:3002` (same auth + DB stack). `pnpm mailbox` starts GraphQL on `:3003` plus the poll worker. `pnpm ai` starts the AI gateway on `:3004`. Launch Flutter from the IDE (**spendmanager** / **timemanager**).
 
+Email spend import (spendmanager Settings → Email import) needs `pnpm mailbox`, `pnpm ai` (template generation), and `pnpm spendmanager` (accept → createExpense) together. See [mailbox.md](mailbox.md).
+
 ## Database
 
 ```bash

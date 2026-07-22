@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:design_system/design_system.dart';
+import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localizations.dart';
+import '../router/app_routes.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
@@ -61,6 +63,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   darkLabel: l10n.settingsThemeDark,
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppCard(
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.inbox_outlined),
+              title: Text(l10n.settingsEmailImport),
+              subtitle: Text(l10n.settingsEmailImportSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.emailImport),
             ),
           ),
           if (widget.onSignedOut != null) ...[

@@ -59,7 +59,10 @@ Self-host later: point `AI_PROVIDER=openai_compatible` at your OpenAI-compatible
 2. Register it in [`apps/ai-api/src/use_cases/registry.ts`](../apps/ai-api/src/use_cases/registry.ts).
 3. Call `POST /v1/use-cases/<id>/run` with `{ "input": { … }, "model"?: "…" }`, or exercise it via `pnpm ai:cli`.
 
-Example use case shipped: `summarize_text`.
+Shipped use cases:
+
+- `summarize_text` — short text summary
+- `generate_email_spend_template` — one-shot structured parsing template from a sample receipt email (used by mailbox-api; worker never calls AI on poll)
 
 ## Non-goals (v1)
 

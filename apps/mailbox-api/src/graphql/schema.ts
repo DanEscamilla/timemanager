@@ -33,6 +33,8 @@ export const typeDefs = gql`
     from_address: String!
     subject: String!
     received_at: String!
+    text_body: String
+    html_body: String
     created_at: String!
   }
 
@@ -43,6 +45,7 @@ export const typeDefs = gql`
     payload: String!
     confidence: Float!
     status: String!
+    published_expense_id: Int
     created_at: String!
     updated_at: String!
   }
@@ -55,6 +58,21 @@ export const typeDefs = gql`
     fetched_count: Int!
     extracted_count: Int!
     error_text: String
+  }
+
+  type ParsingTemplate {
+    id: Int!
+    mailbox_id: Int!
+    user_id: Int!
+    name: String!
+    enabled: Boolean!
+    match_from_pattern: String!
+    match_subject_regex: String
+    extractors: String!
+    source_message_id: Int
+    version: Int!
+    created_at: String!
+    updated_at: String!
   }
 
   input CreateMailboxInput {
@@ -73,6 +91,7 @@ export const typeDefs = gql`
   input UpdateArtifactStatusInput {
     artifactId: Int!
     status: String!
+    categoryId: Int
   }
 
   input ConnectGmailInput {
@@ -82,12 +101,38 @@ export const typeDefs = gql`
     expiresAtMs: Float
   }
 
+  input CreateParsingTemplateInput {
+    mailboxId: Int!
+    name: String!
+    matchFromPattern: String!
+    matchSubjectRegex: String
+    extractorsJson: String!
+    enabled: Boolean
+    sourceMessageId: Int
+  }
+
+  input UpdateParsingTemplateInput {
+    id: Int!
+    name: String
+    matchFromPattern: String
+    matchSubjectRegex: String
+    extractorsJson: String
+    enabled: Boolean
+  }
+
+  input GenerateParsingTemplateInput {
+    messageId: Int!
+    name: String
+    hints: String
+  }
+
   type Query {
     mailboxes: [Mailbox!]!
     domainFilters(mailboxId: Int!): [DomainFilter!]!
     messages(mailboxId: Int!): [Message!]!
     extractionArtifacts(mailboxId: Int, status: String): [ExtractionArtifact!]!
     syncRuns(mailboxId: Int!): [SyncRun!]!
+    parsingTemplates(mailboxId: Int!): [ParsingTemplate!]!
   }
 
   type Mutation {
@@ -97,5 +142,9 @@ export const typeDefs = gql`
     triggerSync(mailboxId: Int!): Mailbox!
     updateArtifactStatus(input: UpdateArtifactStatusInput!): ExtractionArtifact!
     connectGmail(input: ConnectGmailInput!): Mailbox!
+    createParsingTemplate(input: CreateParsingTemplateInput!): ParsingTemplate!
+    updateParsingTemplate(input: UpdateParsingTemplateInput!): ParsingTemplate!
+    deleteParsingTemplate(id: Int!): Boolean!
+    generateParsingTemplate(input: GenerateParsingTemplateInput!): ParsingTemplate!
   }
 `

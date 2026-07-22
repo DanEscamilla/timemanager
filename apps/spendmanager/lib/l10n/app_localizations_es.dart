@@ -126,10 +126,12 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get authAuthorisationUrlMissing => 'Falta la URL de autorización en la respuesta';
+  String get authAuthorisationUrlMissing =>
+      'Falta la URL de autorización en la respuesta';
 
   @override
-  String get authCouldNotGetAuthorisationUrl => 'No se pudo obtener la URL de autorización';
+  String get authCouldNotGetAuthorisationUrl =>
+      'No se pudo obtener la URL de autorización';
 
   @override
   String authCouldNotOpenLogin(String provider) {
@@ -140,7 +142,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorNotSignedIn => 'No has iniciado sesión';
 
   @override
-  String get errorSessionExpired => 'La sesión caducó. Vuelve a iniciar sesión.';
+  String get errorSessionExpired =>
+      'La sesión caducó. Vuelve a iniciar sesión.';
 
   @override
   String errorRequestFailed(int statusCode, String body) {
@@ -199,7 +202,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get expensesFormAmountRequired => 'Introduce un importe';
 
   @override
-  String get expensesFormAmountInvalid => 'Introduce un importe válido (p. ej. 12.50)';
+  String get expensesFormAmountInvalid =>
+      'Introduce un importe válido (p. ej. 12.50)';
 
   @override
   String get expensesFormCategory => 'Categoría';
@@ -220,7 +224,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoriesEmptyTitle => 'Aún no hay categorías';
 
   @override
-  String get categoriesEmptyHint => 'Crea categorías para organizar tus gastos.';
+  String get categoriesEmptyHint =>
+      'Crea categorías para organizar tus gastos.';
 
   @override
   String get categoriesEmptyAction => 'Añadir categoría';
@@ -319,7 +324,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsFormAmountRequired => 'Introduce un importe';
 
   @override
-  String get budgetsFormAmountInvalid => 'Introduce un importe válido (p. ej. 12.50)';
+  String get budgetsFormAmountInvalid =>
+      'Introduce un importe válido (p. ej. 12.50)';
 
   @override
   String get budgetsFormInterval => 'Se repite cada';
@@ -364,7 +370,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsFormAlertPercent => 'Avisar al';
 
   @override
-  String get budgetsFormAlertPercentInvalid => 'Introduce un porcentaje entre 1 y 100';
+  String get budgetsFormAlertPercentInvalid =>
+      'Introduce un porcentaje entre 1 y 100';
 
   @override
   String budgetsAlertAt(int percent) {
@@ -398,4 +405,131 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSignOut => 'Cerrar sesión';
+
+  @override
+  String get settingsEmailImport => 'Importar email';
+
+  @override
+  String get settingsEmailImportSubtitle =>
+      'Conecta buzones, plantillas y revisa gastos';
+
+  @override
+  String get emailImportTitle => 'Importar email';
+
+  @override
+  String get emailImportTabSetup => 'Configuración';
+
+  @override
+  String get emailImportTabTemplates => 'Plantillas';
+
+  @override
+  String get emailImportTabReview => 'Revisión';
+
+  @override
+  String get emailImportSetupBlurb =>
+      'Conecta un buzón, permite dominios (comodines), sincroniza y genera plantillas de IA una vez por tipo de remitente.';
+
+  @override
+  String get emailImportAddFixture => 'Añadir buzón demo';
+
+  @override
+  String get emailImportConnectGmail => 'Conectar Gmail';
+
+  @override
+  String get emailImportFixtureLabel => 'Buzón demo';
+
+  @override
+  String get emailImportGmailLabel => 'Gmail';
+
+  @override
+  String get emailImportGmailTokenHint =>
+      'Pega tokens OAuth con alcance gmail.readonly (desde Google Cloud OAuth).';
+
+  @override
+  String get emailImportAccessToken => 'Access token';
+
+  @override
+  String get emailImportRefreshToken => 'Refresh token (opcional)';
+
+  @override
+  String get emailImportCancel => 'Cancelar';
+
+  @override
+  String get emailImportSave => 'Guardar';
+
+  @override
+  String get emailImportNoMailbox =>
+      'Aún no hay buzón. Añade uno demo o conecta Gmail.';
+
+  @override
+  String get emailImportMailbox => 'Buzón';
+
+  @override
+  String get emailImportDomainFilters => 'Lista de dominios remitentes';
+
+  @override
+  String get emailImportDomainFiltersHint =>
+      'Un patrón por línea, p. ej. amazon.com, *.uber.com, *@shop.com';
+
+  @override
+  String get emailImportNoFilters => 'Sin filtros (todos los remitentes)';
+
+  @override
+  String get emailImportTriggerSync => 'Sincronizar ahora';
+
+  @override
+  String get emailImportSyncQueued =>
+      'Sincronización solicitada. Actualiza en un momento.';
+
+  @override
+  String get emailImportMessages => 'Mensajes recientes';
+
+  @override
+  String get emailImportNoMessages =>
+      'Aún no hay mensajes. Sincroniza tras conectar.';
+
+  @override
+  String get emailImportGenerateTemplate => 'Generar plantilla con IA';
+
+  @override
+  String get emailImportTemplateGenerated =>
+      'Plantilla generada. Puedes editarla en la pestaña Plantillas.';
+
+  @override
+  String get emailImportNoTemplates =>
+      'Aún no hay plantillas. Genera una desde un mensaje en Configuración.';
+
+  @override
+  String get emailImportEditTemplate => 'Editar plantilla';
+
+  @override
+  String get emailImportTemplateName => 'Nombre';
+
+  @override
+  String get emailImportMatchFrom => 'Patrón de remitente';
+
+  @override
+  String get emailImportMatchSubject => 'Regex de asunto (opcional)';
+
+  @override
+  String get emailImportExtractorsJson => 'JSON de extractores';
+
+  @override
+  String get emailImportNoPending => 'No hay candidatos de gasto pendientes.';
+
+  @override
+  String get emailImportAcceptTitle => 'Aceptar como gasto';
+
+  @override
+  String get emailImportCategory => 'Categoría';
+
+  @override
+  String get emailImportAccept => 'Aceptar';
+
+  @override
+  String get emailImportReject => 'Rechazar';
+
+  @override
+  String get emailImportNeedCategory =>
+      'Crea una categoría antes de aceptar gastos.';
 }

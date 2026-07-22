@@ -1,19 +1,39 @@
 import { getContext } from '@getcronit/pylon'
+import {
+  SPENDING_CANDIDATE_KIND,
+  parseSpendTemplateExtractors,
+  type SpendingCandidatePayload,
+} from 'mailbox_kit/mod.ts'
 import { db } from '../../db/database.ts'
 import type { NewMailbox } from '../../db/types/schema.ts'
+import {
+  AiClientError,
+  generateEmailSpendTemplate,
+} from '../../services/ai_client.ts'
+import {
+  SpendmanagerSinkError,
+  publishExpenseToSpendmanager,
+} from '../../services/spendmanager_expense_sink.ts'
 import { asIsoTimestamp, asIsoTimestampOrNull } from '../timestamps.ts'
 import type {
   ConnectGmailInput,
   CreateMailboxInput,
+  CreateParsingTemplateInput,
+  GenerateParsingTemplateInput,
   SetDomainFiltersInput,
   UpdateArtifactStatusInput,
+  UpdateParsingTemplateInput,
 } from '../types.ts'
 import {
   InvalidMailboxError,
   validateArtifactStatus,
+  validateCategoryId,
   validateDomainPatterns,
   validateLabel,
+  validateMatchFromPattern,
   validateProvider,
+  validateSubjectRegex,
+  validateTemplateName,
 } from '../validation.ts'
 
 function requireUserId(): number {
@@ -22,6 +42,15 @@ function requireUserId(): number {
     throw new Error('Unauthenticated')
   }
   return userId
+}
+
+function requireAuthorizationHeader(): string {
+  const ctx = getContext()
+  const header = ctx.req.header('Authorization')
+  if (!header?.startsWith('Bearer ')) {
+    throw new InvalidMailboxError('missing Authorization bearer token')
+  }
+  return header
 }
 
 function mapMailbox(row: {
@@ -70,11 +99,20 @@ function mapMessage(row: {
   from_address: string
   subject: string
   received_at: Date | string
+  text_body?: string | null
+  html_body?: string | null
   created_at: Date | string
 }) {
   return {
-    ...row,
+    id: row.id,
+    mailbox_id: row.mailbox_id,
+    provider_message_id: row.provider_message_id,
+    rfc_message_id: row.rfc_message_id,
+    from_address: row.from_address,
+    subject: row.subject,
     received_at: asIsoTimestamp(row.received_at),
+    text_body: row.text_body ?? null,
+    html_body: row.html_body ?? null,
     created_at: asIsoTimestamp(row.created_at),
   }
 }
@@ -86,6 +124,7 @@ function mapArtifact(row: {
   payload: unknown
   confidence: number
   status: string
+  published_expense_id?: number | null
   created_at: Date | string
   updated_at: Date | string
 }) {
@@ -99,6 +138,7 @@ function mapArtifact(row: {
         : JSON.stringify(row.payload ?? {}),
     confidence: row.confidence,
     status: row.status,
+    published_expense_id: row.published_expense_id ?? null,
     created_at: asIsoTimestamp(row.created_at),
     updated_at: asIsoTimestamp(row.updated_at),
   }
@@ -120,6 +160,39 @@ function mapSyncRun(row: {
   }
 }
 
+function mapParsingTemplate(row: {
+  id: number
+  mailbox_id: number
+  user_id: number
+  name: string
+  enabled: boolean
+  match_from_pattern: string
+  match_subject_regex: string | null
+  extractors: unknown
+  source_message_id: number | null
+  version: number
+  created_at: Date | string
+  updated_at: Date | string
+}) {
+  return {
+    id: row.id,
+    mailbox_id: row.mailbox_id,
+    user_id: row.user_id,
+    name: row.name,
+    enabled: row.enabled,
+    match_from_pattern: row.match_from_pattern,
+    match_subject_regex: row.match_subject_regex,
+    extractors:
+      typeof row.extractors === 'string'
+        ? row.extractors
+        : JSON.stringify(row.extractors ?? {}),
+    source_message_id: row.source_message_id,
+    version: row.version,
+    created_at: asIsoTimestamp(row.created_at),
+    updated_at: asIsoTimestamp(row.updated_at),
+  }
+}
+
 async function requireOwnedMailbox(userId: number, mailboxId: number) {
   const row = await db
     .selectFrom('mailboxes')
@@ -129,6 +202,49 @@ async function requireOwnedMailbox(userId: number, mailboxId: number) {
     .executeTakeFirst()
   if (!row) throw new InvalidMailboxError('mailbox not found')
   return row
+}
+
+function parseExtractorsJson(raw: string) {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    throw new InvalidMailboxError('extractorsJson must be valid JSON')
+  }
+  const extractors = parseSpendTemplateExtractors(parsed)
+  if (!extractors) {
+    throw new InvalidMailboxError('extractorsJson has invalid shape')
+  }
+  return extractors
+}
+
+function asSpendingPayload(payload: unknown): SpendingCandidatePayload | null {
+  const obj = typeof payload === 'string'
+    ? (() => {
+      try {
+        return JSON.parse(payload)
+      } catch {
+        return null
+      }
+    })()
+    : payload
+  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) return null
+  const p = obj as Record<string, unknown>
+  if (typeof p.amountCents !== 'number' || typeof p.spentOn !== 'string') {
+    return null
+  }
+  return {
+    amountCents: p.amountCents,
+    currency: typeof p.currency === 'string' ? p.currency : 'USD',
+    spentOn: p.spentOn,
+    merchant: typeof p.merchant === 'string' ? p.merchant : null,
+    note: typeof p.note === 'string' ? p.note : null,
+    sourceSubject: typeof p.sourceSubject === 'string' ? p.sourceSubject : '',
+    sourceFrom: typeof p.sourceFrom === 'string' ? p.sourceFrom : '',
+    publishedExpenseId:
+      typeof p.publishedExpenseId === 'number' ? p.publishedExpenseId : null,
+    templateId: typeof p.templateId === 'number' ? p.templateId : null,
+  }
 }
 
 const Query = {
@@ -199,6 +315,19 @@ const Query = {
       .execute()
     return rows.map(mapSyncRun)
   },
+
+  async parsingTemplates(mailboxId: number) {
+    const userId = requireUserId()
+    await requireOwnedMailbox(userId, mailboxId)
+    const rows = await db
+      .selectFrom('parsing_templates')
+      .selectAll()
+      .where('mailbox_id', '=', mailboxId)
+      .where('user_id', '=', userId)
+      .orderBy('id', 'asc')
+      .execute()
+    return rows.map(mapParsingTemplate)
+  },
 }
 
 const Mutation = {
@@ -208,10 +337,6 @@ const Mutation = {
     const label = validateLabel(input.label)
     const patterns = validateDomainPatterns(input.domainFilters ?? [])
     const now = new Date().toISOString()
-
-    if (provider === 'gmail' && !input.oauthTokensJson) {
-      // Allow create without tokens; connectGmail fills them later.
-    }
 
     const values: NewMailbox = {
       user_id: userId,
@@ -320,6 +445,77 @@ const Mutation = {
     if (!owned) throw new InvalidMailboxError('artifact not found')
 
     const now = new Date().toISOString()
+
+    if (status === 'rejected') {
+      const row = await db
+        .updateTable('extraction_artifacts')
+        .set({ status, updated_at: now })
+        .where('id', '=', input.artifactId)
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      return mapArtifact(row)
+    }
+
+    if (status === 'accepted') {
+      if (owned.kind === SPENDING_CANDIDATE_KIND) {
+        if (owned.published_expense_id != null) {
+          const row = await db
+            .updateTable('extraction_artifacts')
+            .set({ status: 'accepted', updated_at: now })
+            .where('id', '=', input.artifactId)
+            .returningAll()
+            .executeTakeFirstOrThrow()
+          return mapArtifact(row)
+        }
+
+        const categoryId = validateCategoryId(input.categoryId)
+        const candidate = asSpendingPayload(owned.payload)
+        if (!candidate) {
+          throw new InvalidMailboxError('artifact payload is not a spending candidate')
+        }
+
+        try {
+          const published = await publishExpenseToSpendmanager(
+            candidate,
+            categoryId,
+            requireAuthorizationHeader(),
+          )
+          const nextPayload = {
+            ...candidate,
+            publishedExpenseId: published.expenseId,
+          }
+          const row = await db
+            .updateTable('extraction_artifacts')
+            .set({
+              status: 'accepted',
+              published_expense_id: published.expenseId,
+              payload: nextPayload,
+              updated_at: now,
+            })
+            .where('id', '=', input.artifactId)
+            .returningAll()
+            .executeTakeFirstOrThrow()
+          return mapArtifact(row)
+        } catch (err) {
+          if (err instanceof SpendmanagerSinkError) {
+            throw new InvalidMailboxError(
+              `failed to publish expense: ${err.message}`,
+            )
+          }
+          throw err
+        }
+      }
+
+      const row = await db
+        .updateTable('extraction_artifacts')
+        .set({ status: 'accepted', updated_at: now })
+        .where('id', '=', input.artifactId)
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      return mapArtifact(row)
+    }
+
+    // pending / other
     const row = await db
       .updateTable('extraction_artifacts')
       .set({ status, updated_at: now })
@@ -356,6 +552,174 @@ const Mutation = {
       .returningAll()
       .executeTakeFirstOrThrow()
     return mapMailbox(row)
+  },
+
+  async createParsingTemplate(input: CreateParsingTemplateInput) {
+    const userId = requireUserId()
+    await requireOwnedMailbox(userId, input.mailboxId)
+    const name = validateTemplateName(input.name)
+    const matchFromPattern = validateMatchFromPattern(input.matchFromPattern)
+    const matchSubjectRegex = validateSubjectRegex(input.matchSubjectRegex)
+    const extractors = parseExtractorsJson(input.extractorsJson)
+    const now = new Date().toISOString()
+
+    if (input.sourceMessageId != null) {
+      const msg = await db
+        .selectFrom('messages')
+        .innerJoin('mailboxes', 'mailboxes.id', 'messages.mailbox_id')
+        .select('messages.id')
+        .where('messages.id', '=', input.sourceMessageId)
+        .where('mailboxes.user_id', '=', userId)
+        .where('messages.mailbox_id', '=', input.mailboxId)
+        .executeTakeFirst()
+      if (!msg) throw new InvalidMailboxError('source message not found')
+    }
+
+    const row = await db
+      .insertInto('parsing_templates')
+      .values({
+        mailbox_id: input.mailboxId,
+        user_id: userId,
+        name,
+        enabled: input.enabled ?? true,
+        match_from_pattern: matchFromPattern,
+        match_subject_regex: matchSubjectRegex,
+        extractors,
+        source_message_id: input.sourceMessageId ?? null,
+        version: 1,
+        created_at: now,
+        updated_at: now,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+    return mapParsingTemplate(row)
+  },
+
+  async updateParsingTemplate(input: UpdateParsingTemplateInput) {
+    const userId = requireUserId()
+    const existing = await db
+      .selectFrom('parsing_templates')
+      .selectAll()
+      .where('id', '=', input.id)
+      .where('user_id', '=', userId)
+      .executeTakeFirst()
+    if (!existing) throw new InvalidMailboxError('template not found')
+
+    const now = new Date().toISOString()
+    const patch: {
+      name?: string
+      match_from_pattern?: string
+      match_subject_regex?: string | null
+      extractors?: ReturnType<typeof parseExtractorsJson>
+      enabled?: boolean
+      version: number
+      updated_at: string
+    } = {
+      version: existing.version + 1,
+      updated_at: now,
+    }
+
+    if (input.name != null) patch.name = validateTemplateName(input.name)
+    if (input.matchFromPattern != null) {
+      patch.match_from_pattern = validateMatchFromPattern(input.matchFromPattern)
+    }
+    if (input.matchSubjectRegex !== undefined) {
+      patch.match_subject_regex = validateSubjectRegex(input.matchSubjectRegex)
+    }
+    if (input.extractorsJson != null) {
+      patch.extractors = parseExtractorsJson(input.extractorsJson)
+    }
+    if (input.enabled != null) patch.enabled = input.enabled
+
+    const row = await db
+      .updateTable('parsing_templates')
+      .set(patch)
+      .where('id', '=', input.id)
+      .returningAll()
+      .executeTakeFirstOrThrow()
+    return mapParsingTemplate(row)
+  },
+
+  async deleteParsingTemplate(id: number) {
+    const userId = requireUserId()
+    const result = await db
+      .deleteFrom('parsing_templates')
+      .where('id', '=', id)
+      .where('user_id', '=', userId)
+      .executeTakeFirst()
+    return Number(result.numDeletedRows ?? 0) > 0
+  },
+
+  async generateParsingTemplate(input: GenerateParsingTemplateInput) {
+    const userId = requireUserId()
+    const message = await db
+      .selectFrom('messages')
+      .innerJoin('mailboxes', 'mailboxes.id', 'messages.mailbox_id')
+      .select([
+        'messages.id',
+        'messages.mailbox_id',
+        'messages.from_address',
+        'messages.subject',
+        'messages.text_body',
+        'messages.html_body',
+      ])
+      .where('messages.id', '=', input.messageId)
+      .where('mailboxes.user_id', '=', userId)
+      .executeTakeFirst()
+
+    if (!message) throw new InvalidMailboxError('message not found')
+    if (!message.text_body && !message.html_body) {
+      throw new InvalidMailboxError(
+        'message has no stored body; re-sync after upgrading mailbox',
+      )
+    }
+
+    let aiOut
+    try {
+      aiOut = await generateEmailSpendTemplate({
+        from: message.from_address,
+        subject: message.subject,
+        textBody: message.text_body,
+        htmlBody: message.html_body,
+        hints: input.hints,
+      })
+    } catch (err) {
+      if (err instanceof AiClientError) {
+        throw new InvalidMailboxError(`AI template generation failed: ${err.message}`)
+      }
+      throw err
+    }
+
+    const matchFromPattern = validateMatchFromPattern(aiOut.matchFromPattern)
+    const matchSubjectRegex = validateSubjectRegex(aiOut.matchSubjectRegex)
+    const extractors = parseSpendTemplateExtractors(aiOut.extractors)
+    if (!extractors) {
+      throw new InvalidMailboxError('AI returned invalid extractors')
+    }
+
+    const name = validateTemplateName(
+      input.name?.trim() || aiOut.nameSuggestion || 'Spending template',
+    )
+    const now = new Date().toISOString()
+
+    const row = await db
+      .insertInto('parsing_templates')
+      .values({
+        mailbox_id: message.mailbox_id,
+        user_id: userId,
+        name,
+        enabled: true,
+        match_from_pattern: matchFromPattern,
+        match_subject_regex: matchSubjectRegex,
+        extractors,
+        source_message_id: message.id,
+        version: 1,
+        created_at: now,
+        updated_at: now,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+    return mapParsingTemplate(row)
   },
 }
 
