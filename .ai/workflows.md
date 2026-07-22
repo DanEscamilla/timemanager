@@ -24,6 +24,9 @@ pnpm spendmanager           # nx serve spendmanager-api
 # mailbox email ingest (GraphQL :3003 + poll worker + auth + DB)
 pnpm mailbox                # nx run-many -t serve -p mailbox-api,mailbox-worker
 
+# internal AI gateway (REST :3004; backends only)
+pnpm ai                     # nx serve ai-api
+
 # Flutter clients — Run and Debug in the IDE
 # timemanager → Chrome :4444; spendmanager → Chrome :4445
 
@@ -37,11 +40,12 @@ nx serve timemanager-api    # deno task dev on :3000 (migrate → DB + user-mana
 nx serve spendmanager-api   # deno task dev on :3002 (migrate → DB + user-manager-api)
 nx serve mailbox-api        # deno task dev on :3003 (migrate → DB + user-manager-api)
 nx serve mailbox-worker     # poll / extract loop (depends on mailbox-api:migrate)
+nx serve ai-api             # deno task dev on :3004 (service key; no auth/DB deps)
 nx serve user-manager-web   # vite dev server
 nx serve user-manager-api   # express server
 ```
 
-`pnpm timemanager` starts GraphQL on `:3000`, SuperTokens on `:3001`, and Postgres. `pnpm spendmanager` starts GraphQL on `:3002` (same auth + DB stack). `pnpm mailbox` starts GraphQL on `:3003` plus the poll worker. Launch Flutter from the IDE (**spendmanager** / **timemanager**).
+`pnpm timemanager` starts GraphQL on `:3000`, SuperTokens on `:3001`, and Postgres. `pnpm spendmanager` starts GraphQL on `:3002` (same auth + DB stack). `pnpm mailbox` starts GraphQL on `:3003` plus the poll worker. `pnpm ai` starts the AI gateway on `:3004`. Launch Flutter from the IDE (**spendmanager** / **timemanager**).
 
 ## Database
 
@@ -185,6 +189,8 @@ nx serve timemanager-api    # confirm GraphQL responds on :3000 (requires Bearer
 nx serve spendmanager-api   # confirm GraphQL responds on :3002 (requires Bearer JWT)
 nx serve mailbox-api        # confirm GraphQL responds on :3003 (requires Bearer JWT)
 nx serve mailbox-worker     # confirm poll loop logs sync for fixture mailbox after seed
+nx serve ai-api             # confirm GET /health on :3004 (service key for /v1/*)
+nx test ai_kit && nx test ai-api
 nx serve user-manager-api   # :3001 SuperTokens SSO
 nx serve timemanager        # Flutter login → GraphQL with Authorization header
 nx serve spendmanager       # Chrome :4445 → categories/expenses CRUD

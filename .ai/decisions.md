@@ -42,6 +42,8 @@ These were explicitly deferred in the migration. Treat as future direction, not 
 - **`libs/push_notifications`** — Provider-agnostic push registration and message streams (`PushProvider` + `FirebasePushProvider`). Apps own when to register tokens with their product API. Full-stack use: spendmanager budget-threshold FCM via `device_tokens` + `budget_alert_sends` (server send; local alerts remain a fallback when no FCM token); timemanager registers `device_tokens` the same way while activity reminders stay local until a server scheduler exists.
 - **`libs/deno_api_kit`** — Deno Pylon/Kysely API infrastructure (JWKS + CORS, SSL helpers, Kysely factory, `resolveLocalUser`, migrate/ensure DB, health + GraphQL auth middleware, optional `push/` Firebase Admin sender). Consumed via Deno import map `"deno_api_kit/": "../../libs/deno_api_kit/"` and matching `tsconfig.json` `paths` (Pylon serves with Bun).
 - **`libs/mailbox_kit`** — Deno email ingest pipeline (`MailboxProvider`, domain filter, `Extractor` / `ExtractorPipeline`, `SpendingExtractor`, `ExpenseSink` interface). Used by `mailbox-api` / `mailbox-worker`; not coupled to spendmanager GraphQL types.
+- **`libs/ai_kit`** — Deno AI provider abstraction (`AiProvider`, `GeminiProvider`, `OpenAiCompatibleProvider`, env factory). Used by `ai-api`; use cases stay provider-agnostic so Gemini free tier can swap to a self-hosted OpenAI-compatible endpoint later.
+- **`apps/ai-api`** — Internal REST AI gateway (`:3004`) for backend callers only (shared `AI_SERVICE_KEY`). Not a product GraphQL API; no DB / JWKS in v1. Use cases are hand-registered in code.
 
 ## Cloud (AWS)
 

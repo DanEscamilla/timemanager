@@ -1,0 +1,14 @@
+{
+  "imports": {
+    "ai_kit/": "../../libs/ai_kit/"
+  },
+  "tasks": {
+    "dev": "deno run --allow-net --allow-env --allow-read --env-file=.env --watch src/main.ts",
+    "start": "deno run --allow-net --allow-env --allow-read --env-file=.env src/main.ts",
+    "test": "deno test --allow-env --allow-read --allow-net src"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true
+  }
+}

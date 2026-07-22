@@ -18,6 +18,7 @@ Each app owns its runtime and package manager. **Do not mix them.**
 | `libs/app_core` | **Flutter** | Flutter/Dart (path dep) | `pubspec.yaml` |
 | `libs/deno_api_kit` | **Deno** | Deno (import map) | `deno.json` |
 | `libs/mailbox_kit` | **Deno** | Deno (import map) | `deno.json` |
+| `libs/ai_kit` | **Deno** | Deno (import map) | `deno.json` |
 
 - pnpm is configured at the root (`pnpm-workspace.yaml`) for **Node apps only**. Node version is pinned in `.nvmrc` (20).
 - Deno APIs declare deps in `deno.json` `imports`; never introduce npm/pnpm/Bun tooling there.

@@ -1,6 +1,6 @@
 # Architecture
 
-This monorepo hosts product areas — **timemanager** and **spendmanager** (Flutter + GraphQL APIs), **mailbox** (email ingest GraphQL + worker), and **user-manager** (React web app + Express SuperTokens API) — plus dockerized infrastructure. SuperTokens (`user-manager-api`) is the shared SSO hub for Flutter and future apps.
+This monorepo hosts product areas — **timemanager** and **spendmanager** (Flutter + GraphQL APIs), **mailbox** (email ingest GraphQL + worker), **ai-api** (internal AI gateway for backends), and **user-manager** (React web app + Express SuperTokens API) — plus dockerized infrastructure. SuperTokens (`user-manager-api`) is the shared SSO hub for Flutter and future apps.
 
 ## System diagram
 
@@ -13,6 +13,7 @@ flowchart TB
     SMA["spendmanager-api (Deno + Pylon)"]
     MBA["mailbox-api (Deno + Pylon)"]
     MBW["mailbox-worker (Deno)"]
+    AIA["ai-api (Deno REST)"]
     UMW["user-manager-web (React + Vite)"]
     UMA["user-manager-api (Express + SuperTokens)"]
   end
@@ -20,6 +21,7 @@ flowchart TB
     DB["timemanager-db (Postgres :5432 / pgAdmin :8080)"]
     AUTH["authentik (unwired)"]
     STC["SuperTokens Core"]
+    GEM["Gemini free tier / future self-host"]
   end
   TM -->|"/auth signin / OAuth"| UMA
   TM -->|"GraphQL :3000 + Bearer JWT"| TMA
@@ -32,6 +34,7 @@ flowchart TB
   MBA -->|"verify JWT via JWKS"| UMA
   MBA -->|"Kysely / pg DB mailbox"| DB
   MBW -->|"poll extract write"| DB
+  AIA -->|"service key + use cases"| GEM
   UMW -->|"HTTP :3001"| UMA
   UMA --> STC
 ```
@@ -45,6 +48,8 @@ flowchart TB
 - **`apps/mailbox-api` (Deno + Pylon):** GraphQL API on `:3003` for mailboxes, optional domain filters, messages, extraction artifacts, and sync runs. Database name: `mailbox`. Independent from spendmanager; spending is one extractor kind (`spending.candidate`).
 - **`apps/mailbox-worker` (Deno):** Polls enabled mailboxes via `libs/mailbox_kit` providers (fixture / Gmail), applies domain filters, runs extractors, persists messages and artifacts.
 - **`libs/mailbox_kit` (Deno):** Shared `MailboxProvider`, domain filter, `Extractor` pipeline, `SpendingExtractor`, `ExpenseSink` interface (for a future spendmanager bridge).
+- **`apps/ai-api` (Deno):** Internal REST AI gateway on `:3004`. Backends call code-registered use cases with a shared service key. No Postgres; no SuperTokens. Providers via `libs/ai_kit` (`gemini` now, `openai_compatible` for self-host later).
+- **`libs/ai_kit` (Deno):** Shared `AiProvider` abstraction, `GeminiProvider`, `OpenAiCompatibleProvider`, env factory.
 - **`apps/user-manager-web` (React + Vite):** SuperTokens demo UI; routes `/`, `/auth`, `/dashboard`. Cookie-based sessions against `:3001`.
 - **`apps/user-manager-api` (Express):** Shared SuperTokens SSO backend on `:3001` (`/auth/*`). Brokers auth to SuperTokens Core; issues JWTs for Flutter and cookies for React.
 - **`infra/timemanager-db`:** Postgres 15 + pgAdmin via docker-compose; hosts `timemanager`, `spendmanager`, and `mailbox` databases. Init scripts create extra DBs on fresh volumes; API migrate also ensures each DB exists.
@@ -65,6 +70,7 @@ flowchart TB
 | `user-manager-api` | `:3001` |
 | `spendmanager-api` GraphQL | `:3002` |
 | `mailbox-api` GraphQL | `:3003` |
+| `ai-api` REST | `:3004` |
 | Postgres | `:5432` |
 | pgAdmin | `:8080` |
 | `timemanager` Flutter web | `:4444` |

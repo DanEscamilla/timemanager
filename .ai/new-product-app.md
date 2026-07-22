@@ -26,7 +26,7 @@ GraphQL codegen into `libs/` remains deferred — see [decisions.md](decisions.m
    - Matching `tsconfig.json` `paths` (Pylon serves with Bun, which does not read Deno's import map): `"deno_api_kit/*": ["../../libs/deno_api_kit/*"]` plus `"baseUrl": "."`.
    - Thin `database.ts` via `createKysely`, thin `users.ts` wrapping kit `resolveLocalUser`, thin `index.ts` with `cors` + `health` + `createGraphQLAuthMiddleware`.
    - Own schema types, migrations, seed, GraphQL resolvers/validation.
-   - Pick a free port (avoid `:3000` / `:3001` / `:3002` / `:3003`).
+   - Pick a free port (avoid `:3000` / `:3001` / `:3002` / `:3003` / `:3004`).
    - `.env.example` with `PGDATABASE=<name>`, `AUTH_API_DOMAIN`, `PORT`.
 3. **Flutter** `apps/<name>`:
    - Path-dep `design_system` + `app_core`.
@@ -52,6 +52,7 @@ GraphQL codegen into `libs/` remains deferred — see [decisions.md](decisions.m
 | user-manager (SuperTokens) | `:3001` |
 | spendmanager GraphQL | `:3002` |
 | mailbox GraphQL | `:3003` |
+| ai-api REST | `:3004` |
 | timemanager Flutter web | `:4444` |
 | spendmanager Flutter web | `:4445` |
 
