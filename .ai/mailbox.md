@@ -47,22 +47,28 @@ Pipeline order: enabled templates for the mailbox (first match wins), then heuri
 
 ## GraphQL (authenticated)
 
-- Mutations: `createMailbox`, `deleteMailbox`, `setDomainFilters`, `triggerSync`, `updateArtifactStatus`, `connectGmail`, `createParsingTemplate`, `updateParsingTemplate`, `deleteParsingTemplate`, `generateParsingTemplate`
-- Queries: `mailboxes`, `domainFilters`, `messages`, `extractionArtifacts`, `syncRuns`, `parsingTemplates`
+- Mutations: `createMailbox`, `updateMailbox`, `deleteMailbox`, `setDomainFilters`, `triggerSync`, `updateArtifactStatus`, `connectGmail`, `startGmailOAuth`, `createParsingTemplate`, `updateParsingTemplate`, `deleteParsingTemplate`, `generateParsingTemplate`
+- Queries: `mailboxes`, `domainFilters`, `messages`, `message`, `sourceMessageForExpense`, `extractionArtifacts`, `syncRuns`, `parsingTemplates`
 
 Accept spending candidates with `updateArtifactStatus` (`accepted` + `categoryId`). mailbox-api forwards the caller's Bearer JWT to spendmanager `createExpense` and stores `published_expense_id` for idempotency. Reject stays mailbox-only.
 
 ## Spendmanager Flutter UI
 
-Settings → **Email import**: connect fixture/Gmail, edit domain filters, sync, generate/edit templates, review pending candidates.
+Settings → **Email import**: connect fixture/Gmail, edit domain filters, sync, generate/edit templates, review pending candidates. Review and expense edit can open the **source email** (mailbox `message` / `sourceMessageForExpense`) to validate extracted fields.
 
 Local mailbox GraphQL: `MAILBOX_API_BASE_URL` (default `http://localhost:3003`).
 
 ## Gmail OAuth
 
-1. Google Cloud Console → OAuth client; enable Gmail API.
-2. Scopes: `https://www.googleapis.com/auth/gmail.readonly`.
-3. Set `GMAIL_OAUTH_CLIENT_ID` / `GMAIL_OAUTH_CLIENT_SECRET` on API and worker (token refresh).
-4. `createMailbox(provider: "gmail", …)` then `connectGmail` with access/refresh tokens (Flutter UI accepts pasted tokens).
+1. Google Cloud Console → enable Gmail API → create a **Web** OAuth client.
+2. Authorized redirect URI: `http://localhost:3003/oauth/gmail/callback` (or your deployed mailbox-api callback).
+3. Scope: `https://www.googleapis.com/auth/gmail.readonly`.
+4. Set on **mailbox-api** and **mailbox-worker**:
+   - `GMAIL_OAUTH_CLIENT_ID` / `GMAIL_OAUTH_CLIENT_SECRET` (code exchange + token refresh)
+   - `GMAIL_OAUTH_REDIRECT_URI` (must match the Google console redirect)
+   - `GMAIL_OAUTH_RETURN_TO_ALLOWLIST` (default `http://localhost:4445,spendmanager://settings/email-import`)
+5. In spendmanager: Settings → **Email import** → **Connect Gmail** → Google consent → return to Email import (`?gmail=connected`). mailbox-api stores tokens, sets the mailbox label to the Gmail address when available, and sets `sync_requested`.
+
+Flow: Flutter `createMailbox(provider: gmail)` → `startGmailOAuth` → browser consent → `GET /oauth/gmail/callback` exchanges the code and persists tokens. This is separate from SuperTokens Google login.
 
 Fixture provider needs no Google credentials.

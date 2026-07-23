@@ -40,7 +40,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "deno test --allow-env --allow-read src",
+        "command": "deno test --allow-env --allow-read --allow-sys src",
         "cwd": "apps/mailbox-api"
       }
     }

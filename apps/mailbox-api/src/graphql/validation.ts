@@ -1,12 +1,24 @@
+import { ServiceError } from '@getcronit/pylon'
+
 const PROVIDERS = new Set(['fixture', 'gmail'])
 const ARTIFACT_STATUSES = new Set(['pending', 'accepted', 'rejected'])
 
-export class InvalidMailboxError extends Error {
+/**
+ * Client-facing validation failure. Extends Pylon ServiceError (GraphQLError)
+ * so GraphQL Yoga does not mask the message as "Unexpected error."
+ */
+export class InvalidMailboxError extends ServiceError {
   constructor(message: string) {
-    super(message)
+    super(message, {
+      code: 'INVALID_MAILBOX_INPUT',
+      statusCode: 400,
+    })
     this.name = 'InvalidMailboxError'
   }
 }
+
+const FROM_PATTERN_HELP =
+  'Allowed patterns: shop.com, *.shop.com, user@shop.com, *@shop.com, *@*.shop.com'
 
 export function validateProvider(provider: string): string {
   const trimmed = provider.trim().toLowerCase()
@@ -40,9 +52,7 @@ export function validateDomainPatterns(patterns: string[]): string[] {
       throw new InvalidMailboxError('domain filter pattern is too long')
     }
     if (!isValidFromPattern(p)) {
-      throw new InvalidMailboxError(
-        `invalid domain filter pattern: ${raw}`,
-      )
+      throw new InvalidMailboxError(describeInvalidFromPattern(raw, 'domain filter'))
     }
     if (seen.has(p)) continue
     seen.add(p)
@@ -102,9 +112,62 @@ export function validateTemplateName(name: string): string {
 export function validateMatchFromPattern(pattern: string): string {
   const p = pattern.trim().toLowerCase()
   if (!isValidFromPattern(p)) {
-    throw new InvalidMailboxError(`invalid matchFromPattern: ${pattern}`)
+    throw new InvalidMailboxError(
+      describeInvalidFromPattern(pattern, 'matchFromPattern'),
+    )
   }
   return p
+}
+
+/**
+ * Explains why a from/domain pattern failed validation, with a fix hint when
+ * the mistake is recognizable (e.g. `*envio.shop.com` → `*.envio.shop.com`).
+ */
+export function describeInvalidFromPattern(
+  raw: string,
+  label: string,
+): string {
+  const p = raw.trim().toLowerCase()
+  const prefix = `invalid ${label} "${raw}"`
+
+  if (!p) {
+    return `${prefix}: pattern is empty. ${FROM_PATTERN_HELP}`
+  }
+
+  // `*envio.santander.com.mx` — wildcard missing the dot (or @).
+  if (p.startsWith('*') && !p.startsWith('*.') && !p.startsWith('*@')) {
+    const rest = p.slice(1)
+    if (rest.includes('.') && !rest.includes('*') && isValidDomainPattern(rest)) {
+      return (
+        `${prefix}: use "*.${rest}" for subdomains of ${rest}, ` +
+        `or "${rest}" for that domain and its subdomains. ${FROM_PATTERN_HELP}`
+      )
+    }
+    return (
+      `${prefix}: wildcard must be "*.domain.tld" or "*@domain.tld". ` +
+      FROM_PATTERN_HELP
+    )
+  }
+
+  // `*.com` / `*@*` — needs a multi-part domain.
+  if (
+    (p.startsWith('*.') && !p.slice(2).includes('.')) ||
+    (p.includes('@') && p.endsWith('@*'))
+  ) {
+    return (
+      `${prefix}: wildcard needs a multi-part domain ` +
+      `(e.g. "*.shop.com"), not a bare TLD. ${FROM_PATTERN_HELP}`
+    )
+  }
+
+  if (!p.includes('.') && !p.includes('@')) {
+    return (
+      `${prefix}: must include a domain with a dot (e.g. "shop.com"). ` +
+      FROM_PATTERN_HELP
+    )
+  }
+
+  return `${prefix}. ${FROM_PATTERN_HELP}`
 }
 
 export function validateSubjectRegex(

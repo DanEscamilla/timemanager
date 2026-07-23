@@ -83,6 +83,11 @@ export const typeDefs = gql`
     oauthTokensJson: String
   }
 
+  input UpdateMailboxInput {
+    id: Int!
+    label: String!
+  }
+
   input SetDomainFiltersInput {
     mailboxId: Int!
     patterns: [String!]!
@@ -99,6 +104,15 @@ export const typeDefs = gql`
     accessToken: String!
     refreshToken: String
     expiresAtMs: Float
+  }
+
+  input StartGmailOAuthInput {
+    mailboxId: Int!
+    returnTo: String!
+  }
+
+  type StartGmailOAuthPayload {
+    authorizationUrl: String!
   }
 
   input CreateParsingTemplateInput {
@@ -130,6 +144,8 @@ export const typeDefs = gql`
     mailboxes: [Mailbox!]!
     domainFilters(mailboxId: Int!): [DomainFilter!]!
     messages(mailboxId: Int!): [Message!]!
+    message(id: Int!): Message
+    sourceMessageForExpense(expenseId: Int!): Message
     extractionArtifacts(mailboxId: Int, status: String): [ExtractionArtifact!]!
     syncRuns(mailboxId: Int!): [SyncRun!]!
     parsingTemplates(mailboxId: Int!): [ParsingTemplate!]!
@@ -137,11 +153,13 @@ export const typeDefs = gql`
 
   type Mutation {
     createMailbox(input: CreateMailboxInput!): Mailbox!
+    updateMailbox(input: UpdateMailboxInput!): Mailbox!
     deleteMailbox(id: Int!): Boolean!
     setDomainFilters(input: SetDomainFiltersInput!): [DomainFilter!]!
     triggerSync(mailboxId: Int!): Mailbox!
     updateArtifactStatus(input: UpdateArtifactStatusInput!): ExtractionArtifact!
     connectGmail(input: ConnectGmailInput!): Mailbox!
+    startGmailOAuth(input: StartGmailOAuthInput!): StartGmailOAuthPayload!
     createParsingTemplate(input: CreateParsingTemplateInput!): ParsingTemplate!
     updateParsingTemplate(input: UpdateParsingTemplateInput!): ParsingTemplate!
     deleteParsingTemplate(id: Int!): Boolean!

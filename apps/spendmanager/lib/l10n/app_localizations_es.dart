@@ -442,14 +442,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get emailImportGmailLabel => 'Gmail';
 
   @override
-  String get emailImportGmailTokenHint =>
-      'Pega tokens OAuth con alcance gmail.readonly (desde Google Cloud OAuth).';
+  String get emailImportGmailConnected =>
+      'Gmail conectado. Sincroniza para importar mensajes.';
 
   @override
-  String get emailImportAccessToken => 'Access token';
+  String emailImportGmailFailed(String detail) {
+    return 'Falló la conexión con Gmail: $detail';
+  }
 
   @override
-  String get emailImportRefreshToken => 'Refresh token (opcional)';
+  String get emailImportGmailFailedGeneric =>
+      'Falló la conexión con Gmail. Inténtalo de nuevo.';
+
+  @override
+  String get emailImportGmailLaunchFailed =>
+      'No se pudo abrir el inicio de sesión de Google.';
 
   @override
   String get emailImportCancel => 'Cancelar';
@@ -465,11 +472,31 @@ class AppLocalizationsEs extends AppLocalizations {
   String get emailImportMailbox => 'Buzón';
 
   @override
+  String get emailImportRenameMailbox => 'Renombrar buzón';
+
+  @override
+  String get emailImportRenameMailboxTitle => 'Renombrar buzón';
+
+  @override
+  String get emailImportMailboxName => 'Nombre';
+
+  @override
+  String get emailImportDeleteMailbox => 'Eliminar buzón';
+
+  @override
+  String get emailImportDeleteMailboxTitle => '¿Eliminar buzón?';
+
+  @override
+  String emailImportDeleteMailboxConfirm(String label) {
+    return '¿Quitar \"$label\"? Se eliminarán los mensajes, filtros y plantillas sincronizados de este buzón.';
+  }
+
+  @override
   String get emailImportDomainFilters => 'Lista de dominios remitentes';
 
   @override
   String get emailImportDomainFiltersHint =>
-      'Un patrón por línea, p. ej. amazon.com, *.uber.com, *@shop.com';
+      'Un patrón por línea. Ejemplos: amazon.com, *.uber.com, *@shop.com (el comodín necesita *.).';
 
   @override
   String get emailImportNoFilters => 'Sin filtros (todos los remitentes)';
@@ -492,8 +519,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get emailImportGenerateTemplate => 'Generar plantilla con IA';
 
   @override
+  String get emailImportGeneratingTemplate =>
+      'Generando plantilla… Esto puede tardar un momento.';
+
+  @override
   String get emailImportTemplateGenerated =>
       'Plantilla generada. Puedes editarla en la pestaña Plantillas.';
+
+  @override
+  String get emailImportTemplateGenerationFailed =>
+      'No se pudo generar la plantilla. Inténtalo de nuevo.';
 
   @override
   String get emailImportNoTemplates =>
@@ -532,4 +567,21 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get emailImportNeedCategory =>
       'Crea una categoría antes de aceptar gastos.';
+
+  @override
+  String get emailImportViewEmail => 'Ver email';
+
+  @override
+  String get sourceEmailTitle => 'Email de origen';
+
+  @override
+  String get sourceEmailBodyMissing =>
+      'No se guardó el cuerpo de este mensaje.';
+
+  @override
+  String get sourceEmailNotFound =>
+      'No hay un email de origen vinculado a este gasto.';
+
+  @override
+  String get sourceEmailLoadFailed => 'No se pudo cargar el email de origen.';
 }

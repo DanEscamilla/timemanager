@@ -25,8 +25,9 @@ Copy `.env.example` → `.env` for local defaults.
 
 ## Gmail OAuth
 
-1. Create a Google Cloud OAuth client (Desktop or Web).
-2. Set `GMAIL_OAUTH_CLIENT_ID` / `GMAIL_OAUTH_CLIENT_SECRET` in `.env` (used by the worker for token refresh).
-3. Create a mailbox with `provider: "gmail"`, then call `connectGmail` with access/refresh tokens (scopes: `https://www.googleapis.com/auth/gmail.readonly`).
+1. Create a Google Cloud **Web** OAuth client; enable Gmail API.
+2. Authorized redirect URI: `http://localhost:3003/oauth/gmail/callback`.
+3. Set `GMAIL_OAUTH_CLIENT_ID` / `GMAIL_OAUTH_CLIENT_SECRET` / `GMAIL_OAUTH_REDIRECT_URI` in `.env` (API exchanges the auth code; worker refreshes tokens). Optional: `GMAIL_OAUTH_RETURN_TO_ALLOWLIST`.
+4. From spendmanager Email import, use **Connect Gmail** (GraphQL `startGmailOAuth` → browser consent → `GET /oauth/gmail/callback`). Scope: `https://www.googleapis.com/auth/gmail.readonly`.
 
 Fixture provider needs no OAuth — use `provider: "fixture"` for local demos.

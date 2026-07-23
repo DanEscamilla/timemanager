@@ -3,6 +3,9 @@ import '../models/mailbox.dart';
 import 'graphql_client.dart';
 
 /// GraphQL client for mailbox-api (`:3003`), separate from spendmanager-api.
+///
+/// mailbox-api Pylon schema uses flat field args (`input:`, `mailboxId:`, …),
+/// not the `args: { … }` wrapper used by spendmanager-api.
 class MailboxRepository {
   MailboxRepository({GraphQLClient? client})
       : _client = client ??
@@ -33,7 +36,7 @@ class MailboxRepository {
   }) async {
     final data = await _client.mutate('''
       mutation CreateMailbox(\$input: CreateMailboxInputInput!) {
-        createMailbox(args: { input: \$input }) {
+        createMailbox(input: \$input) {
           id user_id provider label enabled sync_cursor sync_requested
           last_synced_at created_at updated_at
         }
@@ -51,10 +54,32 @@ class MailboxRepository {
     );
   }
 
+  Future<MailboxAccount> updateMailbox({
+    required int id,
+    required String label,
+  }) async {
+    final data = await _client.mutate('''
+      mutation UpdateMailbox(\$input: UpdateMailboxInputInput!) {
+        updateMailbox(input: \$input) {
+          id user_id provider label enabled sync_cursor sync_requested
+          last_synced_at created_at updated_at
+        }
+      }
+    ''', variables: {
+      'input': {
+        'id': id,
+        'label': label,
+      },
+    });
+    return MailboxAccount.fromJson(
+      data['updateMailbox'] as Map<String, dynamic>,
+    );
+  }
+
   Future<bool> deleteMailbox(int id) async {
     final data = await _client.mutate('''
       mutation DeleteMailbox(\$id: Number!) {
-        deleteMailbox(args: { id: \$id })
+        deleteMailbox(id: \$id)
       }
     ''', variables: {'id': id});
     return data['deleteMailbox'] as bool? ?? false;
@@ -63,7 +88,7 @@ class MailboxRepository {
   Future<List<DomainFilter>> fetchDomainFilters(int mailboxId) async {
     final data = await _client.query('''
       query DomainFilters(\$mailboxId: Number!) {
-        domainFilters(args: { mailboxId: \$mailboxId }) {
+        domainFilters(mailboxId: \$mailboxId) {
           id mailbox_id pattern created_at
         }
       }
@@ -80,7 +105,7 @@ class MailboxRepository {
   }) async {
     final data = await _client.mutate('''
       mutation SetDomainFilters(\$input: SetDomainFiltersInputInput!) {
-        setDomainFilters(args: { input: \$input }) {
+        setDomainFilters(input: \$input) {
           id mailbox_id pattern created_at
         }
       }
@@ -99,7 +124,7 @@ class MailboxRepository {
   Future<MailboxAccount> triggerSync(int mailboxId) async {
     final data = await _client.mutate('''
       mutation TriggerSync(\$mailboxId: Number!) {
-        triggerSync(args: { mailboxId: \$mailboxId }) {
+        triggerSync(mailboxId: \$mailboxId) {
           id user_id provider label enabled sync_cursor sync_requested
           last_synced_at created_at updated_at
         }
@@ -118,7 +143,7 @@ class MailboxRepository {
   }) async {
     final data = await _client.mutate('''
       mutation ConnectGmail(\$input: ConnectGmailInputInput!) {
-        connectGmail(args: { input: \$input }) {
+        connectGmail(input: \$input) {
           id user_id provider label enabled sync_cursor sync_requested
           last_synced_at created_at updated_at
         }
@@ -136,10 +161,35 @@ class MailboxRepository {
     );
   }
 
+  /// Returns Google's authorize URL; mailbox-api completes the code exchange.
+  Future<String> startGmailOAuth({
+    required int mailboxId,
+    required String returnTo,
+  }) async {
+    final data = await _client.mutate('''
+      mutation StartGmailOAuth(\$input: StartGmailOAuthInputInput!) {
+        startGmailOAuth(input: \$input) {
+          authorizationUrl
+        }
+      }
+    ''', variables: {
+      'input': {
+        'mailboxId': mailboxId,
+        'returnTo': returnTo,
+      },
+    });
+    final payload = data['startGmailOAuth'] as Map<String, dynamic>?;
+    final url = payload?['authorizationUrl'] as String?;
+    if (url == null || url.isEmpty) {
+      throw GraphQLException('startGmailOAuth missing authorizationUrl');
+    }
+    return url;
+  }
+
   Future<List<MailboxMessage>> fetchMessages(int mailboxId) async {
     final data = await _client.query('''
       query Messages(\$mailboxId: Number!) {
-        messages(args: { mailboxId: \$mailboxId }) {
+        messages(mailboxId: \$mailboxId) {
           id mailbox_id provider_message_id rfc_message_id from_address
           subject received_at text_body html_body created_at
         }
@@ -151,13 +201,41 @@ class MailboxRepository {
         .toList();
   }
 
+  Future<MailboxMessage?> fetchMessage(int id) async {
+    final data = await _client.query('''
+      query Message(\$id: Number!) {
+        message(id: \$id) {
+          id mailbox_id provider_message_id rfc_message_id from_address
+          subject received_at text_body html_body created_at
+        }
+      }
+    ''', variables: {'id': id});
+    final raw = data['message'];
+    if (raw == null) return null;
+    return MailboxMessage.fromJson(raw as Map<String, dynamic>);
+  }
+
+  Future<MailboxMessage?> fetchSourceMessageForExpense(int expenseId) async {
+    final data = await _client.query('''
+      query SourceMessageForExpense(\$expenseId: Number!) {
+        sourceMessageForExpense(expenseId: \$expenseId) {
+          id mailbox_id provider_message_id rfc_message_id from_address
+          subject received_at text_body html_body created_at
+        }
+      }
+    ''', variables: {'expenseId': expenseId});
+    final raw = data['sourceMessageForExpense'];
+    if (raw == null) return null;
+    return MailboxMessage.fromJson(raw as Map<String, dynamic>);
+  }
+
   Future<List<ExtractionArtifact>> fetchArtifacts({
     int? mailboxId,
     String? status,
   }) async {
     final data = await _client.query('''
       query Artifacts(\$mailboxId: Number, \$status: String) {
-        extractionArtifacts(args: { mailboxId: \$mailboxId, status: \$status }) {
+        extractionArtifacts(mailboxId: \$mailboxId, status: \$status) {
           id message_id kind payload confidence status
           published_expense_id created_at updated_at
         }
@@ -179,7 +257,7 @@ class MailboxRepository {
   }) async {
     final data = await _client.mutate('''
       mutation UpdateArtifact(\$input: UpdateArtifactStatusInputInput!) {
-        updateArtifactStatus(args: { input: \$input }) {
+        updateArtifactStatus(input: \$input) {
           id message_id kind payload confidence status
           published_expense_id created_at updated_at
         }
@@ -199,7 +277,7 @@ class MailboxRepository {
   Future<List<ParsingTemplate>> fetchTemplates(int mailboxId) async {
     final data = await _client.query('''
       query Templates(\$mailboxId: Number!) {
-        parsingTemplates(args: { mailboxId: \$mailboxId }) {
+        parsingTemplates(mailboxId: \$mailboxId) {
           id mailbox_id user_id name enabled match_from_pattern
           match_subject_regex extractors source_message_id version
           created_at updated_at
@@ -219,7 +297,7 @@ class MailboxRepository {
   }) async {
     final data = await _client.mutate('''
       mutation GenerateTemplate(\$input: GenerateParsingTemplateInputInput!) {
-        generateParsingTemplate(args: { input: \$input }) {
+        generateParsingTemplate(input: \$input) {
           id mailbox_id user_id name enabled match_from_pattern
           match_subject_regex extractors source_message_id version
           created_at updated_at
@@ -247,7 +325,7 @@ class MailboxRepository {
   }) async {
     final data = await _client.mutate('''
       mutation UpdateTemplate(\$input: UpdateParsingTemplateInputInput!) {
-        updateParsingTemplate(args: { input: \$input }) {
+        updateParsingTemplate(input: \$input) {
           id mailbox_id user_id name enabled match_from_pattern
           match_subject_regex extractors source_message_id version
           created_at updated_at
@@ -271,7 +349,7 @@ class MailboxRepository {
   Future<bool> deleteTemplate(int id) async {
     final data = await _client.mutate('''
       mutation DeleteTemplate(\$id: Number!) {
-        deleteParsingTemplate(args: { id: \$id })
+        deleteParsingTemplate(id: \$id)
       }
     ''', variables: {'id': id});
     return data['deleteParsingTemplate'] as bool? ?? false;

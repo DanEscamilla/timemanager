@@ -7,6 +7,7 @@ import '../models/expense.dart';
 import '../services/category_repository.dart';
 import '../services/expense_repository.dart';
 import '../services/graphql_client.dart';
+import '../services/mailbox_repository.dart';
 import '../utils/money.dart';
 import 'expense_form_screen.dart';
 
@@ -15,11 +16,13 @@ class ExpensesScreen extends StatefulWidget {
     super.key,
     required this.expenseRepository,
     required this.categoryRepository,
+    this.mailboxRepository,
     this.onChanged,
   });
 
   final ExpenseRepository expenseRepository;
   final CategoryRepository categoryRepository;
+  final MailboxRepository? mailboxRepository;
   final VoidCallback? onChanged;
 
   @override
@@ -58,6 +61,7 @@ class ExpensesScreenState extends State<ExpensesScreen> {
         builder: (_) => ExpenseFormScreen(
           expenseRepository: widget.expenseRepository,
           categoryRepository: widget.categoryRepository,
+          mailboxRepository: widget.mailboxRepository,
           expense: expense,
         ),
       ),

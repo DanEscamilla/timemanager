@@ -8,6 +8,11 @@ export interface CreateMailboxInput {
   oauthTokensJson?: string | null
 }
 
+export interface UpdateMailboxInput {
+  id: number
+  label: string
+}
+
 export interface SetDomainFiltersInput {
   mailboxId: number
   patterns: string[]
@@ -25,6 +30,12 @@ export interface ConnectGmailInput {
   accessToken: string
   refreshToken?: string | null
   expiresAtMs?: number | null
+}
+
+export interface StartGmailOAuthInput {
+  mailboxId: number
+  /** Flutter Email import URL to redirect to after Google consent. */
+  returnTo: string
 }
 
 export interface CreateParsingTemplateInput {

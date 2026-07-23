@@ -890,23 +890,29 @@ abstract class AppLocalizations {
   /// **'Gmail'**
   String get emailImportGmailLabel;
 
-  /// No description provided for @emailImportGmailTokenHint.
+  /// No description provided for @emailImportGmailConnected.
   ///
   /// In en, this message translates to:
-  /// **'Paste OAuth tokens with gmail.readonly scope (from Google Cloud OAuth).'**
-  String get emailImportGmailTokenHint;
+  /// **'Gmail connected. Sync to import messages.'**
+  String get emailImportGmailConnected;
 
-  /// No description provided for @emailImportAccessToken.
+  /// No description provided for @emailImportGmailFailed.
   ///
   /// In en, this message translates to:
-  /// **'Access token'**
-  String get emailImportAccessToken;
+  /// **'Gmail connection failed: {detail}'**
+  String emailImportGmailFailed(String detail);
 
-  /// No description provided for @emailImportRefreshToken.
+  /// No description provided for @emailImportGmailFailedGeneric.
   ///
   /// In en, this message translates to:
-  /// **'Refresh token (optional)'**
-  String get emailImportRefreshToken;
+  /// **'Gmail connection failed. Try again.'**
+  String get emailImportGmailFailedGeneric;
+
+  /// No description provided for @emailImportGmailLaunchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open Google sign-in.'**
+  String get emailImportGmailLaunchFailed;
 
   /// No description provided for @emailImportCancel.
   ///
@@ -932,6 +938,42 @@ abstract class AppLocalizations {
   /// **'Mailbox'**
   String get emailImportMailbox;
 
+  /// No description provided for @emailImportRenameMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename mailbox'**
+  String get emailImportRenameMailbox;
+
+  /// No description provided for @emailImportRenameMailboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename mailbox'**
+  String get emailImportRenameMailboxTitle;
+
+  /// No description provided for @emailImportMailboxName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get emailImportMailboxName;
+
+  /// No description provided for @emailImportDeleteMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete mailbox'**
+  String get emailImportDeleteMailbox;
+
+  /// No description provided for @emailImportDeleteMailboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete mailbox?'**
+  String get emailImportDeleteMailboxTitle;
+
+  /// No description provided for @emailImportDeleteMailboxConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{label}\"? Synced messages, filters, and templates for this mailbox will be deleted.'**
+  String emailImportDeleteMailboxConfirm(String label);
+
   /// No description provided for @emailImportDomainFilters.
   ///
   /// In en, this message translates to:
@@ -941,7 +983,7 @@ abstract class AppLocalizations {
   /// No description provided for @emailImportDomainFiltersHint.
   ///
   /// In en, this message translates to:
-  /// **'One pattern per line, e.g. amazon.com, *.uber.com, *@shop.com'**
+  /// **'One pattern per line. Examples: amazon.com, *.uber.com, *@shop.com (wildcard needs *.).'**
   String get emailImportDomainFiltersHint;
 
   /// No description provided for @emailImportNoFilters.
@@ -980,11 +1022,23 @@ abstract class AppLocalizations {
   /// **'Generate template with AI'**
   String get emailImportGenerateTemplate;
 
+  /// No description provided for @emailImportGeneratingTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating template… This can take a moment.'**
+  String get emailImportGeneratingTemplate;
+
   /// No description provided for @emailImportTemplateGenerated.
   ///
   /// In en, this message translates to:
   /// **'Template generated. You can edit it on the Templates tab.'**
   String get emailImportTemplateGenerated;
+
+  /// No description provided for @emailImportTemplateGenerationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Template generation failed. Please try again.'**
+  String get emailImportTemplateGenerationFailed;
 
   /// No description provided for @emailImportNoTemplates.
   ///
@@ -1057,6 +1111,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create a category before accepting expenses.'**
   String get emailImportNeedCategory;
+
+  /// No description provided for @emailImportViewEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'View email'**
+  String get emailImportViewEmail;
+
+  /// No description provided for @sourceEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Source email'**
+  String get sourceEmailTitle;
+
+  /// No description provided for @sourceEmailBodyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No email body was stored for this message.'**
+  String get sourceEmailBodyMissing;
+
+  /// No description provided for @sourceEmailNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No source email is linked to this expense.'**
+  String get sourceEmailNotFound;
+
+  /// No description provided for @sourceEmailLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the source email.'**
+  String get sourceEmailLoadFailed;
 }
 
 class _AppLocalizationsDelegate

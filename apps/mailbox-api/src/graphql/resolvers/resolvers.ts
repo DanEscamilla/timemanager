@@ -11,9 +11,22 @@ import {
   generateEmailSpendTemplate,
 } from '../../services/ai_client.ts'
 import {
+  createKyselyMessageLookupStore,
+  findOwnedMessage,
+  findSourceMessageForExpense,
+} from '../../services/message_lookups.ts'
+import {
   SpendmanagerSinkError,
   publishExpenseToSpendmanager,
 } from '../../services/spendmanager_expense_sink.ts'
+import {
+  GmailOAuthError,
+  buildGoogleAuthorizeUrl,
+  fetchGmailEmailAddress,
+  isReturnToAllowed,
+  loadGmailOAuthConfig,
+  signOAuthState,
+} from '../../services/gmail_oauth.ts'
 import { asIsoTimestamp, asIsoTimestampOrNull } from '../timestamps.ts'
 import type {
   ConnectGmailInput,
@@ -21,7 +34,9 @@ import type {
   CreateParsingTemplateInput,
   GenerateParsingTemplateInput,
   SetDomainFiltersInput,
+  StartGmailOAuthInput,
   UpdateArtifactStatusInput,
+  UpdateMailboxInput,
   UpdateParsingTemplateInput,
 } from '../types.ts'
 import {
@@ -122,6 +137,10 @@ export interface ParsingTemplate {
   version: number
   created_at: string
   updated_at: string
+}
+
+export interface StartGmailOAuthPayload {
+  authorizationUrl: string
 }
 
 function mapMailbox(row: {
@@ -360,6 +379,20 @@ const Query = {
     return rows.map(mapMessage)
   },
 
+  async message(id: number): Promise<Message | null> {
+    const userId = requireUserId()
+    return await findOwnedMessage(createKyselyMessageLookupStore(db), userId, id)
+  },
+
+  async sourceMessageForExpense(expenseId: number): Promise<Message | null> {
+    const userId = requireUserId()
+    return await findSourceMessageForExpense(
+      createKyselyMessageLookupStore(db),
+      userId,
+      expenseId,
+    )
+  },
+
   async extractionArtifacts(
     mailboxId?: number | null,
     status?: string | null,
@@ -451,6 +484,21 @@ const Mutation = {
     }
 
     return mapMailbox(mailbox)
+  },
+
+  async updateMailbox(input: UpdateMailboxInput): Promise<Mailbox> {
+    const userId = requireUserId()
+    await requireOwnedMailbox(userId, input.id)
+    const label = validateLabel(input.label)
+    const now = new Date().toISOString()
+    const row = await db
+      .updateTable('mailboxes')
+      .set({ label, updated_at: now })
+      .where('id', '=', input.id)
+      .where('user_id', '=', userId)
+      .returningAll()
+      .executeTakeFirstOrThrow()
+    return mapMailbox(row)
   },
 
   async deleteMailbox(id: number): Promise<boolean> {
@@ -617,16 +665,19 @@ const Mutation = {
       throw new InvalidMailboxError('accessToken is required')
     }
 
+    const accessToken = input.accessToken.trim()
     const tokens = {
-      accessToken: input.accessToken.trim(),
+      accessToken,
       refreshToken: input.refreshToken ?? null,
       expiresAtMs: input.expiresAtMs ?? null,
     }
+    const email = await fetchGmailEmailAddress({ accessToken })
     const now = new Date().toISOString()
     const row = await db
       .updateTable('mailboxes')
       .set({
         oauth_tokens_json: JSON.stringify(tokens),
+        ...(email ? { label: email } : {}),
         sync_requested: true,
         updated_at: now,
       })
@@ -634,6 +685,46 @@ const Mutation = {
       .returningAll()
       .executeTakeFirstOrThrow()
     return mapMailbox(row)
+  },
+
+  async startGmailOAuth(
+    input: StartGmailOAuthInput,
+  ): Promise<StartGmailOAuthPayload> {
+    const userId = requireUserId()
+    const mailbox = await requireOwnedMailbox(userId, input.mailboxId)
+    if (mailbox.provider !== 'gmail') {
+      throw new InvalidMailboxError('mailbox provider is not gmail')
+    }
+
+    const returnTo = input.returnTo?.trim() ?? ''
+    if (!returnTo) {
+      throw new InvalidMailboxError('returnTo is required')
+    }
+
+    let config
+    try {
+      config = loadGmailOAuthConfig()
+    } catch (err) {
+      if (err instanceof GmailOAuthError) {
+        throw new InvalidMailboxError(err.message)
+      }
+      throw err
+    }
+
+    if (!isReturnToAllowed(returnTo, config.returnToAllowlist)) {
+      throw new InvalidMailboxError('returnTo is not allowed')
+    }
+
+    const state = await signOAuthState(
+      { userId, mailboxId: mailbox.id, returnTo },
+      config.clientSecret,
+    )
+    const authorizationUrl = buildGoogleAuthorizeUrl({
+      clientId: config.clientId,
+      redirectUri: config.redirectUri,
+      state,
+    })
+    return { authorizationUrl }
   },
 
   async createParsingTemplate(
@@ -762,6 +853,16 @@ const Mutation = {
       )
     }
 
+    const genericFailMessage = 'Template generation failed. Please try again.'
+    const failTemplateGeneration = (reason: string, details?: unknown): never => {
+      console.error(
+        '[mailbox-api] template generation failed:',
+        reason,
+        details ?? '',
+      )
+      throw new InvalidMailboxError(genericFailMessage)
+    }
+
     let aiOut
     try {
       aiOut = await generateEmailSpendTemplate({
@@ -773,16 +874,40 @@ const Mutation = {
       })
     } catch (err) {
       if (err instanceof AiClientError) {
-        throw new InvalidMailboxError(`AI template generation failed: ${err.message}`)
+        failTemplateGeneration(err.message, { messageId: message.id })
       }
       throw err
     }
 
-    const matchFromPattern = validateMatchFromPattern(aiOut.matchFromPattern)
-    const matchSubjectRegex = validateSubjectRegex(aiOut.matchSubjectRegex)
-    const extractors = parseSpendTemplateExtractors(aiOut.extractors)
-    if (!extractors) {
-      throw new InvalidMailboxError('AI returned invalid extractors')
+    let matchFromPattern: string
+    let matchSubjectRegex: string | null
+    let extractors: NonNullable<ReturnType<typeof parseSpendTemplateExtractors>>
+    try {
+      matchFromPattern = validateMatchFromPattern(aiOut.matchFromPattern)
+      matchSubjectRegex = validateSubjectRegex(aiOut.matchSubjectRegex)
+      const parsed = parseSpendTemplateExtractors(aiOut.extractors)
+      if (!parsed) {
+        failTemplateGeneration('AI returned invalid extractors', {
+          messageId: message.id,
+          extractors: aiOut.extractors,
+        })
+      }
+      extractors = parsed
+    } catch (err) {
+      if (
+        err instanceof InvalidMailboxError &&
+        err.message === genericFailMessage
+      ) {
+        throw err
+      }
+      if (err instanceof InvalidMailboxError) {
+        failTemplateGeneration(err.message, {
+          messageId: message.id,
+          matchFromPattern: aiOut.matchFromPattern,
+          matchSubjectRegex: aiOut.matchSubjectRegex,
+        })
+      }
+      throw err
     }
 
     const name = validateTemplateName(

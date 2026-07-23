@@ -7,6 +7,7 @@
     "npm:@getcronit/pylon@latest": "2.9.6_@opentelemetry+api@1.9.1_@opentelemetry+context-async-hooks@1.30.1__@opentelemetry+api@1.9.1_@opentelemetry+core@1.30.1__@opentelemetry+api@1.9.1_@opentelemetry+instrumentation@0.57.2__@opentelemetry+api@1.9.1_@opentelemetry+sdk-trace-base@1.30.1__@opentelemetry+api@1.9.1_@opentelemetry+semantic-conventions@1.43.0",
     "npm:@types/pg@^8.10.9": "8.20.0",
     "npm:graphql-tag@^2.12.6": "2.12.7_graphql@16.14.2",
+    "npm:graphql@*": "16.14.2",
     "npm:jose@^5.9.6": "5.10.0",
     "npm:kysely@~0.26.3": "0.26.3",
     "npm:kysely@~0.28.1": "0.28.17",

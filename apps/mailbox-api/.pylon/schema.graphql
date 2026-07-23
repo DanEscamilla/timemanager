@@ -5,6 +5,10 @@ input CreateMailboxInputInput {
 	domainFilters: [String!]
 	oauthTokensJson: String
 }
+input UpdateMailboxInputInput {
+	id: Number!
+	label: String!
+}
 input SetDomainFiltersInputInput {
 	mailboxId: Number!
 	patterns: [String!]!
@@ -19,6 +23,10 @@ input ConnectGmailInputInput {
 	accessToken: String!
 	refreshToken: String
 	expiresAtMs: Number
+}
+input StartGmailOAuthInputInput {
+	mailboxId: Number!
+	returnTo: String!
 }
 input CreateParsingTemplateInputInput {
 	mailboxId: Number!
@@ -46,6 +54,8 @@ type Query {
 mailboxes: [Mailbox!]!
 domainFilters(mailboxId: Number!): [DomainFilter!]!
 messages(mailboxId: Number!): [Message!]!
+message(id: Number!): Message
+sourceMessageForExpense(expenseId: Number!): Message
 extractionArtifacts(mailboxId: Number, status: String): [ExtractionArtifact!]!
 syncRuns(mailboxId: Number!): [SyncRun!]!
 parsingTemplates(mailboxId: Number!): [ParsingTemplate!]!
@@ -116,15 +126,20 @@ updated_at: String!
 }
 type Mutation {
 createMailbox(input: CreateMailboxInputInput!): Mailbox!
+updateMailbox(input: UpdateMailboxInputInput!): Mailbox!
 deleteMailbox(id: Number!): Boolean!
 setDomainFilters(input: SetDomainFiltersInputInput!): [DomainFilter!]!
 triggerSync(mailboxId: Number!): Mailbox!
 updateArtifactStatus(input: UpdateArtifactStatusInputInput!): ExtractionArtifact!
 connectGmail(input: ConnectGmailInputInput!): Mailbox!
+startGmailOAuth(input: StartGmailOAuthInputInput!): StartGmailOAuthPayload!
 createParsingTemplate(input: CreateParsingTemplateInputInput!): ParsingTemplate!
 updateParsingTemplate(input: UpdateParsingTemplateInputInput!): ParsingTemplate!
 deleteParsingTemplate(id: Number!): Boolean!
 generateParsingTemplate(input: GenerateParsingTemplateInputInput!): ParsingTemplate!
+}
+type StartGmailOAuthPayload {
+authorizationUrl: String!
 }
 scalar ID
 scalar Int

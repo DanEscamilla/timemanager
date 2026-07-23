@@ -145,22 +145,45 @@
   "emailImportConnectGmail": "Conectar Gmail",
   "emailImportFixtureLabel": "Buzón demo",
   "emailImportGmailLabel": "Gmail",
-  "emailImportGmailTokenHint": "Pega tokens OAuth con alcance gmail.readonly (desde Google Cloud OAuth).",
-  "emailImportAccessToken": "Access token",
-  "emailImportRefreshToken": "Refresh token (opcional)",
+  "emailImportGmailConnected": "Gmail conectado. Sincroniza para importar mensajes.",
+  "emailImportGmailFailed": "Falló la conexión con Gmail: {detail}",
+  "@emailImportGmailFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "emailImportGmailFailedGeneric": "Falló la conexión con Gmail. Inténtalo de nuevo.",
+  "emailImportGmailLaunchFailed": "No se pudo abrir el inicio de sesión de Google.",
   "emailImportCancel": "Cancelar",
   "emailImportSave": "Guardar",
   "emailImportNoMailbox": "Aún no hay buzón. Añade uno demo o conecta Gmail.",
   "emailImportMailbox": "Buzón",
+  "emailImportRenameMailbox": "Renombrar buzón",
+  "emailImportRenameMailboxTitle": "Renombrar buzón",
+  "emailImportMailboxName": "Nombre",
+  "emailImportDeleteMailbox": "Eliminar buzón",
+  "emailImportDeleteMailboxTitle": "¿Eliminar buzón?",
+  "emailImportDeleteMailboxConfirm": "¿Quitar \"{label}\"? Se eliminarán los mensajes, filtros y plantillas sincronizados de este buzón.",
+  "@emailImportDeleteMailboxConfirm": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "emailImportDomainFilters": "Lista de dominios remitentes",
-  "emailImportDomainFiltersHint": "Un patrón por línea, p. ej. amazon.com, *.uber.com, *@shop.com",
+  "emailImportDomainFiltersHint": "Un patrón por línea. Ejemplos: amazon.com, *.uber.com, *@shop.com (el comodín necesita *.).",
   "emailImportNoFilters": "Sin filtros (todos los remitentes)",
   "emailImportTriggerSync": "Sincronizar ahora",
   "emailImportSyncQueued": "Sincronización solicitada. Actualiza en un momento.",
   "emailImportMessages": "Mensajes recientes",
   "emailImportNoMessages": "Aún no hay mensajes. Sincroniza tras conectar.",
   "emailImportGenerateTemplate": "Generar plantilla con IA",
+  "emailImportGeneratingTemplate": "Generando plantilla… Esto puede tardar un momento.",
   "emailImportTemplateGenerated": "Plantilla generada. Puedes editarla en la pestaña Plantillas.",
+  "emailImportTemplateGenerationFailed": "No se pudo generar la plantilla. Inténtalo de nuevo.",
   "emailImportNoTemplates": "Aún no hay plantillas. Genera una desde un mensaje en Configuración.",
   "emailImportEditTemplate": "Editar plantilla",
   "emailImportTemplateName": "Nombre",
@@ -172,5 +195,10 @@
   "emailImportCategory": "Categoría",
   "emailImportAccept": "Aceptar",
   "emailImportReject": "Rechazar",
-  "emailImportNeedCategory": "Crea una categoría antes de aceptar gastos."
+  "emailImportNeedCategory": "Crea una categoría antes de aceptar gastos.",
+  "emailImportViewEmail": "Ver email",
+  "sourceEmailTitle": "Email de origen",
+  "sourceEmailBodyMissing": "No se guardó el cuerpo de este mensaje.",
+  "sourceEmailNotFound": "No hay un email de origen vinculado a este gasto.",
+  "sourceEmailLoadFailed": "No se pudo cargar el email de origen."
 }

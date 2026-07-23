@@ -437,14 +437,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailImportGmailLabel => 'Gmail';
 
   @override
-  String get emailImportGmailTokenHint =>
-      'Paste OAuth tokens with gmail.readonly scope (from Google Cloud OAuth).';
+  String get emailImportGmailConnected =>
+      'Gmail connected. Sync to import messages.';
 
   @override
-  String get emailImportAccessToken => 'Access token';
+  String emailImportGmailFailed(String detail) {
+    return 'Gmail connection failed: $detail';
+  }
 
   @override
-  String get emailImportRefreshToken => 'Refresh token (optional)';
+  String get emailImportGmailFailedGeneric =>
+      'Gmail connection failed. Try again.';
+
+  @override
+  String get emailImportGmailLaunchFailed => 'Could not open Google sign-in.';
 
   @override
   String get emailImportCancel => 'Cancel';
@@ -460,11 +466,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailImportMailbox => 'Mailbox';
 
   @override
+  String get emailImportRenameMailbox => 'Rename mailbox';
+
+  @override
+  String get emailImportRenameMailboxTitle => 'Rename mailbox';
+
+  @override
+  String get emailImportMailboxName => 'Name';
+
+  @override
+  String get emailImportDeleteMailbox => 'Delete mailbox';
+
+  @override
+  String get emailImportDeleteMailboxTitle => 'Delete mailbox?';
+
+  @override
+  String emailImportDeleteMailboxConfirm(String label) {
+    return 'Remove \"$label\"? Synced messages, filters, and templates for this mailbox will be deleted.';
+  }
+
+  @override
   String get emailImportDomainFilters => 'Sender domain allowlist';
 
   @override
   String get emailImportDomainFiltersHint =>
-      'One pattern per line, e.g. amazon.com, *.uber.com, *@shop.com';
+      'One pattern per line. Examples: amazon.com, *.uber.com, *@shop.com (wildcard needs *.).';
 
   @override
   String get emailImportNoFilters => 'No filters (all senders)';
@@ -485,8 +511,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailImportGenerateTemplate => 'Generate template with AI';
 
   @override
+  String get emailImportGeneratingTemplate =>
+      'Generating template… This can take a moment.';
+
+  @override
   String get emailImportTemplateGenerated =>
       'Template generated. You can edit it on the Templates tab.';
+
+  @override
+  String get emailImportTemplateGenerationFailed =>
+      'Template generation failed. Please try again.';
 
   @override
   String get emailImportNoTemplates =>
@@ -525,4 +559,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get emailImportNeedCategory =>
       'Create a category before accepting expenses.';
+
+  @override
+  String get emailImportViewEmail => 'View email';
+
+  @override
+  String get sourceEmailTitle => 'Source email';
+
+  @override
+  String get sourceEmailBodyMissing =>
+      'No email body was stored for this message.';
+
+  @override
+  String get sourceEmailNotFound =>
+      'No source email is linked to this expense.';
+
+  @override
+  String get sourceEmailLoadFailed => 'Could not load the source email.';
 }

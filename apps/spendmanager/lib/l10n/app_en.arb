@@ -220,22 +220,45 @@
   "emailImportConnectGmail": "Connect Gmail",
   "emailImportFixtureLabel": "Demo mailbox",
   "emailImportGmailLabel": "Gmail",
-  "emailImportGmailTokenHint": "Paste OAuth tokens with gmail.readonly scope (from Google Cloud OAuth).",
-  "emailImportAccessToken": "Access token",
-  "emailImportRefreshToken": "Refresh token (optional)",
+  "emailImportGmailConnected": "Gmail connected. Sync to import messages.",
+  "emailImportGmailFailed": "Gmail connection failed: {detail}",
+  "@emailImportGmailFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "emailImportGmailFailedGeneric": "Gmail connection failed. Try again.",
+  "emailImportGmailLaunchFailed": "Could not open Google sign-in.",
   "emailImportCancel": "Cancel",
   "emailImportSave": "Save",
   "emailImportNoMailbox": "No mailbox yet. Add a demo mailbox or connect Gmail.",
   "emailImportMailbox": "Mailbox",
+  "emailImportRenameMailbox": "Rename mailbox",
+  "emailImportRenameMailboxTitle": "Rename mailbox",
+  "emailImportMailboxName": "Name",
+  "emailImportDeleteMailbox": "Delete mailbox",
+  "emailImportDeleteMailboxTitle": "Delete mailbox?",
+  "emailImportDeleteMailboxConfirm": "Remove \"{label}\"? Synced messages, filters, and templates for this mailbox will be deleted.",
+  "@emailImportDeleteMailboxConfirm": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "emailImportDomainFilters": "Sender domain allowlist",
-  "emailImportDomainFiltersHint": "One pattern per line, e.g. amazon.com, *.uber.com, *@shop.com",
+  "emailImportDomainFiltersHint": "One pattern per line. Examples: amazon.com, *.uber.com, *@shop.com (wildcard needs *.).",
   "emailImportNoFilters": "No filters (all senders)",
   "emailImportTriggerSync": "Sync now",
   "emailImportSyncQueued": "Sync requested. Refresh in a moment.",
   "emailImportMessages": "Recent messages",
   "emailImportNoMessages": "No messages yet. Sync after connecting.",
   "emailImportGenerateTemplate": "Generate template with AI",
+  "emailImportGeneratingTemplate": "Generating template… This can take a moment.",
   "emailImportTemplateGenerated": "Template generated. You can edit it on the Templates tab.",
+  "emailImportTemplateGenerationFailed": "Template generation failed. Please try again.",
   "emailImportNoTemplates": "No templates yet. Generate one from a sample message on the Setup tab.",
   "emailImportEditTemplate": "Edit template",
   "emailImportTemplateName": "Name",
@@ -247,5 +270,10 @@
   "emailImportCategory": "Category",
   "emailImportAccept": "Accept",
   "emailImportReject": "Reject",
-  "emailImportNeedCategory": "Create a category before accepting expenses."
+  "emailImportNeedCategory": "Create a category before accepting expenses.",
+  "emailImportViewEmail": "View email",
+  "sourceEmailTitle": "Source email",
+  "sourceEmailBodyMissing": "No email body was stored for this message.",
+  "sourceEmailNotFound": "No source email is linked to this expense.",
+  "sourceEmailLoadFailed": "Could not load the source email."
 }

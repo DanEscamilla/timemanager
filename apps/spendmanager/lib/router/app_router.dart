@@ -110,6 +110,7 @@ GoRouter createAppRouter({
                   key: auth.expensesKey,
                   expenseRepository: auth.expenseRepository,
                   categoryRepository: auth.categoryRepository,
+                  mailboxRepository: MailboxRepository(),
                   onChanged: auth.reloadAll,
                 ),
               ),

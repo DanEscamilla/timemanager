@@ -1,3 +1,4 @@
+import { env as readEnv } from 'deno_api_kit/db/env.ts'
 import type { SpendingCandidatePayload } from 'mailbox_kit/mod.ts'
 
 export class SpendmanagerSinkError extends Error {
@@ -29,7 +30,7 @@ export async function publishExpenseToSpendmanager(
   }
 
   const baseUrl = (options?.baseUrl ??
-    Deno.env.get('SPENDMANAGER_API_BASE_URL') ??
+    readEnv('SPENDMANAGER_API_BASE_URL') ??
     'http://localhost:3002').replace(/\/$/, '')
 
   const note = candidate.note?.trim() ||

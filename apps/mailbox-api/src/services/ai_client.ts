@@ -1,3 +1,5 @@
+import { env as readEnv } from 'deno_api_kit/db/env.ts'
+
 export type GenerateTemplateAiInput = {
   from: string
   subject: string
@@ -33,9 +35,9 @@ export async function generateEmailSpendTemplate(
   },
 ): Promise<GenerateTemplateAiOutput> {
   const baseUrl = (options?.baseUrl ??
-    Deno.env.get('AI_API_BASE_URL') ??
+    readEnv('AI_API_BASE_URL') ??
     'http://localhost:3004').replace(/\/$/, '')
-  const serviceKey = options?.serviceKey ?? Deno.env.get('AI_SERVICE_KEY')
+  const serviceKey = options?.serviceKey ?? readEnv('AI_SERVICE_KEY')
   if (!serviceKey) {
     throw new AiClientError('AI_SERVICE_KEY is not configured')
   }
