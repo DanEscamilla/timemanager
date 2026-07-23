@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:design_system/design_system.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/mailbox.dart';
@@ -28,7 +30,7 @@ class SourceEmailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final body = displayBodyForSourceEmail(message);
+    final display = displayForSourceEmail(message);
     final height = MediaQuery.sizeOf(context).height * 0.85;
 
     return SizedBox(
@@ -83,21 +85,41 @@ class SourceEmailSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                if (body == null)
-                  Text(
-                    l10n.sourceEmailBodyMissing,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                switch (display) {
+                  SourceEmailEmpty() => Text(
+                      l10n.sourceEmailBodyMissing,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  )
-                else
-                  SelectableText(
-                    body,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontFamily: 'monospace',
-                      height: 1.4,
+                  SourceEmailPlain(:final text) => SelectableText(
+                      text,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontFamily: 'monospace',
+                        height: 1.4,
+                      ),
                     ),
-                  ),
+                  SourceEmailHtml(:final html) => Html(
+                      data: html,
+                      shrinkWrap: true,
+                      doNotRenderTheseTags: const {'img', 'svg', 'video', 'audio', 'iframe', 'script'},
+                      onLinkTap: (url, _, __) => _openSafeHttpLink(url),
+                      style: {
+                        'body': Style(
+                          margin: Margins.zero,
+                          padding: HtmlPaddings.zero,
+                          fontSize: FontSize(
+                            theme.textTheme.bodyMedium?.fontSize ?? 14,
+                          ),
+                          color: theme.colorScheme.onSurface,
+                        ),
+                        'a': Style(
+                          color: theme.colorScheme.primary,
+                          textDecoration: TextDecoration.underline,
+                        ),
+                      },
+                    ),
+                },
               ],
             ),
           ),
@@ -105,4 +127,12 @@ class SourceEmailSheet extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _openSafeHttpLink(String? url) async {
+  if (url == null || url.isEmpty) return;
+  final uri = Uri.tryParse(url);
+  if (uri == null) return;
+  if (uri.scheme != 'http' && uri.scheme != 'https') return;
+  await launchUrl(uri, mode: LaunchMode.externalApplication);
 }

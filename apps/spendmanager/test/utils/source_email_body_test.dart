@@ -18,22 +18,34 @@ MailboxMessage _msg({String? textBody, String? htmlBody}) {
 }
 
 void main() {
-  test('prefers text body over html', () {
-    final body = displayBodyForSourceEmail(
+  test('prefers html over plain text for visualization', () {
+    final display = displayForSourceEmail(
       _msg(textBody: 'Plain total', htmlBody: '<b>HTML</b>'),
     );
-    expect(body, 'Plain total');
+    expect(display, isA<SourceEmailHtml>());
+    expect((display as SourceEmailHtml).html, '<b>HTML</b>');
   });
 
-  test('falls back to stripped html when text missing', () {
-    final body = displayBodyForSourceEmail(
-      _msg(textBody: null, htmlBody: '<p>Hi &amp; bye<br/>line</p>'),
+  test('uses plain text when html missing', () {
+    final display = displayForSourceEmail(
+      _msg(textBody: 'Plain total', htmlBody: null),
     );
-    expect(body, 'Hi & bye\nline');
+    expect(display, isA<SourceEmailPlain>());
+    expect((display as SourceEmailPlain).text, 'Plain total');
   });
 
-  test('returns null when both bodies empty', () {
-    expect(displayBodyForSourceEmail(_msg()), isNull);
-    expect(displayBodyForSourceEmail(_msg(textBody: '  ', htmlBody: '')), isNull);
+  test('returns empty when both bodies empty', () {
+    expect(displayForSourceEmail(_msg()), isA<SourceEmailEmpty>());
+    expect(
+      displayForSourceEmail(_msg(textBody: '  ', htmlBody: '')),
+      isA<SourceEmailEmpty>(),
+    );
+  });
+
+  test('stripHtmlToPlainText decodes basic entities and breaks', () {
+    expect(
+      stripHtmlToPlainText('<p>Hi &amp; bye<br/>line</p>'),
+      'Hi & bye\nline',
+    );
   });
 }

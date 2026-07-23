@@ -1,16 +1,40 @@
 import '../models/mailbox.dart';
 
-/// Prefer plain text; fall back to a crude HTML→text strip for display.
-String? displayBodyForSourceEmail(MailboxMessage message) {
-  final text = message.textBody?.trim();
-  if (text != null && text.isNotEmpty) return text;
-
-  final html = message.htmlBody?.trim();
-  if (html == null || html.isEmpty) return null;
-  return stripHtmlToPlainText(html);
+/// How the source-email sheet should present the message body.
+sealed class SourceEmailDisplay {
+  const SourceEmailDisplay();
 }
 
-/// Minimal tag strip for source-email preview (not a full HTML sanitizer).
+class SourceEmailHtml extends SourceEmailDisplay {
+  const SourceEmailHtml(this.html);
+  final String html;
+}
+
+class SourceEmailPlain extends SourceEmailDisplay {
+  const SourceEmailPlain(this.text);
+  final String text;
+}
+
+class SourceEmailEmpty extends SourceEmailDisplay {
+  const SourceEmailEmpty();
+}
+
+/// Prefer HTML for visualization; fall back to plain text when HTML is absent.
+SourceEmailDisplay displayForSourceEmail(MailboxMessage message) {
+  final html = message.htmlBody?.trim();
+  if (html != null && html.isNotEmpty) {
+    return SourceEmailHtml(html);
+  }
+
+  final text = message.textBody?.trim();
+  if (text != null && text.isNotEmpty) {
+    return SourceEmailPlain(text);
+  }
+
+  return const SourceEmailEmpty();
+}
+
+/// Minimal tag strip kept for defensive plain-text conversion if needed.
 String stripHtmlToPlainText(String html) {
   var s = html
       .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
