@@ -682,10 +682,10 @@ print_next_steps() {
 Next steps
 ----------
 1. Restart your shell (or: $reload_hint) so PATH updates apply.
-2. Start APIs + DB from the repo root:
-     pnpm timemanager
-3. Launch Flutter (IDE Run and Debug → timemanager, or):
-     nx serve timemanager                  # Chrome :4444
+2. Start a product stack from the repo root (shared services + API + Flutter web):
+     pnpm timemanager                      # GraphQL :3000 + Chrome :4444
+     # or: pnpm spendmanager               # GraphQL :3002 + Chrome :4445
+3. Native Flutter targets (optional; when not using web serve above):
      flutter run -d ios                    # macOS / Xcode
      flutter run -d android                # emulator or device
 4. Android emulator hosts: use 10.0.2.2 for localhost APIs (already handled in app config).

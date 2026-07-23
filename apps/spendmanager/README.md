@@ -9,9 +9,8 @@ Settings → **Email import** talks to mailbox-api (`:3003`) for per-user mailbo
 Local services:
 
 ```bash
-pnpm spendmanager   # GraphQL :3002
-pnpm mailbox        # GraphQL :3003 + worker
-pnpm ai             # template generation :3004
+pnpm services       # auth + ai + mailbox
+pnpm spendmanager   # ensures services, then GraphQL :3002 + Flutter :4445
 ```
 
 Optional dart-define: `MAILBOX_API_BASE_URL` (default `http://localhost:3003`).

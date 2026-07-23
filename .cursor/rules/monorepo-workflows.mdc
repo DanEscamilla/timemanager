@@ -6,9 +6,11 @@ alwaysApply: true
 Run everything through Nx from the repo root. Convenience scripts in root `package.json`:
 
 ```bash
-pnpm timemanager      # nx serve timemanager-api (GraphQL + auth + DB); Flutter via IDE launch.json
-pnpm spendmanager     # nx serve spendmanager-api (GraphQL :3002 + auth + DB); Flutter via IDE
-pnpm mailbox          # nx run-many -t serve -p mailbox-api,mailbox-worker (GraphQL :3003 + poller)
+pnpm serve            # all backends + Flutter apps (omit user-manager-web)
+pnpm services         # auth :3001 + ai :3004 + mailbox :3003 + worker
+pnpm timemanager      # ensure-dev-services.sh timemanager-api + timemanager (GraphQL :3000 + Flutter :4444)
+pnpm spendmanager     # ensure-dev-services.sh spendmanager-api + spendmanager (GraphQL :3002 + Flutter :4445)
+pnpm mailbox          # ensure-dev-services.sh mailbox-api mailbox-worker
 pnpm ai               # nx serve ai-api (REST AI gateway :3004)
 pnpm user-manager     # nx run-many -t serve -p user-manager-web,user-manager-api
 pnpm db:up            # nx run timemanager-api:migrate (starts Postgres + pgAdmin, then migrates)
@@ -26,6 +28,6 @@ Project tags (in each `project.json`) — use for filtering and to understand sc
 Notes:
 
 - `timemanager-api:migrate` / `spendmanager-api:migrate` / `mailbox-api:migrate` `dependsOn` `timemanager-db:up`; `serve` and `seed` depend on `migrate`, so schema is applied before the API or seed runs.
-- Product API `serve` targets `dependsOn` `user-manager-api:serve` (continuous), so auth starts with GraphQL; Flutter is launched from the IDE (`.vscode/launch.json`).
+- Shared backends (auth, ai, mailbox) are owned by `pnpm services` or `scripts/ensure-dev-services.sh` (health-check skip if already up). Product API `serve` depends on `migrate` only. Product pnpm scripts also start the matching Flutter web client; IDE launch configs (`.vscode/launch.json`) remain for device/debug workflows.
 - Deno and Flutter targets are `nx:run-commands` wrappers (no `@nx/deno` plugin).
 - Full workflows (seed, migrations, smoke checks): [.ai/workflows.md](mdc:.ai/workflows.md).

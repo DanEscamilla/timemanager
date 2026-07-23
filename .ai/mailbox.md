@@ -15,9 +15,10 @@ Standalone product for polling mailboxes, filtering by sender domain (with wildc
 ```bash
 nx run mailbox-api:migrate
 nx run mailbox-api:seed
-pnpm mailbox   # API + worker
-pnpm ai        # needed for generateParsingTemplate
-pnpm spendmanager  # needed for accept → createExpense
+pnpm services      # auth + ai + mailbox API + worker
+pnpm spendmanager  # ensures services; needed for accept → createExpense
+# or ensure + mailbox only:
+pnpm mailbox
 # or one sync without the long-running worker:
 cd apps/mailbox-worker && deno task sync-once
 ```

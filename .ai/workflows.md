@@ -15,31 +15,34 @@ Full inventory, manual steps, and how to keep the scripts in sync: [local-setup.
 ## Run the apps
 
 ```bash
-# timemanager APIs (GraphQL + auth; also starts DB via migrate)
-pnpm timemanager            # nx serve timemanager-api
+# all backends + Flutter apps in one terminal (omit user-manager-web)
+pnpm serve
 
-# spendmanager APIs (GraphQL :3002 + auth; also starts DB via migrate)
-pnpm spendmanager           # nx serve spendmanager-api
+# shared backends only (auth :3001 + ai :3004 + mailbox :3003 + worker)
+pnpm services
 
-# mailbox email ingest (GraphQL :3003 + poll worker + auth + DB)
-pnpm mailbox                # nx run-many -t serve -p mailbox-api,mailbox-worker
+# product stacks — ensure shared services (skip if already healthy), then API + Flutter
+pnpm timemanager            # ensure-dev-services.sh → GraphQL :3000 (+ DB) + Flutter :4444
+pnpm spendmanager           # ensure-dev-services.sh → GraphQL :3002 (+ DB) + Flutter :4445
+pnpm mailbox                # ensure auth/ai; start mailbox API + worker if needed
 
-# internal AI gateway (REST :3004; backends only)
+# internal AI gateway alone (also covered by pnpm services)
 pnpm ai                     # nx serve ai-api
 pnpm ai:cli                 # guided HTTP CLI against a running ai-api
 
-# Flutter clients — Run and Debug in the IDE
-# timemanager → Chrome :4444; spendmanager → Chrome :4445
+# Flutter clients alone / IDE — use when APIs are already up
+# IDE: Run and Debug → timemanager (:4444) / spendmanager (:4445)
+# CLI: nx serve timemanager | nx serve spendmanager
 
-# user-manager stack (React web + Express API)
+# user-manager stack (React web + Express API; web stays separate from pnpm services)
 pnpm user-manager           # nx run-many -t serve -p user-manager-web,user-manager-api
 
-# individual projects
-nx serve timemanager        # flutter run -d chrome --web-port=4444 (also starts user-manager-api)
-nx serve spendmanager       # flutter run -d chrome --web-port=4445 (also starts user-manager-api)
-nx serve timemanager-api    # deno task dev on :3000 (migrate → DB + user-manager-api)
-nx serve spendmanager-api   # deno task dev on :3002 (migrate → DB + user-manager-api)
-nx serve mailbox-api        # deno task dev on :3003 (migrate → DB + user-manager-api)
+# individual projects (do not auto-start shared services — use pnpm services / product scripts)
+nx serve timemanager        # flutter run -d chrome --web-port=4444
+nx serve spendmanager       # flutter run -d chrome --web-port=4445
+nx serve timemanager-api    # deno task dev on :3000 (migrate → DB)
+nx serve spendmanager-api   # deno task dev on :3002 (migrate → DB)
+nx serve mailbox-api        # deno task dev on :3003 (migrate → DB)
 nx serve mailbox-worker     # poll / extract loop (depends on mailbox-api:migrate)
 nx serve ai-api             # deno task dev on :3004 (service key; no auth/DB deps)
 nx run ai-api:cli           # interactive use-case CLI (requires serve)
@@ -47,9 +50,9 @@ nx serve user-manager-web   # vite dev server
 nx serve user-manager-api   # express server
 ```
 
-`pnpm timemanager` starts GraphQL on `:3000`, SuperTokens on `:3001`, and Postgres. `pnpm spendmanager` starts GraphQL on `:3002` (same auth + DB stack). `pnpm mailbox` starts GraphQL on `:3003` plus the poll worker. `pnpm ai` starts the AI gateway on `:3004`. Launch Flutter from the IDE (**spendmanager** / **timemanager**).
+Typical flow: `pnpm serve` for everything, or `pnpm timemanager` / `pnpm spendmanager` for one product (ensures shared services, then API + Flutter web). Flutter can also be launched from the IDE (**spendmanager** / **timemanager**) when APIs are already up.
 
-Email spend import (spendmanager Settings → Email import) needs `pnpm mailbox`, `pnpm ai` (template generation), and `pnpm spendmanager` (accept → createExpense) together. See [mailbox.md](mailbox.md).
+Email spend import (spendmanager Settings → Email import) needs shared services (`pnpm services` or ensure via `pnpm spendmanager` / `pnpm mailbox`) so mailbox + ai are up with spendmanager. See [mailbox.md](mailbox.md).
 
 ## Database
 

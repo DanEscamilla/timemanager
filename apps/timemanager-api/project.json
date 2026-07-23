@@ -8,7 +8,7 @@
     "serve": {
       "executor": "nx:run-commands",
       "continuous": true,
-      "dependsOn": ["migrate", "user-manager-api:serve"],
+      "dependsOn": ["migrate"],
       "options": {
         "command": "deno task dev",
         "cwd": "apps/timemanager-api"

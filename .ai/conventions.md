@@ -39,7 +39,7 @@ Every `project.json` carries tags used for filtering and scope reasoning:
 - App/API projects expose `serve` / `build` (and `lint` / `test` where applicable).
 - Deno and Flutter targets are `nx:run-commands` wrappers around the native CLI (`deno task`, `flutter`) — the `@nx/deno` plugin is intentionally not used.
 - `timemanager-api:migrate`, `spendmanager-api:migrate`, and `mailbox-api:migrate` declare `dependsOn: ["timemanager-db:up"]`; `serve` and `seed` depend on `migrate` so the DB is up and schema is applied first.
-- Flutter `serve` targets declare `dependsOn: ["user-manager-api:serve"]` with both targets marked `continuous: true`, so the SuperTokens SSO API starts alongside the client.
+- Shared local backends (auth, ai, mailbox) are started via `pnpm services` or ensured by product pnpm scripts (`scripts/ensure-dev-services.sh`), which skip healthy ports so terminals can share them.
 - Infra projects expose `up` / `down` / `logs` wrapping `docker compose`.
 
 ## Auth (SuperTokens SSO)

@@ -1,0 +1,113 @@
+input CreateMailboxInputInput {
+	provider: String!
+	label: String!
+	enabled: Boolean
+	domainFilters: [String!]
+	oauthTokensJson: String
+}
+input SetDomainFiltersInputInput {
+	mailboxId: Number!
+	patterns: [String!]!
+}
+input UpdateArtifactStatusInputInput {
+	artifactId: Number!
+	status: String!
+	categoryId: Number
+}
+input ConnectGmailInputInput {
+	mailboxId: Number!
+	accessToken: String!
+	refreshToken: String
+	expiresAtMs: Number
+}
+input CreateParsingTemplateInputInput {
+	mailboxId: Number!
+	name: String!
+	matchFromPattern: String!
+	matchSubjectRegex: String
+	extractorsJson: String!
+	enabled: Boolean
+	sourceMessageId: Number
+}
+input UpdateParsingTemplateInputInput {
+	id: Number!
+	name: String
+	matchFromPattern: String
+	matchSubjectRegex: String
+	extractorsJson: String
+	enabled: Boolean
+}
+input GenerateParsingTemplateInputInput {
+	messageId: Number!
+	name: String
+	hints: String
+}
+type Query {
+mailboxes: Any!
+domainFilters(mailboxId: Number!): Any!
+messages(mailboxId: Number!): Any!
+extractionArtifacts(mailboxId: Number, status: String): Any!
+syncRuns(mailboxId: Number!): Any!
+parsingTemplates(mailboxId: Number!): Any!
+}
+type Mutation {
+createMailbox(input: CreateMailboxInputInput!): CreateMailbox!
+deleteMailbox(id: Number!): Boolean!
+setDomainFilters(input: SetDomainFiltersInputInput!): Any!
+triggerSync(mailboxId: Number!): CreateMailbox!
+updateArtifactStatus(input: UpdateArtifactStatusInputInput!): UpdateArtifactStatus!
+connectGmail(input: ConnectGmailInputInput!): CreateMailbox!
+createParsingTemplate(input: CreateParsingTemplateInputInput!): CreateParsingTemplate!
+updateParsingTemplate(input: UpdateParsingTemplateInputInput!): CreateParsingTemplate!
+deleteParsingTemplate(id: Number!): Boolean!
+generateParsingTemplate(input: GenerateParsingTemplateInputInput!): CreateParsingTemplate!
+}
+type CreateMailbox {
+id: Number!
+user_id: Number!
+provider: String!
+label: String!
+enabled: Boolean!
+sync_cursor: String
+sync_requested: Boolean!
+last_synced_at: String
+created_at: String!
+updated_at: String!
+}
+type UpdateArtifactStatus {
+id: Number!
+message_id: Number!
+kind: String!
+payload: String!
+confidence: Number!
+status: String!
+published_expense_id: Number
+created_at: String!
+updated_at: String!
+}
+type CreateParsingTemplate {
+id: Number!
+mailbox_id: Number!
+user_id: Number!
+name: String!
+enabled: Boolean!
+match_from_pattern: String!
+match_subject_regex: String
+extractors: String!
+source_message_id: Number
+version: Number!
+created_at: String!
+updated_at: String!
+}
+scalar ID
+scalar Int
+scalar Float
+scalar Number
+scalar Any
+scalar Void
+scalar Object
+scalar File
+scalar Date
+scalar JSON
+scalar String
+scalar Boolean

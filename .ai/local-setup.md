@@ -85,21 +85,24 @@ Never commit `.env` files or filled-in `*.dart-defines.json` (gitignored; keep `
 ## First run
 
 ```bash
-# 1. APIs + Postgres (from repo root)
-pnpm timemanager
+# Product stack (ensures shared services if needed, then API + Flutter web)
+pnpm timemanager       # GraphQL :3000 + DB + Flutter Chrome :4444
+# pnpm spendmanager    # GraphQL :3002 + DB + Flutter Chrome :4445
 
-# 2. Flutter — pick one:
-# IDE: Run and Debug → timemanager (Chrome :4444)
-nx serve timemanager                 # Chrome
+# Or shared backends in a long-lived terminal, then product:
+# pnpm services
+# pnpm timemanager
+
+# Native Flutter targets (when not using the web serve above):
+# IDE: Run and Debug → timemanager / spendmanager
 flutter run -d ios                   # macOS + Xcode
 flutter run -d android               # emulator or device
 ```
 
-- GraphQL: `http://localhost:3000` — Auth: `http://localhost:3001` — Flutter web: `:4444`
+- GraphQL: `http://localhost:3000` — Auth: `http://localhost:3001` — AI: `:3004` — Flutter web: `:4444`
 - Android emulator: host loopback is `10.0.2.2` (already handled in app config)
 - Physical device (same Wi‑Fi as the Mac): **Run and Debug → timemanager (device, local)** or **spendmanager (device, local)** — a preLaunchTask runs `scripts/update-local-dart-defines.sh` to point APIs at your LAN IP. Use **(device, cloud)** with `config/cloud.dart-defines.json` for staging/production.
 - Do not run `pnpm user-manager` and `pnpm timemanager` together without changing ports — both default web/GraphQL surfaces use `:3000`
-
 More detail: [workflows.md](workflows.md).
 
 ## Optional stacks

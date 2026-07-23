@@ -54,16 +54,18 @@ Details: [`.ai/local-setup.md`](.ai/local-setup.md).
 ## Common commands
 
 ```bash
-pnpm timemanager      # GraphQL API + auth + DB; launch Flutter via IDE (Run and Debug → timemanager)
-pnpm spendmanager     # spendmanager GraphQL + auth + DB; launch Flutter via IDE (spendmanager)
-pnpm mailbox          # mailbox GraphQL :3003 + poll worker + auth + DB
-pnpm ai               # ai-api REST gateway :3004 (backends only; service key)
+pnpm serve            # all backends + Flutter apps (omit user-manager-web)
+pnpm services         # shared backends: auth :3001 + ai :3004 + mailbox :3003 + worker
+pnpm timemanager      # ensures services, then GraphQL :3000 + DB + Flutter :4444
+pnpm spendmanager     # ensures services, then GraphQL :3002 + DB + Flutter :4445
+pnpm mailbox          # ensures auth/ai; starts mailbox API + worker if needed
+pnpm ai               # ai-api REST gateway :3004 only
 pnpm user-manager     # nx run-many -t serve -p user-manager-web,user-manager-api
 pnpm db:up            # start Postgres + pgAdmin, then run timemanager migrations
 pnpm db:down          # stop the DB stack
 ```
 
-`timemanager-api:serve` depends on `migrate` (DB) and `user-manager-api:serve` (auth). Flutter is launched from `.vscode/launch.json`, not from `pnpm timemanager`. More detail in [`.ai/workflows.md`](.ai/workflows.md).
+Product `serve` targets depend on `migrate` (DB). Shared backends are started by `pnpm services` or ensured by product pnpm scripts (`scripts/ensure-dev-services.sh`). `pnpm timemanager` / `pnpm spendmanager` also serve the Flutter web clients (`:4444` / `:4445`); IDE launch configs in `.vscode/launch.json` remain available for device/debug workflows. More detail in [`.ai/workflows.md`](.ai/workflows.md).
 
 ## Reference docs
 
