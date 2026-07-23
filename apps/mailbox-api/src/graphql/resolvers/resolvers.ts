@@ -53,6 +53,77 @@ function requireAuthorizationHeader(): string {
   return header
 }
 
+/** Named return shapes so Pylon emits GraphQL object types (not `Any!`). */
+export interface Mailbox {
+  id: number
+  user_id: number
+  provider: string
+  label: string
+  enabled: boolean
+  sync_cursor: string | null
+  sync_requested: boolean
+  last_synced_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DomainFilter {
+  id: number
+  mailbox_id: number
+  pattern: string
+  created_at: string
+}
+
+export interface Message {
+  id: number
+  mailbox_id: number
+  provider_message_id: string
+  rfc_message_id: string
+  from_address: string
+  subject: string
+  received_at: string
+  text_body: string | null
+  html_body: string | null
+  created_at: string
+}
+
+export interface ExtractionArtifact {
+  id: number
+  message_id: number
+  kind: string
+  payload: string
+  confidence: number
+  status: string
+  published_expense_id: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SyncRun {
+  id: number
+  mailbox_id: number
+  started_at: string
+  finished_at: string | null
+  fetched_count: number
+  extracted_count: number
+  error_text: string | null
+}
+
+export interface ParsingTemplate {
+  id: number
+  mailbox_id: number
+  user_id: number
+  name: string
+  enabled: boolean
+  match_from_pattern: string
+  match_subject_regex: string | null
+  extractors: string
+  source_message_id: number | null
+  version: number
+  created_at: string
+  updated_at: string
+}
+
 function mapMailbox(row: {
   id: number
   user_id: number
@@ -64,7 +135,7 @@ function mapMailbox(row: {
   last_synced_at: Date | string | null
   created_at: Date | string
   updated_at: Date | string
-}) {
+}): Mailbox {
   return {
     id: row.id,
     user_id: row.user_id,
@@ -84,9 +155,11 @@ function mapDomainFilter(row: {
   mailbox_id: number
   pattern: string
   created_at: Date | string
-}) {
+}): DomainFilter {
   return {
-    ...row,
+    id: row.id,
+    mailbox_id: row.mailbox_id,
+    pattern: row.pattern,
     created_at: asIsoTimestamp(row.created_at),
   }
 }
@@ -102,7 +175,7 @@ function mapMessage(row: {
   text_body?: string | null
   html_body?: string | null
   created_at: Date | string
-}) {
+}): Message {
   return {
     id: row.id,
     mailbox_id: row.mailbox_id,
@@ -127,7 +200,7 @@ function mapArtifact(row: {
   published_expense_id?: number | null
   created_at: Date | string
   updated_at: Date | string
-}) {
+}): ExtractionArtifact {
   return {
     id: row.id,
     message_id: row.message_id,
@@ -152,11 +225,15 @@ function mapSyncRun(row: {
   fetched_count: number
   extracted_count: number
   error_text: string | null
-}) {
+}): SyncRun {
   return {
-    ...row,
+    id: row.id,
+    mailbox_id: row.mailbox_id,
     started_at: asIsoTimestamp(row.started_at),
     finished_at: asIsoTimestampOrNull(row.finished_at),
+    fetched_count: row.fetched_count,
+    extracted_count: row.extracted_count,
+    error_text: row.error_text,
   }
 }
 
@@ -173,7 +250,7 @@ function mapParsingTemplate(row: {
   version: number
   created_at: Date | string
   updated_at: Date | string
-}) {
+}): ParsingTemplate {
   return {
     id: row.id,
     mailbox_id: row.mailbox_id,
@@ -248,7 +325,7 @@ function asSpendingPayload(payload: unknown): SpendingCandidatePayload | null {
 }
 
 const Query = {
-  async mailboxes() {
+  async mailboxes(): Promise<Mailbox[]> {
     const userId = requireUserId()
     const rows = await db
       .selectFrom('mailboxes')
@@ -259,7 +336,7 @@ const Query = {
     return rows.map(mapMailbox)
   },
 
-  async domainFilters(mailboxId: number) {
+  async domainFilters(mailboxId: number): Promise<DomainFilter[]> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, mailboxId)
     const rows = await db
@@ -271,7 +348,7 @@ const Query = {
     return rows.map(mapDomainFilter)
   },
 
-  async messages(mailboxId: number) {
+  async messages(mailboxId: number): Promise<Message[]> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, mailboxId)
     const rows = await db
@@ -283,7 +360,10 @@ const Query = {
     return rows.map(mapMessage)
   },
 
-  async extractionArtifacts(mailboxId?: number | null, status?: string | null) {
+  async extractionArtifacts(
+    mailboxId?: number | null,
+    status?: string | null,
+  ): Promise<ExtractionArtifact[]> {
     const userId = requireUserId()
     let q = db
       .selectFrom('extraction_artifacts')
@@ -303,7 +383,7 @@ const Query = {
     return rows.map(mapArtifact)
   },
 
-  async syncRuns(mailboxId: number) {
+  async syncRuns(mailboxId: number): Promise<SyncRun[]> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, mailboxId)
     const rows = await db
@@ -316,7 +396,7 @@ const Query = {
     return rows.map(mapSyncRun)
   },
 
-  async parsingTemplates(mailboxId: number) {
+  async parsingTemplates(mailboxId: number): Promise<ParsingTemplate[]> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, mailboxId)
     const rows = await db
@@ -331,7 +411,7 @@ const Query = {
 }
 
 const Mutation = {
-  async createMailbox(input: CreateMailboxInput) {
+  async createMailbox(input: CreateMailboxInput): Promise<Mailbox> {
     const userId = requireUserId()
     const provider = validateProvider(input.provider)
     const label = validateLabel(input.label)
@@ -373,7 +453,7 @@ const Mutation = {
     return mapMailbox(mailbox)
   },
 
-  async deleteMailbox(id: number) {
+  async deleteMailbox(id: number): Promise<boolean> {
     const userId = requireUserId()
     const result = await db
       .deleteFrom('mailboxes')
@@ -383,7 +463,7 @@ const Mutation = {
     return Number(result.numDeletedRows ?? 0) > 0
   },
 
-  async setDomainFilters(input: SetDomainFiltersInput) {
+  async setDomainFilters(input: SetDomainFiltersInput): Promise<DomainFilter[]> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, input.mailboxId)
     const patterns = validateDomainPatterns(input.patterns)
@@ -416,7 +496,7 @@ const Mutation = {
     return rows.map(mapDomainFilter)
   },
 
-  async triggerSync(mailboxId: number) {
+  async triggerSync(mailboxId: number): Promise<Mailbox> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, mailboxId)
     const now = new Date().toISOString()
@@ -430,7 +510,9 @@ const Mutation = {
     return mapMailbox(row)
   },
 
-  async updateArtifactStatus(input: UpdateArtifactStatusInput) {
+  async updateArtifactStatus(
+    input: UpdateArtifactStatusInput,
+  ): Promise<ExtractionArtifact> {
     const userId = requireUserId()
     const status = validateArtifactStatus(input.status)
     const owned = await db
@@ -525,7 +607,7 @@ const Mutation = {
     return mapArtifact(row)
   },
 
-  async connectGmail(input: ConnectGmailInput) {
+  async connectGmail(input: ConnectGmailInput): Promise<Mailbox> {
     const userId = requireUserId()
     const mailbox = await requireOwnedMailbox(userId, input.mailboxId)
     if (mailbox.provider !== 'gmail') {
@@ -554,7 +636,9 @@ const Mutation = {
     return mapMailbox(row)
   },
 
-  async createParsingTemplate(input: CreateParsingTemplateInput) {
+  async createParsingTemplate(
+    input: CreateParsingTemplateInput,
+  ): Promise<ParsingTemplate> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, input.mailboxId)
     const name = validateTemplateName(input.name)
@@ -595,7 +679,9 @@ const Mutation = {
     return mapParsingTemplate(row)
   },
 
-  async updateParsingTemplate(input: UpdateParsingTemplateInput) {
+  async updateParsingTemplate(
+    input: UpdateParsingTemplateInput,
+  ): Promise<ParsingTemplate> {
     const userId = requireUserId()
     const existing = await db
       .selectFrom('parsing_templates')
@@ -640,7 +726,7 @@ const Mutation = {
     return mapParsingTemplate(row)
   },
 
-  async deleteParsingTemplate(id: number) {
+  async deleteParsingTemplate(id: number): Promise<boolean> {
     const userId = requireUserId()
     const result = await db
       .deleteFrom('parsing_templates')
@@ -650,7 +736,9 @@ const Mutation = {
     return Number(result.numDeletedRows ?? 0) > 0
   },
 
-  async generateParsingTemplate(input: GenerateParsingTemplateInput) {
+  async generateParsingTemplate(
+    input: GenerateParsingTemplateInput,
+  ): Promise<ParsingTemplate> {
     const userId = requireUserId()
     const message = await db
       .selectFrom('messages')

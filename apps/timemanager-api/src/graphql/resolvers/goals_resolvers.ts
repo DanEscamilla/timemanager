@@ -15,7 +15,16 @@ import type {
   NewGoalDependency,
   NewGoalLink,
 } from '../../db/types/schema.ts'
-import { createInitialCycle, deadlineState, lifecyclePhase, rescheduleActiveCycle, rollOverIfNeeded, rollOverUserGoals } from '../../goals/cycles.ts'
+import {
+  createInitialCycle,
+  deadlineState,
+  type DeadlineState,
+  lifecyclePhase,
+  type GoalLifecyclePhase,
+  rescheduleActiveCycle,
+  rollOverIfNeeded,
+  rollOverUserGoals,
+} from '../../goals/cycles.ts'
 import { buildGoalNudges } from '../../goals/nudges.ts'
 import { recomputeAllActiveCycles, recomputeCycle } from '../../goals/progress.ts'
 import type {
@@ -41,6 +50,134 @@ function requireUserId(): number {
     throw new Error('Unauthenticated')
   }
   return userId
+}
+
+/** Named return shapes so Pylon emits GraphQL object types (not `Any!`). */
+export interface LinkedActivity {
+  id: number
+  user_id: number
+  group_id: number | null
+  title: string
+  description: string | null
+  start_time: string
+  end_time: string
+  is_recurring: boolean
+  date: string | null
+  notification_offsets: number[]
+  created_at: Date
+  updated_at: Date
+}
+
+export interface LinkedGroup {
+  id: number
+  user_id: number
+  name: string
+  color: string
+  created_at: Date
+  updated_at: Date
+}
+
+export interface GoalLink {
+  id: number
+  goal_id: number
+  link_type: string
+  activity_id: number | null
+  group_id: number | null
+  weight: number
+  created_at: Date
+  activity: () => Promise<LinkedActivity | null>
+  group: () => Promise<LinkedGroup | null>
+}
+
+export interface GoalCycleView {
+  id: number
+  goal_id: number
+  cycle_index: number
+  starts_at: Date
+  ends_at: Date | null
+  deadline_at: Date | null
+  target_value: number
+  current_value: number
+  status: string
+  carry_over: number
+  created_at: Date
+  updated_at: Date
+}
+
+export interface ActiveCycle extends GoalCycleView {
+  deadlineState: DeadlineState
+  percentComplete: number
+  remaining: number
+}
+
+export interface GoalDependency {
+  id: number
+  goal_id: number
+  depends_on_goal_id: number
+  requirement: string
+  threshold: number | null
+  weight: number
+  created_at: Date
+  dependsOn: () => Promise<Goal | null>
+}
+
+export interface GoalSnapshot {
+  id: number
+  goal_cycle_id: number
+  as_of: string
+  value: number
+  created_at: Date
+}
+
+export interface Goal {
+  id: number
+  user_id: number
+  title: string
+  description: string | null
+  color: string
+  icon: string | null
+  rule_type: string
+  metric: string
+  target_value: number
+  config: GoalConfig
+  status: string
+  recurrence: GoalRecurrenceConfig | null
+  deadline: GoalDeadlineConfig | null
+  priority: number
+  sort_order: number
+  starts_at: Date
+  created_at: Date
+  updated_at: Date
+  startsAt: string
+  lifecyclePhase: GoalLifecyclePhase
+  links: () => Promise<GoalLink[]>
+  activeCycle: () => Promise<ActiveCycle | null>
+  cycles: () => Promise<GoalCycleView[]>
+  dependencies: () => Promise<GoalDependency[]>
+  snapshots: () => Promise<GoalSnapshot[]>
+  isLocked: () => Promise<boolean>
+}
+
+export interface ActivityCompletionRow {
+  id: number
+  activity_id: number
+  user_id: number
+  occurrence_date: string
+  duration_minutes: number | null
+  completed_at: Date
+  metadata: {
+    title?: string
+    notes?: string
+    trigger_events?: string[]
+  } | null
+}
+
+export interface DailyProgress {
+  date: string
+  completedCount: number
+  minutesToday: number
+  streakDays: number
+  completions: ActivityCompletionRow[]
 }
 
 function parseJson<T>(value: unknown): T | null {
@@ -309,7 +446,7 @@ async function dependenciesMet(
   return true
 }
 
-function withGoalRelations(goal: GoalRow) {
+function withGoalRelations(goal: GoalRow): Goal {
   const config = parseJson<GoalConfig>(goal.config) ?? {}
   const recurrence = parseJson<GoalRecurrenceConfig>(goal.recurrence)
   const deadline = parseJson<GoalDeadlineConfig>(goal.deadline)
@@ -323,15 +460,15 @@ function withGoalRelations(goal: GoalRow) {
     config,
     recurrence,
     deadline,
-    links: async () => {
+    links: async (): Promise<GoalLink[]> => {
       const rows = await db
         .selectFrom('goal_links')
         .where('goal_id', '=', goal.id)
         .selectAll()
         .execute()
-      return rows.map((link) => ({
+      return rows.map((link): GoalLink => ({
         ...mapLinkScalars(link),
-        activity: async () => {
+        activity: async (): Promise<LinkedActivity | null> => {
           if (link.activity_id == null) return null
           return await db
             .selectFrom('activities')
@@ -339,7 +476,7 @@ function withGoalRelations(goal: GoalRow) {
             .selectAll()
             .executeTakeFirst() ?? null
         },
-        group: async () => {
+        group: async (): Promise<LinkedGroup | null> => {
           if (link.group_id == null) return null
           return await db
             .selectFrom('groups')
@@ -349,7 +486,7 @@ function withGoalRelations(goal: GoalRow) {
         },
       }))
     },
-    activeCycle: async () => {
+    activeCycle: async (): Promise<ActiveCycle | null> => {
       let cycle = await db
         .selectFrom('goal_cycles')
         .where('goal_id', '=', goal.id)
@@ -398,7 +535,7 @@ function withGoalRelations(goal: GoalRow) {
         remaining: Math.max(0, target - current),
       }
     },
-    cycles: async () => {
+    cycles: async (): Promise<GoalCycleView[]> => {
       const rows = await db
         .selectFrom('goal_cycles')
         .where('goal_id', '=', goal.id)
@@ -407,15 +544,15 @@ function withGoalRelations(goal: GoalRow) {
         .execute()
       return rows.map(mapCycleScalars)
     },
-    dependencies: async () => {
+    dependencies: async (): Promise<GoalDependency[]> => {
       const rows = await db
         .selectFrom('goal_dependencies')
         .where('goal_id', '=', goal.id)
         .selectAll()
         .execute()
-      return rows.map((dep) => ({
+      return rows.map((dep): GoalDependency => ({
         ...mapDependencyScalars(dep),
-        dependsOn: async () => {
+        dependsOn: async (): Promise<Goal | null> => {
           const g = await db
             .selectFrom('goals')
             .where('id', '=', dep.depends_on_goal_id)
@@ -425,7 +562,7 @@ function withGoalRelations(goal: GoalRow) {
         },
       }))
     },
-    snapshots: async () => {
+    snapshots: async (): Promise<GoalSnapshot[]> => {
       const cycle = await db
         .selectFrom('goal_cycles')
         .where('goal_id', '=', goal.id)
@@ -442,7 +579,7 @@ function withGoalRelations(goal: GoalRow) {
         .execute()
       return rows.map(mapSnapshotScalars)
     },
-    isLocked: async () => {
+    isLocked: async (): Promise<boolean> => {
       if (!config.block_until_unlocked) return false
       return !(await dependenciesMet(goal.id, goal.user_id))
     },
@@ -450,7 +587,7 @@ function withGoalRelations(goal: GoalRow) {
 }
 
 export const GoalQuery = {
-  goals: async (args?: { status?: string }) => {
+  goals: async (args?: { status?: string }): Promise<Goal[]> => {
     const userId = requireUserId()
     await rollOverUserGoals(db, userId)
 
@@ -470,7 +607,7 @@ export const GoalQuery = {
     return rows.map(withGoalRelations)
   },
 
-  goal: async (args: { id: number }) => {
+  goal: async (args: { id: number }): Promise<Goal | null> => {
     const userId = requireUserId()
     await rollOverUserGoals(db, userId)
     const row = await db
@@ -507,7 +644,7 @@ export const GoalQuery = {
     return buildGoalNudges(pairs)
   },
 
-  dailyProgress: async (args?: { date?: string }) => {
+  dailyProgress: async (args?: { date?: string }): Promise<DailyProgress> => {
     const userId = requireUserId()
     const date = args?.date ?? new Date().toISOString().slice(0, 10)
 
@@ -558,7 +695,7 @@ export const GoalQuery = {
 }
 
 export const GoalMutation = {
-  createGoal: async (args: { input: CreateGoalInput }) => {
+  createGoal: async (args: { input: CreateGoalInput }): Promise<Goal> => {
     const userId = requireUserId()
     const input = args.input
     const now = new Date()
@@ -619,7 +756,9 @@ export const GoalMutation = {
     )
   },
 
-  updateGoal: async (args: { id: number; input: UpdateGoalInput }) => {
+  updateGoal: async (
+    args: { id: number; input: UpdateGoalInput },
+  ): Promise<Goal> => {
     const userId = requireUserId()
     const existing = await db
       .selectFrom('goals')
@@ -815,7 +954,7 @@ export const GoalMutation = {
     return withGoalRelations(goal)
   },
 
-  pauseGoal: async (args: { id: number }) => {
+  pauseGoal: async (args: { id: number }): Promise<Goal> => {
     const userId = requireUserId()
     const goal = await db
       .updateTable('goals')
@@ -828,7 +967,7 @@ export const GoalMutation = {
     return withGoalRelations(goal)
   },
 
-  resumeGoal: async (args: { id: number }) => {
+  resumeGoal: async (args: { id: number }): Promise<Goal> => {
     const userId = requireUserId()
     const goal = await db
       .updateTable('goals')
@@ -841,7 +980,7 @@ export const GoalMutation = {
     return withGoalRelations(goal)
   },
 
-  archiveGoal: async (args: { id: number }) => {
+  archiveGoal: async (args: { id: number }): Promise<Goal> => {
     const userId = requireUserId()
     const goal = await db
       .updateTable('goals')

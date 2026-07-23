@@ -4,7 +4,6 @@ import { db } from "../../db/database.ts";
 import type {
   Activity as ActivityRow,
   Database,
-  Group as GroupRow,
   NewActivity,
   NewActivityCompletion,
   NewDeviceToken,
@@ -51,6 +50,66 @@ import {
 
 interface ParsedRecurrencePattern extends Omit<RecurrencePatternRow, "config"> {
   config: RecurrenceConfig;
+}
+
+/** Named return shapes so Pylon emits GraphQL object types (not `Any!`). */
+export interface Group {
+  id: number;
+  user_id: number;
+  name: string;
+  color: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Activity {
+  id: number;
+  user_id: number;
+  group_id: number | null;
+  title: string;
+  description: string | null;
+  start_time: string;
+  end_time: string;
+  is_recurring: boolean;
+  date: string | null;
+  notification_offsets: number[];
+  created_at: Date;
+  updated_at: Date;
+  recurrencePattern: () => Promise<ParsedRecurrencePattern | null>;
+  group: () => Promise<Group | null>;
+}
+
+export interface ActivityCompletion {
+  id: number;
+  activity_id: number;
+  user_id: number;
+  occurrence_date: string;
+  duration_minutes: number | null;
+  completed_at: Date;
+  metadata: {
+    title?: string;
+    notes?: string;
+    trigger_events?: string[];
+  } | null;
+}
+
+export interface CompleteActivityResult extends ActivityCompletion {
+  grantedRewards: Array<Record<string, unknown> | null | undefined>;
+}
+
+export interface LogTimeResult {
+  id: number;
+  user_id: number;
+  source_type: string;
+  activity_id: number | null;
+  group_id: number | null;
+  completion_id: number | null;
+  occurred_at: Date;
+  occurrence_date: string | null;
+  metric: string;
+  amount: number;
+  metadata: Record<string, unknown> | null;
+  created_at: Date;
 }
 
 function requireUserId(): number {
@@ -116,7 +175,7 @@ async function fetchOwnedActivity(activityId: number, userId: number) {
 // Pylon resolves nested GraphQL fields from (possibly async) properties on
 // the returned object, not from a separate resolver map — so nested data is
 // attached inline here rather than via a standalone resolver export.
-function withActivityRelations(activity: ActivityRow) {
+function withActivityRelations(activity: ActivityRow): Activity {
   return {
     ...activity,
     recurrencePattern: async (): Promise<ParsedRecurrencePattern | null> => {
@@ -127,7 +186,7 @@ function withActivityRelations(activity: ActivityRow) {
       if (!config) return null;
       return { ...pattern, config };
     },
-    group: async (): Promise<GroupRow | null> => {
+    group: async (): Promise<Group | null> => {
       if (activity.group_id == null) return null;
       return await db
         .selectFrom("groups")
@@ -139,7 +198,7 @@ function withActivityRelations(activity: ActivityRow) {
 }
 
 export const Query = {
-  groups: async (args?: Record<string, never>) => {
+  groups: async (args?: Record<string, never>): Promise<Group[]> => {
     void args;
     const userId = requireUserId();
     return await db
@@ -150,7 +209,7 @@ export const Query = {
       .execute();
   },
 
-  group: async (args: { id: number }) => {
+  group: async (args: { id: number }): Promise<Group | null> => {
     const userId = requireUserId();
     const { id } = args;
     return await db
@@ -161,7 +220,7 @@ export const Query = {
       .executeTakeFirst() ?? null;
   },
 
-  activities: async (args?: Record<string, never>) => {
+  activities: async (args?: Record<string, never>): Promise<Activity[]> => {
     void args;
     const userId = requireUserId();
     const rows = await db
@@ -172,7 +231,7 @@ export const Query = {
     return rows.map(withActivityRelations);
   },
 
-  activity: async (args: { id: number }) => {
+  activity: async (args: { id: number }): Promise<Activity | null> => {
     const userId = requireUserId();
     const { id } = args;
     const row = await db
@@ -188,7 +247,7 @@ export const Query = {
     activityId?: number;
     fromDate?: string;
     toDate?: string;
-  }) => {
+  }): Promise<ActivityCompletion[]> => {
     const userId = requireUserId();
     let query = db
       .selectFrom("activity_completions")
@@ -213,7 +272,7 @@ export const Query = {
 };
 
 export const Mutation = {
-  createGroup: async (args: { input: CreateGroupInput }) => {
+  createGroup: async (args: { input: CreateGroupInput }): Promise<Group> => {
     const { input } = args;
     const userId = requireUserId();
     const name = validateGroupName(input.name);
@@ -233,7 +292,9 @@ export const Mutation = {
       .executeTakeFirstOrThrow();
   },
 
-  updateGroup: async (args: { id: number; input: UpdateGroupInput }) => {
+  updateGroup: async (
+    args: { id: number; input: UpdateGroupInput },
+  ): Promise<Group> => {
     const { id, input } = args;
     const userId = requireUserId();
 
@@ -279,7 +340,7 @@ export const Mutation = {
 
   createActivity: async (
     args: { input: CreateActivityInput },
-  ) => {
+  ): Promise<Activity> => {
     const { input } = args;
     const userId = requireUserId();
 
@@ -333,7 +394,7 @@ export const Mutation = {
 
   updateActivity: async (
     args: { id: number; input: UpdateActivityInput },
-  ) => {
+  ): Promise<Activity> => {
     const { id, input } = args;
     const userId = requireUserId();
 
@@ -439,7 +500,9 @@ export const Mutation = {
     return result.length > 0;
   },
 
-  completeActivity: async (args: { input: CompleteActivityInput }) => {
+  completeActivity: async (args: {
+    input: CompleteActivityInput;
+  }): Promise<CompleteActivityResult> => {
     const userId = requireUserId();
     const { input } = args;
     const occurrenceDate = validateOccurrenceDate(input.occurrenceDate);
@@ -593,7 +656,7 @@ export const Mutation = {
     return true;
   },
 
-  logTime: async (args: { input: LogTimeInput }) => {
+  logTime: async (args: { input: LogTimeInput }): Promise<LogTimeResult> => {
     const userId = requireUserId();
     const { input } = args;
     const minutes = validatePositiveDuration(input.durationMinutes);

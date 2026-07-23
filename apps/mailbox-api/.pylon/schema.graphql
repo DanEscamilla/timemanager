@@ -43,26 +43,14 @@ input GenerateParsingTemplateInputInput {
 	hints: String
 }
 type Query {
-mailboxes: Any!
-domainFilters(mailboxId: Number!): Any!
-messages(mailboxId: Number!): Any!
-extractionArtifacts(mailboxId: Number, status: String): Any!
-syncRuns(mailboxId: Number!): Any!
-parsingTemplates(mailboxId: Number!): Any!
+mailboxes: [Mailbox!]!
+domainFilters(mailboxId: Number!): [DomainFilter!]!
+messages(mailboxId: Number!): [Message!]!
+extractionArtifacts(mailboxId: Number, status: String): [ExtractionArtifact!]!
+syncRuns(mailboxId: Number!): [SyncRun!]!
+parsingTemplates(mailboxId: Number!): [ParsingTemplate!]!
 }
-type Mutation {
-createMailbox(input: CreateMailboxInputInput!): CreateMailbox!
-deleteMailbox(id: Number!): Boolean!
-setDomainFilters(input: SetDomainFiltersInputInput!): Any!
-triggerSync(mailboxId: Number!): CreateMailbox!
-updateArtifactStatus(input: UpdateArtifactStatusInputInput!): UpdateArtifactStatus!
-connectGmail(input: ConnectGmailInputInput!): CreateMailbox!
-createParsingTemplate(input: CreateParsingTemplateInputInput!): CreateParsingTemplate!
-updateParsingTemplate(input: UpdateParsingTemplateInputInput!): CreateParsingTemplate!
-deleteParsingTemplate(id: Number!): Boolean!
-generateParsingTemplate(input: GenerateParsingTemplateInputInput!): CreateParsingTemplate!
-}
-type CreateMailbox {
+type Mailbox {
 id: Number!
 user_id: Number!
 provider: String!
@@ -74,7 +62,25 @@ last_synced_at: String
 created_at: String!
 updated_at: String!
 }
-type UpdateArtifactStatus {
+type DomainFilter {
+id: Number!
+mailbox_id: Number!
+pattern: String!
+created_at: String!
+}
+type Message {
+id: Number!
+mailbox_id: Number!
+provider_message_id: String!
+rfc_message_id: String!
+from_address: String!
+subject: String!
+received_at: String!
+text_body: String
+html_body: String
+created_at: String!
+}
+type ExtractionArtifact {
 id: Number!
 message_id: Number!
 kind: String!
@@ -85,7 +91,16 @@ published_expense_id: Number
 created_at: String!
 updated_at: String!
 }
-type CreateParsingTemplate {
+type SyncRun {
+id: Number!
+mailbox_id: Number!
+started_at: String!
+finished_at: String
+fetched_count: Number!
+extracted_count: Number!
+error_text: String
+}
+type ParsingTemplate {
 id: Number!
 mailbox_id: Number!
 user_id: Number!
@@ -98,6 +113,18 @@ source_message_id: Number
 version: Number!
 created_at: String!
 updated_at: String!
+}
+type Mutation {
+createMailbox(input: CreateMailboxInputInput!): Mailbox!
+deleteMailbox(id: Number!): Boolean!
+setDomainFilters(input: SetDomainFiltersInputInput!): [DomainFilter!]!
+triggerSync(mailboxId: Number!): Mailbox!
+updateArtifactStatus(input: UpdateArtifactStatusInputInput!): ExtractionArtifact!
+connectGmail(input: ConnectGmailInputInput!): Mailbox!
+createParsingTemplate(input: CreateParsingTemplateInputInput!): ParsingTemplate!
+updateParsingTemplate(input: UpdateParsingTemplateInputInput!): ParsingTemplate!
+deleteParsingTemplate(id: Number!): Boolean!
+generateParsingTemplate(input: GenerateParsingTemplateInputInput!): ParsingTemplate!
 }
 scalar ID
 scalar Int

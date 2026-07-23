@@ -17,7 +17,7 @@ input ArgsInput_2 {
 input RewardInventoryFilterInput {
 	search: String
 	stackableOnly: Boolean
-	sort: NAME_RECENT_QUANTITYInput
+	sort: RECENT_NAME_QUANTITYInput
 	limit: Number
 	offset: Number
 }
@@ -319,65 +319,133 @@ input LogTimeInputInput {
 	notes: String
 }
 type Query {
-rewardDefinitions(args: ArgsInput!): Any!
+rewardDefinitions(args: ArgsInput!): [RewardDefinition!]!
 rewardDefinition(args: ArgsInput_1!): RewardDefinition
-rewardInventory(args: ArgsInput_2!): Any!
-rewardHistory(args: ArgsInput_3!): Any!
-rewardRules(args: ArgsInput_4!): Any!
+rewardInventory(args: ArgsInput_2!): [RewardInventoryItem!]!
+rewardHistory(args: ArgsInput_3!): [RewardHistoryItem!]!
+rewardRules(args: ArgsInput_4!): [RewardRule!]!
 recentAssets(args: ArgsInput_5!): [RecentAssets!]!
 rewardNudges(_args: Object): [RewardNudge!]!
-goals(args: ArgsInput_6): Any!
+goals(args: ArgsInput_6): [Goal!]!
 goal(args: ArgsInput_7!): Goal
 goalNudges(args: Object): [GoalNudge!]!
 dailyProgress(args: ArgsInput_8): DailyProgress!
-groups(args: Object): Any!
-group(args: ArgsInput_9!): Any!
-activities(args: Object): Any!
+groups(args: Object): [Group!]!
+group(args: ArgsInput_9!): Group
+activities(args: Object): [Activity!]!
 activity(args: ArgsInput_10!): Activity
-activityCompletions(args: ArgsInput_11): Any!
+activityCompletions(args: ArgsInput_11): [ActivityCompletion!]!
 }
 type RewardDefinition {
-tags: [String!]!
-image_url: String
-image: Image
-user_id: Number!
-sort_order: Number!
-name: String!
 id: Number!
+user_id: Number!
+name: String!
 description: String
 notes: String
 category: String
+tags: [String!]!
 color: String!
 icon: String
 image_asset_id: Number
 stackable: Boolean!
 default_quantity: Number!
+sort_order: Number!
 archived_at: Date
 created_at: Date!
 updated_at: Date!
+image_url: String
+image: RewardImage
 }
-type Image {
-url: String!
-user_id: Number!
+"""
+Named return shapes so Pylon emits GraphQL object types (not `Any!`).
+"""
+type RewardImage {
 id: Number!
-created_at: Date!
+user_id: Number!
 sha256: String!
 content_type: String!
 byte_size: Number!
 storage_key: String!
 ref_count: Number!
+created_at: Date!
 orphaned_at: Date
+url: String!
+}
+type RewardInventoryItem {
+id: Number!
+user_id: Number!
+reward_definition_id: Number!
+quantity: Number!
+stack_key: String
+first_earned_at: Date!
+last_earned_at: Date!
+updated_at: Date!
+definition: RewardDefinition
+}
+type RewardHistoryItem {
+id: Number!
+user_id: Number!
+type: String!
+reward_definition_id: Number
+inventory_id: Number
+quantity: Number!
+definition_name: String!
+definition_color: String!
+definition_icon: String
+image_asset_id: Number
+source_type: String
+source_id: Number
+trigger_key: String
+rule_id: Number
+activity_id: Number
+goal_id: Number
+completion_id: Number
+cycle_id: Number
+note: String
+metadata: Object
+created_at: Date!
+}
+type RewardRule {
+id: Number!
+user_id: Number!
+source_type: String!
+source_id: Number!
+reward_definition_id: Number!
+quantity: Number!
+mode: String!
+config: RewardRuleConfig!
+enabled: Boolean!
+created_at: Date!
+updated_at: Date!
+definition: RewardDefinition
+}
+type RewardRuleConfig {
+once: Boolean
+cooldown_hours: Number
+max_grants_total: Number
+max_grants_per_period: Number
+period_hours: Number
+probability: Number
+"""
+Pool of definition ids for random_pool mode.
+"""
+pool: [Pool!]
+}
+type Pool {
+definition_id: Number!
+weight: Number
+quantity: Number
 }
 type RecentAssets {
 url: String!
-user_id: Number!
 id: Number!
-created_at: Date!
+user_id: Number!
 sha256: String!
 content_type: String!
 byte_size: Number!
 storage_key: String!
 ref_count: Number!
+created_at: Date!
 orphaned_at: Date
 }
 type RewardNudge {
@@ -389,32 +457,32 @@ definitionId: Number
 inventoryId: Number
 }
 type Goal {
-target_value: Number!
-startsAt: String!
-lifecyclePhase: GoalLifecyclePhase!
-config: GoalConfig!
-recurrence: GoalRecurrenceConfig
-deadline: GoalDeadlineConfig
-links: Any!
-activeCycle: Any!
-cycles: Any!
-dependencies: Any!
-snapshots: Any!
-isLocked: Boolean!
-user_id: Number!
-sort_order: Number!
 id: Number!
+user_id: Number!
+title: String!
 description: String
 color: String!
 icon: String
+rule_type: String!
+metric: String!
+target_value: Number!
+config: GoalConfig!
+status: String!
+recurrence: GoalRecurrenceConfig
+deadline: GoalDeadlineConfig
+priority: Number!
+sort_order: Number!
+starts_at: Date!
 created_at: Date!
 updated_at: Date!
-priority: Number!
-title: String!
-rule_type: String!
-metric: GoalMetric!
-status: GoalStatus!
-starts_at: Date!
+startsAt: String!
+lifecyclePhase: GoalLifecyclePhase!
+links: [GoalLink!]!
+activeCycle: ActiveCycle
+cycles: [GoalCycleView!]!
+dependencies: [GoalDependency!]!
+snapshots: [GoalSnapshot!]!
+isLocked: Boolean!
 }
 type GoalConfig {
 composite_mode: ALL_ANY_WEIGHTED
@@ -437,6 +505,90 @@ days_after_cycle_start: Number
 grace_days: Number
 warn_days: Number
 }
+type GoalLink {
+id: Number!
+goal_id: Number!
+link_type: String!
+activity_id: Number
+group_id: Number
+weight: Number!
+created_at: Date!
+activity: LinkedActivity
+group: LinkedGroup
+}
+"""
+Named return shapes so Pylon emits GraphQL object types (not `Any!`).
+"""
+type LinkedActivity {
+id: Number!
+user_id: Number!
+group_id: Number
+title: String!
+description: String
+start_time: String!
+end_time: String!
+is_recurring: Boolean!
+date: String
+notification_offsets: [Number!]!
+created_at: Date!
+updated_at: Date!
+}
+type LinkedGroup {
+id: Number!
+user_id: Number!
+name: String!
+color: String!
+created_at: Date!
+updated_at: Date!
+}
+type ActiveCycle {
+deadlineState: DeadlineState!
+percentComplete: Number!
+remaining: Number!
+id: Number!
+goal_id: Number!
+cycle_index: Number!
+starts_at: Date!
+ends_at: Date
+deadline_at: Date
+target_value: Number!
+current_value: Number!
+status: String!
+carry_over: Number!
+created_at: Date!
+updated_at: Date!
+}
+type GoalCycleView {
+id: Number!
+goal_id: Number!
+cycle_index: Number!
+starts_at: Date!
+ends_at: Date
+deadline_at: Date
+target_value: Number!
+current_value: Number!
+status: String!
+carry_over: Number!
+created_at: Date!
+updated_at: Date!
+}
+type GoalDependency {
+id: Number!
+goal_id: Number!
+depends_on_goal_id: Number!
+requirement: String!
+threshold: Number
+weight: Number!
+created_at: Date!
+dependsOn: Goal
+}
+type GoalSnapshot {
+id: Number!
+goal_cycle_id: Number!
+as_of: String!
+value: Number!
+created_at: Date!
+}
 type GoalNudge {
 kind: GoalNudgeKind!
 goalId: Number!
@@ -446,26 +598,48 @@ severity: INFO_SUCCESS_WARNING!
 }
 type DailyProgress {
 date: String!
-completedCount: Any!
-minutesToday: Any!
+completedCount: Number!
+minutesToday: Number!
 streakDays: Number!
-completions: Any!
+completions: [ActivityCompletionRow!]!
 }
-type Activity {
-recurrencePattern: ParsedRecurrencePattern
-group: Group
-user_id: Number!
+type ActivityCompletionRow {
 id: Number!
-description: String
+activity_id: Number!
+user_id: Number!
+occurrence_date: String!
+duration_minutes: Number
+completed_at: Date!
+metadata: Metadata
+}
+type Metadata {
+title: String
+notes: String
+trigger_events: [String!]
+}
+type Group {
+id: Number!
+user_id: Number!
+name: String!
+color: String!
 created_at: Date!
 updated_at: Date!
-title: String!
+}
+type Activity {
+id: Number!
+user_id: Number!
 group_id: Number
+title: String!
+description: String
 start_time: String!
 end_time: String!
 is_recurring: Boolean!
 date: String
 notification_offsets: [Number!]!
+created_at: Date!
+updated_at: Date!
+recurrencePattern: ParsedRecurrencePattern
+group: Group
 }
 type ParsedRecurrencePattern {
 config: RecurrenceConfig!
@@ -483,13 +657,19 @@ interval_days: Number
 start_date: String!
 end_date: String
 }
-type Group {
-user_id: Number!
-name: String!
+type ActivityCompletion {
 id: Number!
-color: String!
-created_at: Date!
-updated_at: Date!
+activity_id: Number!
+user_id: Number!
+occurrence_date: String!
+duration_minutes: Number
+completed_at: Date!
+metadata: Metadata_1
+}
+type Metadata_1 {
+title: String
+notes: String
+trigger_events: [String!]
 }
 type Mutation {
 registerDeviceToken(args: ArgsInput_12!): Boolean!
@@ -499,12 +679,12 @@ updateRewardDefinition(args: ArgsInput_15!): RewardDefinition!
 archiveRewardDefinition(args: ArgsInput_16!): RewardDefinition!
 unarchiveRewardDefinition(args: ArgsInput_17!): RewardDefinition!
 deleteRewardDefinition(args: ArgsInput_18!): Boolean!
-attachRewardRule(args: ArgsInput_19!): AttachRewardRule!
+attachRewardRule(args: ArgsInput_19!): RewardRule!
 detachRewardRule(args: ArgsInput_20!): Boolean!
 consumeReward(args: ArgsInput_21!): ConsumeReward!
 discardReward(args: ArgsInput_22!): DiscardReward!
 restoreReward(args: ArgsInput_23!): RestoreReward!
-manualGrantReward(args: ArgsInput_24!): ManualGrantReward
+manualGrantReward(args: ArgsInput_24!): RewardHistoryItem
 recomputeRewardInventory: Boolean!
 createGoal(args: ArgsInput_25!): Goal!
 updateGoal(args: ArgsInput_26!): Goal!
@@ -513,95 +693,54 @@ resumeGoal(args: ArgsInput_28!): Goal!
 archiveGoal(args: ArgsInput_29!): Goal!
 deleteGoal(args: ArgsInput_30!): Boolean!
 recomputeGoalProgress(args: Object): RecomputeGoalProgress!
-createGroup(args: ArgsInput_31!): Any!
-updateGroup(args: ArgsInput_32!): Any!
+createGroup(args: ArgsInput_31!): Group!
+updateGroup(args: ArgsInput_32!): Group!
 deleteGroup(args: ArgsInput_33!): Boolean!
 createActivity(args: ArgsInput_34!): Activity!
 updateActivity(args: ArgsInput_35!): Activity!
 deleteActivity(args: ArgsInput_36!): Boolean!
-completeActivity(args: ArgsInput_37!): Any!
+completeActivity(args: ArgsInput_37!): CompleteActivityResult!
 undoCompletion(args: ArgsInput_38!): Boolean!
-logTime(args: ArgsInput_39!): Any!
-}
-type AttachRewardRule {
-config: RewardRuleConfig!
-definition: RewardDefinition
-user_id: Number!
-id: Number!
-created_at: Date!
-updated_at: Date!
-quantity: Number!
-source_type: String!
-source_id: Number!
-reward_definition_id: Number!
-mode: RewardRuleMode!
-enabled: Boolean!
-}
-type RewardRuleConfig {
-once: Boolean
-cooldown_hours: Number
-max_grants_total: Number
-max_grants_per_period: Number
-period_hours: Number
-probability: Number
-"""
-Pool of definition ids for random_pool mode.
-"""
-pool: [Pool!]
-}
-type Pool {
-definition_id: Number!
-weight: Number
-quantity: Number
+logTime(args: ArgsInput_39!): LogTimeResult!
 }
 type ConsumeReward {
-inventory: Inventory
-transaction: ManualGrantReward!
-}
-type Inventory {
-definition: RewardDefinition
-user_id: Number!
-id: Number!
-updated_at: Date!
-quantity: Number!
-reward_definition_id: Number!
-stack_key: String
-first_earned_at: Date!
-last_earned_at: Date!
-}
-type ManualGrantReward {
-metadata: Any!
-user_id: Number!
-id: Number!
-image_asset_id: Number
-created_at: Date!
-quantity: Number!
-source_type: String
-source_id: Number
-reward_definition_id: Number
-type: RewardTransactionType!
-inventory_id: Number
-definition_name: String!
-definition_color: String!
-definition_icon: String
-trigger_key: String
-rule_id: Number
-activity_id: Number
-goal_id: Number
-completion_id: Number
-cycle_id: Number
-note: String
+inventory: RewardInventoryItem
+transaction: RewardHistoryItem!
 }
 type DiscardReward {
-inventory: Inventory
-transaction: ManualGrantReward!
+inventory: RewardInventoryItem
+transaction: RewardHistoryItem!
 }
 type RestoreReward {
-inventory: Inventory!
-transaction: ManualGrantReward!
+inventory: RewardInventoryItem!
+transaction: RewardHistoryItem!
 }
 type RecomputeGoalProgress {
 recomputed: Number!
+}
+type CompleteActivityResult {
+grantedRewards: [Object]!
+id: Number!
+activity_id: Number!
+user_id: Number!
+occurrence_date: String!
+duration_minutes: Number
+completed_at: Date!
+metadata: Metadata_1
+}
+type LogTimeResult {
+id: Number!
+user_id: Number!
+source_type: String!
+activity_id: Number
+group_id: Number
+completion_id: Number
+occurred_at: Date!
+occurrence_date: String
+metric: String!
+amount: Number!
+metadata: Object
+created_at: Date!
 }
 scalar ID
 scalar Int
@@ -625,18 +764,7 @@ enum INFO_SUCCESS {
 	success
 }
 enum GoalLifecyclePhase {
-	active
-	paused
-	completed
-	archived
-	failed
 	scheduled
-}
-enum GoalMetric {
-	count
-	duration
-}
-enum GoalStatus {
 	active
 	paused
 	completed
@@ -662,6 +790,12 @@ enum ABSOLUTE_RELATIVE {
 	absolute
 	relative
 }
+enum DeadlineState {
+	failed
+	on_track
+	approaching
+	overdue
+}
 enum GoalNudgeKind {
 	deadline_approaching
 	deadline_overdue
@@ -680,21 +814,9 @@ enum WEEKLY_MONTHLY_EVERY_X_DAYS {
 	monthly
 	every_x_days
 }
-enum RewardRuleMode {
-	fixed
-	probability
-	random_pool
-}
-enum RewardTransactionType {
-	earn
-	consume
-	delete
-	restore
-	adjust
-}
-enum NAME_RECENT_QUANTITYInput {
-	name
+enum RECENT_NAME_QUANTITYInput {
 	recent
+	name
 	quantity
 }
 enum FIXED_PROBABILITY_RANDOM_POOLInput {

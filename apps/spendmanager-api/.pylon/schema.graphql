@@ -105,49 +105,56 @@ input ArgsInput_18 {
 	token: String!
 }
 type Query {
-categories(args: ArgsInput): Any!
+categories(args: ArgsInput): [Category!]!
 category(args: ArgsInput_1!): Category
-expenses(args: ArgsInput_2): Any!
+expenses(args: ArgsInput_2): [Expense!]!
 expense(args: ArgsInput_3!): Expense
-expenseTotals(args: ArgsInput_4!): Any!
-budgets(args: ArgsInput_5): Any!
+expenseTotals(args: ArgsInput_4!): [ExpenseTotal!]!
+budgets(args: ArgsInput_5): [Budget!]!
 budget(args: ArgsInput_6!): Budget
 budgetStatuses(args: ArgsInput_7): [BudgetStatusRow!]!
 }
 type Category {
-archived_at: String
-created_at: String!
-updated_at: String!
 id: Number!
 user_id: Number!
 name: String!
 color: String!
-}
-type Expense {
-amount_cents: Number!
-created_at: String!
-updated_at: String!
-id: Number!
-user_id: Number!
-category_id: Number!
-currency: String!
-spent_on: String!
-note: String
-}
-type Budget {
-amount_cents: Number!
 archived_at: String
 created_at: String!
 updated_at: String!
+}
+type Expense {
+id: Number!
+user_id: Number!
+category_id: Number!
+amount_cents: Number!
+currency: String!
+spent_on: String!
+note: String
+created_at: String!
+updated_at: String!
+}
+type ExpenseTotal {
+category_id: Number!
+category_name: String!
+category_color: String!
+currency: String!
+total_cents: Number!
+}
+type Budget {
 id: Number!
 user_id: Number!
 name: String!
 category_id: Number
+amount_cents: Number!
 currency: String!
 interval_unit: String!
 interval_count: Number!
 anchor_date: String!
 alert_percent: Number!
+archived_at: String
+created_at: String!
+updated_at: String!
 }
 type BudgetStatusRow {
 budget_id: Number!
