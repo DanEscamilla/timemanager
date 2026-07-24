@@ -1,3 +1,5 @@
+import { classifyEmailSpendRelevanceUseCase } from './classify_email_spend_relevance.ts'
+import { generateEmailRejectTemplateUseCase } from './generate_email_reject_template.ts'
 import { generateEmailSpendTemplateUseCase } from './generate_email_spend_template.ts'
 import { summarizeTextUseCase } from './summarize_text.ts'
 import type { UseCase, UseCaseInputField } from './types.ts'
@@ -7,6 +9,8 @@ import type { UseCase, UseCaseInputField } from './types.ts'
 const useCases: UseCase<any, any>[] = [
   summarizeTextUseCase,
   generateEmailSpendTemplateUseCase,
+  generateEmailRejectTemplateUseCase,
+  classifyEmailSpendRelevanceUseCase,
 ]
 
 const byId = new Map(useCases.map((uc) => [uc.id, uc]))

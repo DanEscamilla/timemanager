@@ -5,11 +5,6 @@ sealed class SourceEmailDisplay {
   const SourceEmailDisplay();
 }
 
-class SourceEmailHtml extends SourceEmailDisplay {
-  const SourceEmailHtml(this.html);
-  final String html;
-}
-
 class SourceEmailPlain extends SourceEmailDisplay {
   const SourceEmailPlain(this.text);
   final String text;
@@ -19,24 +14,39 @@ class SourceEmailEmpty extends SourceEmailDisplay {
   const SourceEmailEmpty();
 }
 
-/// Prefer HTML for visualization; fall back to plain text when HTML is absent.
-SourceEmailDisplay displayForSourceEmail(MailboxMessage message) {
-  final html = message.htmlBody?.trim();
-  if (html != null && html.isNotEmpty) {
-    return SourceEmailHtml(html);
-  }
+final _htmlLooking = RegExp(
+  r'^\s*(<!DOCTYPE\b|<html\b|<head\b|<body\b|<div\b|<table\b|<p\b|<br\b|<span\b)',
+  caseSensitive: false,
+);
 
+bool looksLikeHtml(String value) => _htmlLooking.hasMatch(value);
+
+/// Bodies are extracted to plain text at sync time; show [MailboxMessage.textBody].
+/// Light HTML strip remains only for unmigrated / edge-case rows.
+SourceEmailDisplay displayForSourceEmail(MailboxMessage message) {
   final text = message.textBody?.trim();
-  if (text != null && text.isNotEmpty) {
+  if (text == null || text.isEmpty) return const SourceEmailEmpty();
+
+  if (!looksLikeHtml(text)) {
     return SourceEmailPlain(text);
   }
 
+  final stripped = stripHtmlToPlainText(text);
+  if (stripped.isNotEmpty) return SourceEmailPlain(stripped);
   return const SourceEmailEmpty();
 }
 
-/// Minimal tag strip kept for defensive plain-text conversion if needed.
+/// Minimal tag strip for rare rows that still contain raw HTML in text_body.
 String stripHtmlToPlainText(String html) {
   var s = html
+      .replaceAll(
+        RegExp(r'<script[\s\S]*?</script>', caseSensitive: false),
+        '',
+      )
+      .replaceAll(
+        RegExp(r'<style[\s\S]*?</style>', caseSensitive: false),
+        '',
+      )
       .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
       .replaceAll(RegExp(r'</p\s*>', caseSensitive: false), '\n')
       .replaceAll(RegExp(r'</div\s*>', caseSensitive: false), '\n')

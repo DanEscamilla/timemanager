@@ -5,9 +5,10 @@ import {
   matchesFromPattern,
 } from './domain_filter.ts'
 
-Deno.test('matchesDomainFilter: empty patterns accept all', () => {
-  assertEquals(matchesDomainFilter('a@b.com', []), true)
-  assertEquals(matchesDomainFilter('a@b.com', null), true)
+Deno.test('matchesDomainFilter: empty patterns reject all', () => {
+  assertEquals(matchesDomainFilter('a@b.com', []), false)
+  assertEquals(matchesDomainFilter('a@b.com', null), false)
+  assertEquals(filterMessagesByDomain([{ from: 'a@b.com' }], []), [])
 })
 
 Deno.test('matchesDomainFilter: exact email', () => {

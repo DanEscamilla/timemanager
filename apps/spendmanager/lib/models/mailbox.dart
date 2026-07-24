@@ -11,6 +11,8 @@ class MailboxAccount {
     required this.enabled,
     this.syncCursor,
     required this.syncRequested,
+    this.syncSince,
+    this.syncUntil,
     this.lastSyncedAt,
     required this.createdAt,
     required this.updatedAt,
@@ -23,6 +25,8 @@ class MailboxAccount {
   final bool enabled;
   final String? syncCursor;
   final bool syncRequested;
+  final DateTime? syncSince;
+  final DateTime? syncUntil;
   final DateTime? lastSyncedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -36,6 +40,8 @@ class MailboxAccount {
       enabled: json['enabled'] as bool? ?? true,
       syncCursor: json['sync_cursor'] as String?,
       syncRequested: json['sync_requested'] as bool? ?? false,
+      syncSince: parseJsonDateOrNull(json['sync_since']),
+      syncUntil: parseJsonDateOrNull(json['sync_until']),
       lastSyncedAt: parseJsonDateOrNull(json['last_synced_at']),
       createdAt: parseJsonDate(json['created_at']),
       updatedAt: parseJsonDate(json['updated_at']),
@@ -76,7 +82,6 @@ class MailboxMessage {
     required this.subject,
     required this.receivedAt,
     this.textBody,
-    this.htmlBody,
     required this.createdAt,
   });
 
@@ -88,7 +93,6 @@ class MailboxMessage {
   final String subject;
   final DateTime receivedAt;
   final String? textBody;
-  final String? htmlBody;
   final DateTime createdAt;
 
   factory MailboxMessage.fromJson(Map<String, dynamic> json) {
@@ -101,7 +105,6 @@ class MailboxMessage {
       subject: json['subject'] as String,
       receivedAt: parseJsonDate(json['received_at']),
       textBody: json['text_body'] as String?,
-      htmlBody: json['html_body'] as String?,
       createdAt: parseJsonDate(json['created_at']),
     );
   }
@@ -142,6 +145,14 @@ class ExtractionArtifact {
   String? get spentOn => payload['spentOn'] as String?;
   String? get sourceSubject => payload['sourceSubject'] as String?;
 
+  /// Parsing template id when extracted via a template; null for fallback.
+  int? get templateId {
+    final v = payload['templateId'];
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return null;
+  }
+
   factory ExtractionArtifact.fromJson(Map<String, dynamic> json) {
     final rawPayload = json['payload'];
     final Map<String, dynamic> payload;
@@ -175,16 +186,46 @@ class ExtractionArtifact {
   }
 }
 
+class ExtractionArtifactPage {
+  ExtractionArtifactPage({
+    required this.items,
+    required this.totalCount,
+    required this.page,
+    required this.pageSize,
+  });
+
+  final List<ExtractionArtifact> items;
+  final int totalCount;
+  final int page;
+  final int pageSize;
+
+  int get totalPages =>
+      totalCount == 0 ? 1 : ((totalCount + pageSize - 1) / pageSize).floor();
+
+  factory ExtractionArtifactPage.fromJson(Map<String, dynamic> json) {
+    final list = json['items'] as List<dynamic>? ?? [];
+    return ExtractionArtifactPage(
+      items: list
+          .map((e) => ExtractionArtifact.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      totalCount: asInt(json['totalCount'] ?? json['total_count'] ?? 0),
+      page: asInt(json['page'] ?? 1),
+      pageSize: asInt(json['pageSize'] ?? json['page_size'] ?? 20),
+    );
+  }
+}
+
 class ParsingTemplate {
   ParsingTemplate({
     required this.id,
     required this.mailboxId,
     required this.userId,
     required this.name,
+    required this.kind,
     required this.enabled,
     required this.matchFromPattern,
     this.matchSubjectRegex,
-    required this.extractorsJson,
+    this.extractorsJson,
     this.sourceMessageId,
     required this.version,
     required this.createdAt,
@@ -195,34 +236,67 @@ class ParsingTemplate {
   final int mailboxId;
   final int userId;
   final String name;
+  /// `approve` | `reject`
+  final String kind;
   final bool enabled;
   final String matchFromPattern;
   final String? matchSubjectRegex;
-  final String extractorsJson;
+  /// Null for reject (match-only) templates.
+  final String? extractorsJson;
   final int? sourceMessageId;
   final int version;
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  bool get isApprove => kind == 'approve';
+  bool get isReject => kind == 'reject';
+
   factory ParsingTemplate.fromJson(Map<String, dynamic> json) {
     final extractors = json['extractors'];
+    String? extractorsJson;
+    if (extractors == null) {
+      extractorsJson = null;
+    } else if (extractors is String) {
+      extractorsJson = extractors;
+    } else {
+      extractorsJson = jsonEncode(extractors);
+    }
     return ParsingTemplate(
       id: asInt(json['id']),
       mailboxId: asInt(json['mailbox_id']),
       userId: asInt(json['user_id']),
       name: json['name'] as String,
+      kind: (json['kind'] as String?) ?? 'approve',
       enabled: json['enabled'] as bool? ?? true,
       matchFromPattern: json['match_from_pattern'] as String,
       matchSubjectRegex: json['match_subject_regex'] as String?,
-      extractorsJson: extractors is String
-          ? extractors
-          : jsonEncode(extractors ?? {}),
+      extractorsJson: extractorsJson,
       sourceMessageId: json['source_message_id'] == null
           ? null
           : asInt(json['source_message_id']),
       version: asInt(json['version'] ?? 1),
       createdAt: parseJsonDate(json['created_at']),
       updatedAt: parseJsonDate(json['updated_at']),
+    );
+  }
+}
+
+/// Result of [MailboxRepository.generateTemplate].
+class GenerateTemplateResult {
+  GenerateTemplateResult({
+    required this.template,
+    required this.reevaluatedCount,
+  });
+
+  final ParsingTemplate template;
+  final int reevaluatedCount;
+
+  factory GenerateTemplateResult.fromJson(Map<String, dynamic> json) {
+    return GenerateTemplateResult(
+      template: ParsingTemplate.fromJson(
+        json['template'] as Map<String, dynamic>,
+      ),
+      reevaluatedCount: asInt(json['reevaluatedCount'] ?? 0),
     );
   }
 }

@@ -30,6 +30,7 @@ interface GmailMessageResponse {
   id: string
   internalDate?: string
   payload?: {
+    mimeType?: string
     headers?: Array<{ name: string; value: string }>
     body?: { data?: string }
     parts?: Array<{
@@ -75,15 +76,32 @@ export class GmailMailboxProvider implements MailboxProvider {
   async listMessages(options: {
     cursor: SyncCursor
     limit?: number
+    since?: Date
+    until?: Date
   }): Promise<ListMessagesResult> {
     const limit = Math.min(options.limit ?? 25, 100)
+    const rangeMode = options.since != null || options.until != null
     const parsed = parseGmailCursor(options.cursor)
 
     const params = new URLSearchParams()
     params.set('maxResults', String(limit))
     if (parsed.pageToken) params.set('pageToken', parsed.pageToken)
-    if (parsed.afterUnix) {
-      params.set('q', `after:${parsed.afterUnix}`)
+
+    const qParts: string[] = []
+    if (rangeMode) {
+      // Range backfill ignores incremental done:<unix> watermark.
+      if (options.since) {
+        qParts.push(`after:${Math.floor(options.since.getTime() / 1000) - 1}`)
+      }
+      if (options.until) {
+        // before: is exclusive in Gmail; +1s keeps until inclusive.
+        qParts.push(`before:${Math.floor(options.until.getTime() / 1000) + 1}`)
+      }
+    } else if (parsed.afterUnix) {
+      qParts.push(`after:${parsed.afterUnix}`)
+    }
+    if (qParts.length > 0) {
+      params.set('q', qParts.join(' '))
     }
 
     const list = await this.gmailFetch<GmailListResponse>(
@@ -99,10 +117,16 @@ export class GmailMailboxProvider implements MailboxProvider {
 
     let nextCursor: SyncCursor
     if (list.nextPageToken) {
-      nextCursor = serializeGmailCursor({
-        pageToken: list.nextPageToken,
-        afterUnix: parsed.afterUnix,
-      })
+      if (rangeMode) {
+        nextCursor = serializeGmailCursor({ pageToken: list.nextPageToken })
+      } else {
+        nextCursor = serializeGmailCursor({
+          pageToken: list.nextPageToken,
+          afterUnix: parsed.afterUnix,
+        })
+      }
+    } else if (rangeMode) {
+      nextCursor = null
     } else {
       const newest = messages.reduce(
         (max, m) => Math.max(max, m.receivedAt.getTime()),
@@ -277,8 +301,15 @@ function extractBodies(
   }
 
   visit(payload)
-  if (!textBody && payload.body?.data && !payload.parts) {
-    textBody = decodeBase64Url(payload.body.data)
+  // Single-part messages: assign by mimeType. Do not copy HTML into textBody.
+  if (payload.body?.data && !payload.parts) {
+    const mime = (payload.mimeType ?? '').toLowerCase()
+    const decoded = decodeBase64Url(payload.body.data)
+    if (mime === 'text/html') {
+      if (!htmlBody) htmlBody = decoded
+    } else if (!textBody) {
+      textBody = decoded
+    }
   }
   return { textBody, htmlBody }
 }

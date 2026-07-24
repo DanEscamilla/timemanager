@@ -87,9 +87,14 @@
   "delete": "Delete",
   "archive": "Archive",
 
+  "expensesTabHistory": "History",
+  "expensesTabReview": "Review",
   "expensesEmptyTitle": "No expenses yet",
   "expensesEmptyHint": "Tap + to log your first spend.",
   "expensesEmptyAction": "Add expense",
+  "expensesReviewSetupRequiredTitle": "Email import not set up",
+  "expensesReviewSetupRequiredHint": "Connect a mailbox and allow sender domains to import spending from email.",
+  "expensesReviewSetupCta": "Set up email import",
   "expensesDeleteTitle": "Delete expense?",
   "expensesDeleteConfirm": "Remove this expense?",
   "expensesFormNew": "New expense",
@@ -209,13 +214,15 @@
   "settingsThemeDark": "Dark",
   "settingsSignOut": "Sign out",
   "settingsEmailImport": "Email import",
-  "settingsEmailImportSubtitle": "Connect mailboxes, templates, and review spending",
+  "settingsEmailImportSubtitle": "Connect a mailbox and sender allowlist",
 
   "emailImportTitle": "Email import",
-  "emailImportTabSetup": "Setup",
-  "emailImportTabTemplates": "Templates",
-  "emailImportTabReview": "Review",
-  "emailImportSetupBlurb": "Connect a mailbox, allow sender domains (wildcards supported), sync mail, then generate AI parsing templates once per sender type.",
+  "emailImportWizardStepMailbox": "Mailbox",
+  "emailImportWizardStepSenders": "Senders",
+  "emailImportWizardNext": "Next",
+  "emailImportWizardBack": "Back",
+  "emailImportWizardDone": "Done",
+  "emailImportSetupBlurb": "Connect a mailbox, then allow sender domains or full addresses so we can sync and extract spending.",
   "emailImportAddFixture": "Add demo mailbox",
   "emailImportConnectGmail": "Connect Gmail",
   "emailImportFixtureLabel": "Demo mailbox",
@@ -248,30 +255,82 @@
       }
     }
   },
-  "emailImportDomainFilters": "Sender domain allowlist",
-  "emailImportDomainFiltersHint": "One pattern per line. Examples: amazon.com, *.uber.com, *@shop.com (wildcard needs *.).",
-  "emailImportNoFilters": "No filters (all senders)",
+  "emailImportDomainFilters": "Sender allowlist",
+  "emailImportDomainFiltersHint": "One pattern per line. Domain (all senders): amazon.com. Exact sender: noreply@uber.com",
+  "emailImportNoFilters": "Add at least one sender domain or email address before syncing",
+  "emailImportFiltersRequired": "Add at least one sender allowlist pattern before syncing",
   "emailImportTriggerSync": "Sync now",
+  "emailImportSyncFrom": "From",
+  "emailImportSyncTo": "To",
+  "emailImportSyncClearDate": "Clear",
   "emailImportSyncQueued": "Sync requested. Refresh in a moment.",
   "emailImportMessages": "Recent messages",
   "emailImportNoMessages": "No messages yet. Sync after connecting.",
-  "emailImportGenerateTemplate": "Generate template with AI",
+  "emailImportApproveEmail": "Approve",
+  "emailImportRejectEmail": "Ignore",
   "emailImportGeneratingTemplate": "Generating template… This can take a moment.",
-  "emailImportTemplateGenerated": "Template generated. You can edit it on the Templates tab.",
+  "emailImportApproveTemplateGenerated": "Approved. Matching emails will appear under Review as spending candidates.",
+  "emailImportRejectTemplateGenerated": "Ignored. Matching emails will be skipped.",
+  "emailImportGenerateTemplate": "Generate template with AI",
+  "emailImportTemplateGeneratedWithReeval": "Template generated; updated {count} review items.",
+  "@emailImportTemplateGeneratedWithReeval": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "emailImportTemplateGenerationFailed": "Template generation failed. Please try again.",
-  "emailImportNoTemplates": "No templates yet. Generate one from a sample message on the Setup tab.",
+  "emailImportNoTemplates": "No templates yet. Approve or ignore a sample message on the Setup tab.",
   "emailImportEditTemplate": "Edit template",
   "emailImportTemplateName": "Name",
+  "emailImportTemplateKindApprove": "Approve",
+  "emailImportTemplateKindReject": "Ignore",
   "emailImportMatchFrom": "Match from pattern",
   "emailImportMatchSubject": "Match subject regex (optional)",
   "emailImportExtractorsJson": "Extractors JSON",
-  "emailImportNoPending": "No pending spending candidates.",
+  "emailImportNoPending": "No pending spending candidates. Sync your mailbox to import spending emails.",
   "emailImportAcceptTitle": "Accept as expense",
   "emailImportCategory": "Category",
   "emailImportAccept": "Accept",
   "emailImportReject": "Reject",
+  "emailImportRejectAll": "Reject all",
+  "emailImportRejectAllTitle": "Reject all pending?",
+  "emailImportRejectAllConfirm": "Reject {count} pending spending candidates? This cannot be undone.",
+  "@emailImportRejectAllConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emailImportRejectAllDone": "Rejected {count} candidates.",
+  "@emailImportRejectAllDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emailImportClearInbox": "Clear inbox data",
+  "emailImportClearInboxTitle": "Clear inbox data?",
+  "emailImportClearInboxConfirm": "Remove synced messages, review items, and sync history for this mailbox? Filters and templates stay. The next sync can re-fetch emails.",
+  "emailImportClearInboxDone": "Inbox data cleared.",
   "emailImportNeedCategory": "Create a category before accepting expenses.",
   "emailImportViewEmail": "View email",
+  "emailImportPagePrevious": "Previous",
+  "emailImportPageNext": "Next",
+  "emailImportPageOf": "Page {page} of {totalPages}",
+  "@emailImportPageOf": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "totalPages": {
+        "type": "int"
+      }
+    }
+  },
   "sourceEmailTitle": "Source email",
   "sourceEmailBodyMissing": "No email body was stored for this message.",
   "sourceEmailNotFound": "No source email is linked to this expense.",

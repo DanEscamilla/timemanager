@@ -1,6 +1,8 @@
 import { assertEquals, assertRejects } from 'jsr:@std/assert@1'
 import {
   AiClientError,
+  classifyEmailSpendRelevance,
+  generateEmailRejectTemplate,
   generateEmailSpendTemplate,
 } from './ai_client.ts'
 
@@ -88,4 +90,75 @@ Deno.test('generateEmailSpendTemplate throws AiClientError on non-ok', async () 
     AiClientError,
     'ai-api error 503',
   )
+})
+
+Deno.test('generateEmailRejectTemplate posts to reject use case', async () => {
+  let seenUrl = ''
+  const out = await generateEmailRejectTemplate(
+    {
+      from: 'promos@bank.com',
+      subject: 'Oferta especial',
+      textBody: 'No es un cargo',
+    },
+    {
+      baseUrl: 'http://ai.test',
+      serviceKey: 'test-key',
+      fetchImpl: (input) => {
+        seenUrl = String(input)
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              output: {
+                matchFromPattern: 'bank.com',
+                matchSubjectRegex: 'oferta',
+                nameSuggestion: 'Bank promos',
+              },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
+        )
+      },
+    },
+  )
+  assertEquals(
+    seenUrl,
+    'http://ai.test/v1/use-cases/generate_email_reject_template/run',
+  )
+  assertEquals(out.nameSuggestion, 'Bank promos')
+  assertEquals(out.matchSubjectRegex, 'oferta')
+})
+
+Deno.test('classifyEmailSpendRelevance posts to classify use case', async () => {
+  let seenUrl = ''
+  const out = await classifyEmailSpendRelevance(
+    {
+      from: 'alertas@bank.com',
+      subject: 'Compra',
+      textBody: 'Cargo $10',
+    },
+    {
+      baseUrl: 'http://ai.test',
+      serviceKey: 'test-key',
+      fetchImpl: (input) => {
+        seenUrl = String(input)
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              output: {
+                useful: true,
+                reason: 'Purchase charge',
+              },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
+        )
+      },
+    },
+  )
+  assertEquals(
+    seenUrl,
+    'http://ai.test/v1/use-cases/classify_email_spend_relevance/run',
+  )
+  assertEquals(out.useful, true)
+  assertEquals(out.reason, 'Purchase charge')
 })

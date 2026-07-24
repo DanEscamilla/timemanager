@@ -4,6 +4,10 @@ export interface ListMessagesOptions {
   cursor: SyncCursor
   /** Max messages to return this page. */
   limit?: number
+  /** Inclusive lower bound for receivedAt (one-shot backfill). */
+  since?: Date
+  /** Inclusive upper bound for receivedAt (one-shot backfill). */
+  until?: Date
 }
 
 /**

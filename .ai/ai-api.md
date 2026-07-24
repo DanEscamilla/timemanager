@@ -62,7 +62,9 @@ Self-host later: point `AI_PROVIDER=openai_compatible` at your OpenAI-compatible
 Shipped use cases:
 
 - `summarize_text` — short text summary
-- `generate_email_spend_template` — one-shot structured parsing template from a sample receipt email (used by mailbox-api; worker never calls AI on poll)
+- `generate_email_spend_template` — structured spending parsing template from a sample email (mailbox-api GraphQL + worker auto-template)
+- `generate_email_reject_template` — match-only ignore template from a sample email
+- `classify_email_spend_relevance` — whether an email type is useful for spending extraction (`useful` boolean); worker uses this on unmatched mail before generating a template
 
 ## Non-goals (v1)
 

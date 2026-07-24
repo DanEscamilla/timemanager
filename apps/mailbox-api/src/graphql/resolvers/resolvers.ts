@@ -1,6 +1,7 @@
 import { getContext } from '@getcronit/pylon'
 import {
   SPENDING_CANDIDATE_KIND,
+  messageMatchesAnyTemplate,
   parseSpendTemplateExtractors,
   type SpendingCandidatePayload,
 } from 'mailbox_kit/mod.ts'
@@ -8,8 +9,22 @@ import { db } from '../../db/database.ts'
 import type { NewMailbox } from '../../db/types/schema.ts'
 import {
   AiClientError,
+  generateEmailRejectTemplate,
   generateEmailSpendTemplate,
 } from '../../services/ai_client.ts'
+import {
+  applyTemplatesToMailbox,
+  createKyselyApplyTemplatesStore,
+} from '../../services/apply_templates.ts'
+import {
+  clearInboxData,
+  createKyselyInboxOpsStore,
+  rejectAllPendingArtifacts as rejectAllPendingArtifactsOp,
+} from '../../services/inbox_ops.ts'
+import {
+  createKyselyTemplateReevaluateStore,
+  reevaluatePendingWithTemplate,
+} from '../../services/template_reevaluate.ts'
 import {
   createKyselyMessageLookupStore,
   findOwnedMessage,
@@ -41,13 +56,17 @@ import type {
 } from '../types.ts'
 import {
   InvalidMailboxError,
+  clampArtifactPage,
   validateArtifactStatus,
   validateCategoryId,
   validateDomainPatterns,
   validateLabel,
   validateMatchFromPattern,
+  validateOptionalSyncDate,
   validateProvider,
   validateSubjectRegex,
+  validateSyncDateRange,
+  validateTemplateKind,
   validateTemplateName,
 } from '../validation.ts'
 
@@ -77,6 +96,8 @@ export interface Mailbox {
   enabled: boolean
   sync_cursor: string | null
   sync_requested: boolean
+  sync_since: string | null
+  sync_until: string | null
   last_synced_at: string | null
   created_at: string
   updated_at: string
@@ -114,6 +135,13 @@ export interface ExtractionArtifact {
   updated_at: string
 }
 
+export interface ExtractionArtifactPage {
+  items: ExtractionArtifact[]
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
 export interface SyncRun {
   id: number
   mailbox_id: number
@@ -129,10 +157,11 @@ export interface ParsingTemplate {
   mailbox_id: number
   user_id: number
   name: string
+  kind: string
   enabled: boolean
   match_from_pattern: string
   match_subject_regex: string | null
-  extractors: string
+  extractors: string | null
   source_message_id: number | null
   version: number
   created_at: string
@@ -143,6 +172,11 @@ export interface StartGmailOAuthPayload {
   authorizationUrl: string
 }
 
+export interface GenerateParsingTemplatePayload {
+  template: ParsingTemplate
+  reevaluatedCount: number
+}
+
 function mapMailbox(row: {
   id: number
   user_id: number
@@ -151,6 +185,8 @@ function mapMailbox(row: {
   enabled: boolean
   sync_cursor: string | null
   sync_requested: boolean
+  sync_since?: Date | string | null
+  sync_until?: Date | string | null
   last_synced_at: Date | string | null
   created_at: Date | string
   updated_at: Date | string
@@ -163,6 +199,8 @@ function mapMailbox(row: {
     enabled: row.enabled,
     sync_cursor: row.sync_cursor,
     sync_requested: row.sync_requested,
+    sync_since: asIsoTimestampOrNull(row.sync_since ?? null),
+    sync_until: asIsoTimestampOrNull(row.sync_until ?? null),
     last_synced_at: asIsoTimestampOrNull(row.last_synced_at),
     created_at: asIsoTimestamp(row.created_at),
     updated_at: asIsoTimestamp(row.updated_at),
@@ -261,6 +299,7 @@ function mapParsingTemplate(row: {
   mailbox_id: number
   user_id: number
   name: string
+  kind: string
   enabled: boolean
   match_from_pattern: string
   match_subject_regex: string | null
@@ -270,18 +309,22 @@ function mapParsingTemplate(row: {
   created_at: Date | string
   updated_at: Date | string
 }): ParsingTemplate {
+  let extractors: string | null = null
+  if (row.extractors != null) {
+    extractors = typeof row.extractors === 'string'
+      ? row.extractors
+      : JSON.stringify(row.extractors)
+  }
   return {
     id: row.id,
     mailbox_id: row.mailbox_id,
     user_id: row.user_id,
     name: row.name,
+    kind: row.kind,
     enabled: row.enabled,
     match_from_pattern: row.match_from_pattern,
     match_subject_regex: row.match_subject_regex,
-    extractors:
-      typeof row.extractors === 'string'
-        ? row.extractors
-        : JSON.stringify(row.extractors ?? {}),
+    extractors,
     source_message_id: row.source_message_id,
     version: row.version,
     created_at: asIsoTimestamp(row.created_at),
@@ -367,7 +410,10 @@ const Query = {
     return rows.map(mapDomainFilter)
   },
 
-  async messages(mailboxId: number): Promise<Message[]> {
+  async messages(
+    mailboxId: number,
+    excludeMatchingTemplates?: boolean,
+  ): Promise<Message[]> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, mailboxId)
     const rows = await db
@@ -376,7 +422,27 @@ const Query = {
       .where('mailbox_id', '=', mailboxId)
       .orderBy('received_at', 'desc')
       .execute()
-    return rows.map(mapMessage)
+    const mapped = rows.map(mapMessage)
+    if (!excludeMatchingTemplates) return mapped
+
+    const templates = await db
+      .selectFrom('parsing_templates')
+      .select(['match_from_pattern', 'match_subject_regex', 'enabled'])
+      .where('mailbox_id', '=', mailboxId)
+      .where('enabled', '=', true)
+      .execute()
+    const specs = templates.map((t) => ({
+      matchFromPattern: t.match_from_pattern,
+      matchSubjectRegex: t.match_subject_regex,
+      enabled: t.enabled,
+    }))
+    return mapped.filter(
+      (m) =>
+        !messageMatchesAnyTemplate(
+          { from: m.from_address, subject: m.subject },
+          specs,
+        ),
+    )
   },
 
   async message(id: number): Promise<Message | null> {
@@ -396,24 +462,58 @@ const Query = {
   async extractionArtifacts(
     mailboxId?: number | null,
     status?: string | null,
-  ): Promise<ExtractionArtifact[]> {
+    page?: number | null,
+    pageSize?: number | null,
+  ): Promise<ExtractionArtifactPage> {
     const userId = requireUserId()
-    let q = db
+    const { page: safePage, pageSize: safeSize, offset } = clampArtifactPage(
+      page,
+      pageSize,
+    )
+    const statusFilter =
+      status != null && status !== ''
+        ? validateArtifactStatus(status)
+        : null
+
+    let countQ = db
+      .selectFrom('extraction_artifacts')
+      .innerJoin('messages', 'messages.id', 'extraction_artifacts.message_id')
+      .innerJoin('mailboxes', 'mailboxes.id', 'messages.mailbox_id')
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .where('mailboxes.user_id', '=', userId)
+    if (mailboxId != null) {
+      countQ = countQ.where('messages.mailbox_id', '=', mailboxId)
+    }
+    if (statusFilter != null) {
+      countQ = countQ.where('extraction_artifacts.status', '=', statusFilter)
+    }
+    const countRow = await countQ.executeTakeFirstOrThrow()
+    const totalCount = Number(countRow.count)
+
+    let listQ = db
       .selectFrom('extraction_artifacts')
       .innerJoin('messages', 'messages.id', 'extraction_artifacts.message_id')
       .innerJoin('mailboxes', 'mailboxes.id', 'messages.mailbox_id')
       .selectAll('extraction_artifacts')
       .where('mailboxes.user_id', '=', userId)
-
     if (mailboxId != null) {
-      q = q.where('messages.mailbox_id', '=', mailboxId)
+      listQ = listQ.where('messages.mailbox_id', '=', mailboxId)
     }
-    if (status != null && status !== '') {
-      q = q.where('extraction_artifacts.status', '=', validateArtifactStatus(status))
+    if (statusFilter != null) {
+      listQ = listQ.where('extraction_artifacts.status', '=', statusFilter)
     }
+    const rows = await listQ
+      .orderBy('extraction_artifacts.id', 'desc')
+      .limit(safeSize)
+      .offset(offset)
+      .execute()
 
-    const rows = await q.orderBy('extraction_artifacts.id', 'desc').execute()
-    return rows.map(mapArtifact)
+    return {
+      items: rows.map(mapArtifact),
+      totalCount,
+      page: safePage,
+      pageSize: safeSize,
+    }
   },
 
   async syncRuns(mailboxId: number): Promise<SyncRun[]> {
@@ -448,7 +548,11 @@ const Mutation = {
     const userId = requireUserId()
     const provider = validateProvider(input.provider)
     const label = validateLabel(input.label)
-    const patterns = validateDomainPatterns(input.domainFilters ?? [])
+    // Empty allowed at create (e.g. Gmail OAuth); sync requires filters later.
+    const rawFilters = input.domainFilters ?? []
+    const patterns = rawFilters.length === 0
+      ? []
+      : validateDomainPatterns(rawFilters)
     const now = new Date().toISOString()
 
     const values: NewMailbox = {
@@ -457,7 +561,7 @@ const Mutation = {
       label,
       enabled: input.enabled ?? true,
       sync_cursor: null,
-      sync_requested: true,
+      sync_requested: patterns.length > 0,
       oauth_tokens_json: input.oauthTokensJson ?? null,
       last_synced_at: null,
       created_at: now,
@@ -511,6 +615,16 @@ const Mutation = {
     return Number(result.numDeletedRows ?? 0) > 0
   },
 
+  async clearInbox(mailboxId: number): Promise<Mailbox> {
+    const userId = requireUserId()
+    await requireOwnedMailbox(userId, mailboxId)
+    const row = await clearInboxData(
+      createKyselyInboxOpsStore(db),
+      mailboxId,
+    )
+    return mapMailbox(row)
+  },
+
   async setDomainFilters(input: SetDomainFiltersInput): Promise<DomainFilter[]> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, input.mailboxId)
@@ -544,18 +658,51 @@ const Mutation = {
     return rows.map(mapDomainFilter)
   },
 
-  async triggerSync(mailboxId: number): Promise<Mailbox> {
+  async triggerSync(
+    mailboxId: number,
+    since?: string | null,
+    until?: string | null,
+  ): Promise<Mailbox> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, mailboxId)
+    const filterCount = await db
+      .selectFrom('domain_filters')
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .where('mailbox_id', '=', mailboxId)
+      .executeTakeFirstOrThrow()
+    if (Number(filterCount.count) < 1) {
+      throw new InvalidMailboxError(
+        'domain filters are required before sync',
+      )
+    }
+    const range = validateSyncDateRange(
+      validateOptionalSyncDate(since, 'since'),
+      validateOptionalSyncDate(until, 'until'),
+    )
     const now = new Date().toISOString()
     const row = await db
       .updateTable('mailboxes')
-      .set({ sync_requested: true, updated_at: now })
+      .set({
+        sync_requested: true,
+        sync_since: range.since,
+        sync_until: range.until,
+        sync_backfill_cursor: null,
+        updated_at: now,
+      })
       .where('id', '=', mailboxId)
       .where('user_id', '=', userId)
       .returningAll()
       .executeTakeFirstOrThrow()
     return mapMailbox(row)
+  },
+
+  async rejectAllPendingArtifacts(mailboxId: number): Promise<number> {
+    const userId = requireUserId()
+    await requireOwnedMailbox(userId, mailboxId)
+    return await rejectAllPendingArtifactsOp(
+      createKyselyInboxOpsStore(db),
+      mailboxId,
+    )
   },
 
   async updateArtifactStatus(
@@ -732,10 +879,19 @@ const Mutation = {
   ): Promise<ParsingTemplate> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, input.mailboxId)
+    const kind = validateTemplateKind(input.kind ?? 'approve')
     const name = validateTemplateName(input.name)
     const matchFromPattern = validateMatchFromPattern(input.matchFromPattern)
     const matchSubjectRegex = validateSubjectRegex(input.matchSubjectRegex)
-    const extractors = parseExtractorsJson(input.extractorsJson)
+    let extractors: ReturnType<typeof parseExtractorsJson> | null = null
+    if (kind === 'approve') {
+      if (input.extractorsJson == null || !input.extractorsJson.trim()) {
+        throw new InvalidMailboxError(
+          'extractorsJson is required for approve templates',
+        )
+      }
+      extractors = parseExtractorsJson(input.extractorsJson)
+    }
     const now = new Date().toISOString()
 
     if (input.sourceMessageId != null) {
@@ -756,6 +912,7 @@ const Mutation = {
         mailbox_id: input.mailboxId,
         user_id: userId,
         name,
+        kind,
         enabled: input.enabled ?? true,
         match_from_pattern: matchFromPattern,
         match_subject_regex: matchSubjectRegex,
@@ -767,6 +924,12 @@ const Mutation = {
       })
       .returningAll()
       .executeTakeFirstOrThrow()
+
+    await applyTemplatesToMailbox(
+      createKyselyApplyTemplatesStore(db),
+      input.mailboxId,
+      now,
+    )
     return mapParsingTemplate(row)
   },
 
@@ -787,7 +950,7 @@ const Mutation = {
       name?: string
       match_from_pattern?: string
       match_subject_regex?: string | null
-      extractors?: ReturnType<typeof parseExtractorsJson>
+      extractors?: ReturnType<typeof parseExtractorsJson> | null
       enabled?: boolean
       version: number
       updated_at: string
@@ -804,6 +967,11 @@ const Mutation = {
       patch.match_subject_regex = validateSubjectRegex(input.matchSubjectRegex)
     }
     if (input.extractorsJson != null) {
+      if (existing.kind === 'reject') {
+        throw new InvalidMailboxError(
+          'reject templates cannot have extractors',
+        )
+      }
       patch.extractors = parseExtractorsJson(input.extractorsJson)
     }
     if (input.enabled != null) patch.enabled = input.enabled
@@ -814,6 +982,12 @@ const Mutation = {
       .where('id', '=', input.id)
       .returningAll()
       .executeTakeFirstOrThrow()
+
+    await applyTemplatesToMailbox(
+      createKyselyApplyTemplatesStore(db),
+      existing.mailbox_id,
+      now,
+    )
     return mapParsingTemplate(row)
   },
 
@@ -829,8 +1003,9 @@ const Mutation = {
 
   async generateParsingTemplate(
     input: GenerateParsingTemplateInput,
-  ): Promise<ParsingTemplate> {
+  ): Promise<GenerateParsingTemplatePayload> {
     const userId = requireUserId()
+    const decision = validateTemplateKind(input.decision)
     const message = await db
       .selectFrom('messages')
       .innerJoin('mailboxes', 'mailboxes.id', 'messages.mailbox_id')
@@ -840,14 +1015,13 @@ const Mutation = {
         'messages.from_address',
         'messages.subject',
         'messages.text_body',
-        'messages.html_body',
       ])
       .where('messages.id', '=', input.messageId)
       .where('mailboxes.user_id', '=', userId)
       .executeTakeFirst()
 
     if (!message) throw new InvalidMailboxError('message not found')
-    if (!message.text_body && !message.html_body) {
+    if (!message.text_body?.trim()) {
       throw new InvalidMailboxError(
         'message has no stored body; re-sync after upgrading mailbox',
       )
@@ -863,36 +1037,40 @@ const Mutation = {
       throw new InvalidMailboxError(genericFailMessage)
     }
 
-    let aiOut
-    try {
-      aiOut = await generateEmailSpendTemplate({
-        from: message.from_address,
-        subject: message.subject,
-        textBody: message.text_body,
-        htmlBody: message.html_body,
-        hints: input.hints,
-      })
-    } catch (err) {
-      if (err instanceof AiClientError) {
-        failTemplateGeneration(err.message, { messageId: message.id })
-      }
-      throw err
+    const aiInput = {
+      from: message.from_address,
+      subject: message.subject,
+      textBody: message.text_body,
+      hints: input.hints,
     }
 
     let matchFromPattern: string
     let matchSubjectRegex: string | null
-    let extractors: NonNullable<ReturnType<typeof parseSpendTemplateExtractors>>
+    let extractors:
+      | NonNullable<ReturnType<typeof parseSpendTemplateExtractors>>
+      | null = null
+    let nameSuggestion: string
+
     try {
-      matchFromPattern = validateMatchFromPattern(aiOut.matchFromPattern)
-      matchSubjectRegex = validateSubjectRegex(aiOut.matchSubjectRegex)
-      const parsed = parseSpendTemplateExtractors(aiOut.extractors)
-      if (!parsed) {
-        failTemplateGeneration('AI returned invalid extractors', {
-          messageId: message.id,
-          extractors: aiOut.extractors,
-        })
+      if (decision === 'reject') {
+        const aiOut = await generateEmailRejectTemplate(aiInput)
+        matchFromPattern = validateMatchFromPattern(aiOut.matchFromPattern)
+        matchSubjectRegex = validateSubjectRegex(aiOut.matchSubjectRegex)
+        nameSuggestion = aiOut.nameSuggestion || 'Ignored email type'
+      } else {
+        const aiOut = await generateEmailSpendTemplate(aiInput)
+        matchFromPattern = validateMatchFromPattern(aiOut.matchFromPattern)
+        matchSubjectRegex = validateSubjectRegex(aiOut.matchSubjectRegex)
+        const parsed = parseSpendTemplateExtractors(aiOut.extractors)
+        if (!parsed) {
+          failTemplateGeneration('AI returned invalid extractors', {
+            messageId: message.id,
+            extractors: aiOut.extractors,
+          })
+        }
+        extractors = parsed
+        nameSuggestion = aiOut.nameSuggestion || 'Spending template'
       }
-      extractors = parsed
     } catch (err) {
       if (
         err instanceof InvalidMailboxError &&
@@ -900,18 +1078,14 @@ const Mutation = {
       ) {
         throw err
       }
-      if (err instanceof InvalidMailboxError) {
-        failTemplateGeneration(err.message, {
-          messageId: message.id,
-          matchFromPattern: aiOut.matchFromPattern,
-          matchSubjectRegex: aiOut.matchSubjectRegex,
-        })
+      if (err instanceof AiClientError || err instanceof InvalidMailboxError) {
+        failTemplateGeneration(err.message, { messageId: message.id })
       }
       throw err
     }
 
     const name = validateTemplateName(
-      input.name?.trim() || aiOut.nameSuggestion || 'Spending template',
+      input.name?.trim() || nameSuggestion,
     )
     const now = new Date().toISOString()
 
@@ -921,6 +1095,7 @@ const Mutation = {
         mailbox_id: message.mailbox_id,
         user_id: userId,
         name,
+        kind: decision,
         enabled: true,
         match_from_pattern: matchFromPattern,
         match_subject_regex: matchSubjectRegex,
@@ -932,7 +1107,31 @@ const Mutation = {
       })
       .returningAll()
       .executeTakeFirstOrThrow()
-    return mapParsingTemplate(row)
+
+    await applyTemplatesToMailbox(
+      createKyselyApplyTemplatesStore(db),
+      message.mailbox_id,
+      now,
+    )
+
+    const reevaluatedCount = await reevaluatePendingWithTemplate(
+      createKyselyTemplateReevaluateStore(db),
+      {
+        id: row.id,
+        mailbox_id: row.mailbox_id,
+        kind: row.kind,
+        enabled: row.enabled,
+        match_from_pattern: row.match_from_pattern,
+        match_subject_regex: row.match_subject_regex,
+        extractors: row.extractors,
+      },
+      now,
+    )
+
+    return {
+      template: mapParsingTemplate(row),
+      reevaluatedCount,
+    }
   },
 }
 

@@ -41,9 +41,12 @@ export interface StartGmailOAuthInput {
 export interface CreateParsingTemplateInput {
   mailboxId: number
   name: string
+  /** 'approve' | 'reject' (default approve). */
+  kind?: string | null
   matchFromPattern: string
   matchSubjectRegex?: string | null
-  extractorsJson: string
+  /** Required for approve; ignored/cleared for reject. */
+  extractorsJson?: string | null
   enabled?: boolean | null
   sourceMessageId?: number | null
 }
@@ -59,6 +62,8 @@ export interface UpdateParsingTemplateInput {
 
 export interface GenerateParsingTemplateInput {
   messageId: number
+  /** 'approve' | 'reject' */
+  decision: string
   name?: string | null
   hints?: string | null
 }

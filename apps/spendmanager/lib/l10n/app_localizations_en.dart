@@ -126,12 +126,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get authAuthorisationUrlMissing =>
-      'Authorisation URL missing from response';
+  String get authAuthorisationUrlMissing => 'Authorisation URL missing from response';
 
   @override
-  String get authCouldNotGetAuthorisationUrl =>
-      'Could not get authorisation URL';
+  String get authCouldNotGetAuthorisationUrl => 'Could not get authorisation URL';
 
   @override
   String authCouldNotOpenLogin(String provider) {
@@ -174,6 +172,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get archive => 'Archive';
 
   @override
+  String get expensesTabHistory => 'History';
+
+  @override
+  String get expensesTabReview => 'Review';
+
+  @override
   String get expensesEmptyTitle => 'No expenses yet';
 
   @override
@@ -181,6 +185,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get expensesEmptyAction => 'Add expense';
+
+  @override
+  String get expensesReviewSetupRequiredTitle => 'Email import not set up';
+
+  @override
+  String get expensesReviewSetupRequiredHint => 'Connect a mailbox and allow sender domains to import spending from email.';
+
+  @override
+  String get expensesReviewSetupCta => 'Set up email import';
 
   @override
   String get expensesDeleteTitle => 'Delete expense?';
@@ -405,24 +418,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEmailImport => 'Email import';
 
   @override
-  String get settingsEmailImportSubtitle =>
-      'Connect mailboxes, templates, and review spending';
+  String get settingsEmailImportSubtitle => 'Connect a mailbox and sender allowlist';
 
   @override
   String get emailImportTitle => 'Email import';
 
   @override
-  String get emailImportTabSetup => 'Setup';
+  String get emailImportWizardStepMailbox => 'Mailbox';
 
   @override
-  String get emailImportTabTemplates => 'Templates';
+  String get emailImportWizardStepSenders => 'Senders';
 
   @override
-  String get emailImportTabReview => 'Review';
+  String get emailImportWizardNext => 'Next';
 
   @override
-  String get emailImportSetupBlurb =>
-      'Connect a mailbox, allow sender domains (wildcards supported), sync mail, then generate AI parsing templates once per sender type.';
+  String get emailImportWizardBack => 'Back';
+
+  @override
+  String get emailImportWizardDone => 'Done';
+
+  @override
+  String get emailImportSetupBlurb => 'Connect a mailbox, then allow sender domains or full addresses so we can sync and extract spending.';
 
   @override
   String get emailImportAddFixture => 'Add demo mailbox';
@@ -437,8 +454,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailImportGmailLabel => 'Gmail';
 
   @override
-  String get emailImportGmailConnected =>
-      'Gmail connected. Sync to import messages.';
+  String get emailImportGmailConnected => 'Gmail connected. Sync to import messages.';
 
   @override
   String emailImportGmailFailed(String detail) {
@@ -446,8 +462,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get emailImportGmailFailedGeneric =>
-      'Gmail connection failed. Try again.';
+  String get emailImportGmailFailedGeneric => 'Gmail connection failed. Try again.';
 
   @override
   String get emailImportGmailLaunchFailed => 'Could not open Google sign-in.';
@@ -459,8 +474,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailImportSave => 'Save';
 
   @override
-  String get emailImportNoMailbox =>
-      'No mailbox yet. Add a demo mailbox or connect Gmail.';
+  String get emailImportNoMailbox => 'No mailbox yet. Add a demo mailbox or connect Gmail.';
 
   @override
   String get emailImportMailbox => 'Mailbox';
@@ -486,17 +500,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get emailImportDomainFilters => 'Sender domain allowlist';
+  String get emailImportDomainFilters => 'Sender allowlist';
 
   @override
-  String get emailImportDomainFiltersHint =>
-      'One pattern per line. Examples: amazon.com, *.uber.com, *@shop.com (wildcard needs *.).';
+  String get emailImportDomainFiltersHint => 'One pattern per line. Domain (all senders): amazon.com. Exact sender: noreply@uber.com';
 
   @override
-  String get emailImportNoFilters => 'No filters (all senders)';
+  String get emailImportNoFilters => 'Add at least one sender domain or email address before syncing';
+
+  @override
+  String get emailImportFiltersRequired => 'Add at least one sender allowlist pattern before syncing';
 
   @override
   String get emailImportTriggerSync => 'Sync now';
+
+  @override
+  String get emailImportSyncFrom => 'From';
+
+  @override
+  String get emailImportSyncTo => 'To';
+
+  @override
+  String get emailImportSyncClearDate => 'Clear';
 
   @override
   String get emailImportSyncQueued => 'Sync requested. Refresh in a moment.';
@@ -508,29 +533,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailImportNoMessages => 'No messages yet. Sync after connecting.';
 
   @override
+  String get emailImportApproveEmail => 'Approve';
+
+  @override
+  String get emailImportRejectEmail => 'Ignore';
+
+  @override
+  String get emailImportGeneratingTemplate => 'Generating template… This can take a moment.';
+
+  @override
+  String get emailImportApproveTemplateGenerated => 'Approved. Matching emails will appear under Review as spending candidates.';
+
+  @override
+  String get emailImportRejectTemplateGenerated => 'Ignored. Matching emails will be skipped.';
+
+  @override
   String get emailImportGenerateTemplate => 'Generate template with AI';
 
   @override
-  String get emailImportGeneratingTemplate =>
-      'Generating template… This can take a moment.';
+  String emailImportTemplateGeneratedWithReeval(int count) {
+    return 'Template generated; updated $count review items.';
+  }
 
   @override
-  String get emailImportTemplateGenerated =>
-      'Template generated. You can edit it on the Templates tab.';
+  String get emailImportTemplateGenerationFailed => 'Template generation failed. Please try again.';
 
   @override
-  String get emailImportTemplateGenerationFailed =>
-      'Template generation failed. Please try again.';
-
-  @override
-  String get emailImportNoTemplates =>
-      'No templates yet. Generate one from a sample message on the Setup tab.';
+  String get emailImportNoTemplates => 'No templates yet. Approve or ignore a sample message on the Setup tab.';
 
   @override
   String get emailImportEditTemplate => 'Edit template';
 
   @override
   String get emailImportTemplateName => 'Name';
+
+  @override
+  String get emailImportTemplateKindApprove => 'Approve';
+
+  @override
+  String get emailImportTemplateKindReject => 'Ignore';
 
   @override
   String get emailImportMatchFrom => 'Match from pattern';
@@ -542,7 +583,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailImportExtractorsJson => 'Extractors JSON';
 
   @override
-  String get emailImportNoPending => 'No pending spending candidates.';
+  String get emailImportNoPending => 'No pending spending candidates. Sync your mailbox to import spending emails.';
 
   @override
   String get emailImportAcceptTitle => 'Accept as expense';
@@ -557,22 +598,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailImportReject => 'Reject';
 
   @override
-  String get emailImportNeedCategory =>
-      'Create a category before accepting expenses.';
+  String get emailImportRejectAll => 'Reject all';
+
+  @override
+  String get emailImportRejectAllTitle => 'Reject all pending?';
+
+  @override
+  String emailImportRejectAllConfirm(int count) {
+    return 'Reject $count pending spending candidates? This cannot be undone.';
+  }
+
+  @override
+  String emailImportRejectAllDone(int count) {
+    return 'Rejected $count candidates.';
+  }
+
+  @override
+  String get emailImportClearInbox => 'Clear inbox data';
+
+  @override
+  String get emailImportClearInboxTitle => 'Clear inbox data?';
+
+  @override
+  String get emailImportClearInboxConfirm => 'Remove synced messages, review items, and sync history for this mailbox? Filters and templates stay. The next sync can re-fetch emails.';
+
+  @override
+  String get emailImportClearInboxDone => 'Inbox data cleared.';
+
+  @override
+  String get emailImportNeedCategory => 'Create a category before accepting expenses.';
 
   @override
   String get emailImportViewEmail => 'View email';
 
   @override
+  String get emailImportPagePrevious => 'Previous';
+
+  @override
+  String get emailImportPageNext => 'Next';
+
+  @override
+  String emailImportPageOf(int page, int totalPages) {
+    return 'Page $page of $totalPages';
+  }
+
+  @override
   String get sourceEmailTitle => 'Source email';
 
   @override
-  String get sourceEmailBodyMissing =>
-      'No email body was stored for this message.';
+  String get sourceEmailBodyMissing => 'No email body was stored for this message.';
 
   @override
-  String get sourceEmailNotFound =>
-      'No source email is linked to this expense.';
+  String get sourceEmailNotFound => 'No source email is linked to this expense.';
 
   @override
   String get sourceEmailLoadFailed => 'Could not load the source email.';

@@ -56,13 +56,39 @@ export type FieldExtractor =
   | { source: 'from_domain' }
   | { source: 'constant'; value: string }
 
+/**
+ * Locale-agnostic date extractor: capture numeric year/month/day groups
+ * and compose YYYY-MM-DD at extract time.
+ */
+export type DatePartsExtractor = {
+  source: 'subject' | 'text' | 'html_text'
+  regex: string
+  yearGroup: number
+  monthGroup: number
+  dayGroup: number
+}
+
+/**
+ * Detect inbound vs outbound money flow. When the capture matches an
+ * inbound keyword, TemplateSpendingExtractor skips the message.
+ */
+export type DirectionExtractor = {
+  source: 'subject' | 'text' | 'html_text'
+  regex: string
+  group: number
+  inboundMatches: string[]
+  outboundMatches: string[]
+}
+
 /** Field map stored in `parsing_templates.extractors` JSONB. */
 export type SpendTemplateExtractors = {
   amount: FieldExtractor
   currency?: FieldExtractor | null
-  spentOn?: FieldExtractor | null
+  /** Legacy single-group FieldExtractor or preferred date-parts shape. */
+  spentOn?: FieldExtractor | DatePartsExtractor | null
   merchant?: FieldExtractor | null
   note?: FieldExtractor | null
+  direction?: DirectionExtractor | null
 }
 
 /** Runtime definition for a mailbox parsing template. */

@@ -1,18 +1,54 @@
 import { db } from 'mailbox_api/db/database.ts'
 import type { Mailbox } from 'mailbox_api/db/types/schema.ts'
 import {
-  ExtractorPipeline,
-  SpendingExtractor,
-  TemplateSpendingExtractor,
+  autoTemplateFromMessage,
+  createKyselyAutoTemplateStore,
+  templateRowToMatchSets,
+} from 'mailbox_api/services/auto_template_from_message.ts'
+import {
+  extractSpendingCandidates,
   filterMessagesByDomain,
+  messageMatchesAnyTemplate,
   parseSpendTemplateExtractors,
+  resolveTextBody,
+  type EmailMessage,
   type ExtractionArtifact,
   type MailboxProvider,
   type SpendParsingTemplate,
+  type SyncCursor,
+  type TemplateMatchSpec,
 } from 'mailbox_kit/mod.ts'
 import { createProviderForMailbox } from './provider_factory.ts'
 
-const HEURISTIC = new SpendingExtractor()
+export type MailboxTemplateSets = {
+  rejectTemplates: TemplateMatchSpec[]
+  approveTemplates: SpendParsingTemplate[]
+}
+
+/** True when no enabled reject/approve template matches (needs AI classify). */
+export function messageNeedsAutoTemplate(
+  message: EmailMessage,
+  templates: MailboxTemplateSets,
+): boolean {
+  return !(
+    messageMatchesAnyTemplate(message, templates.rejectTemplates) ||
+    messageMatchesAnyTemplate(message, templates.approveTemplates)
+  )
+}
+
+/** Error when a mailbox has no domain allowlist rows. */
+export const DOMAIN_FILTERS_REQUIRED =
+  'domain filters are required before sync'
+
+/**
+ * Returns the abort message when patterns are empty; otherwise null.
+ * Exported for unit tests (full syncMailbox needs Postgres).
+ */
+export function missingDomainFiltersError(
+  patterns: readonly string[],
+): string | null {
+  return patterns.length === 0 ? DOMAIN_FILTERS_REQUIRED : null
+}
 
 export interface SyncMailboxResult {
   fetched: number
@@ -20,11 +56,24 @@ export interface SyncMailboxResult {
   error: string | null
 }
 
+function toDateOrUndefined(
+  value: Date | string | null | undefined,
+): Date | undefined {
+  if (value == null) return undefined
+  const d = value instanceof Date ? value : new Date(value)
+  return Number.isFinite(d.getTime()) ? d : undefined
+}
+
+function hasMoreBackfillPages(nextCursor: SyncCursor): boolean {
+  return nextCursor != null && nextCursor !== ''
+}
+
 export async function syncMailbox(
   mailbox: Mailbox,
   options?: {
     provider?: MailboxProvider
-    pipeline?: ExtractorPipeline
+    /** Override template sets used for extraction (tests). */
+    templates?: MailboxTemplateSets
   },
 ): Promise<SyncMailboxResult> {
   const run = await db
@@ -43,10 +92,6 @@ export async function syncMailbox(
   let errorText: string | null = null
 
   try {
-    const provider = options?.provider ?? createProviderForMailbox(mailbox)
-    const pipeline = options?.pipeline ??
-      (await buildPipelineForMailbox(mailbox.id))
-
     const patterns = (
       await db
         .selectFrom('domain_filters')
@@ -55,58 +100,168 @@ export async function syncMailbox(
         .execute()
     ).map((r) => r.pattern)
 
-    let cursor = mailbox.sync_cursor
-    // One page per poll tick keeps runs bounded; triggerSync / next interval continues.
-    const page = await provider.listMessages({ cursor, limit: 50 })
-    const filtered = filterMessagesByDomain(page.messages, patterns)
-    fetched = filtered.length
-
-    for (const msg of filtered) {
-      const existing = await db
-        .selectFrom('messages')
-        .select('id')
-        .where('mailbox_id', '=', mailbox.id)
-        .where('rfc_message_id', '=', msg.rfcMessageId)
-        .executeTakeFirst()
-
-      if (existing) continue
-
-      const bodyHash = await hashBody(msg.textBody ?? msg.htmlBody ?? '')
-      const inserted = await db
-        .insertInto('messages')
-        .values({
-          mailbox_id: mailbox.id,
-          provider_message_id: msg.id,
-          rfc_message_id: msg.rfcMessageId,
-          from_address: msg.from,
-          subject: msg.subject,
-          received_at: msg.receivedAt.toISOString(),
-          body_hash: bodyHash,
-          text_body: truncateBody(msg.textBody),
-          html_body: truncateBody(msg.htmlBody),
+    const missingFilters = missingDomainFiltersError(patterns)
+    if (missingFilters) {
+      errorText = missingFilters
+      const now = new Date().toISOString()
+      await db
+        .updateTable('mailboxes')
+        .set({
+          sync_requested: false,
+          sync_since: null,
+          sync_until: null,
+          sync_backfill_cursor: null,
+          // Avoid due-mailbox re-pick via last_synced_at IS NULL every poll.
+          last_synced_at: now,
+          updated_at: now,
         })
-        .returningAll()
-        .executeTakeFirstOrThrow()
+        .where('id', '=', mailbox.id)
+        .execute()
+    } else {
+      const provider = options?.provider ?? createProviderForMailbox(mailbox)
+      let templates = options?.templates ??
+        (await loadTemplateSetsForMailbox(mailbox.id))
 
-      const artifacts = pipeline.run(msg)
-      for (const art of artifacts) {
-        await insertArtifact(inserted.id, art)
-        extracted += 1
+      const since = toDateOrUndefined(mailbox.sync_since)
+      const until = toDateOrUndefined(mailbox.sync_until)
+      const backfillMode = since != null || until != null
+
+      // One page per poll tick keeps runs bounded; triggerSync / next interval continues.
+      const page = await provider.listMessages({
+        cursor: backfillMode
+          ? mailbox.sync_backfill_cursor
+          : mailbox.sync_cursor,
+        limit: 50,
+        since,
+        until,
+      })
+      const filtered = filterMessagesByDomain(page.messages, patterns)
+      fetched = filtered.length
+
+      for (const msg of filtered) {
+        const existing = await db
+          .selectFrom('messages')
+          .select('id')
+          .where('mailbox_id', '=', mailbox.id)
+          .where('rfc_message_id', '=', msg.rfcMessageId)
+          .executeTakeFirst()
+
+        if (existing) continue
+
+        // Same resolved plain text for DB + extractors so source:"text"
+        // matches the viewer body (HTML-only / HTML-in-text MIME parts).
+        const forExtract = messageForExtraction(msg)
+        const textBody = forExtract.textBody
+        const bodyHash = await hashBody(textBody ?? '')
+        const inserted = await db
+          .insertInto('messages')
+          .values({
+            mailbox_id: mailbox.id,
+            provider_message_id: msg.id,
+            rfc_message_id: msg.rfcMessageId,
+            from_address: msg.from,
+            subject: msg.subject,
+            received_at: msg.receivedAt.toISOString(),
+            body_hash: bodyHash,
+            text_body: textBody,
+            html_body: null,
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        let workingTemplates = templates
+        if (messageNeedsAutoTemplate(forExtract, workingTemplates)) {
+          try {
+            const created = await autoTemplateFromMessage(
+              {
+                id: inserted.id,
+                mailbox_id: mailbox.id,
+                user_id: mailbox.user_id,
+                from_address: inserted.from_address,
+                subject: inserted.subject,
+                text_body: inserted.text_body,
+              },
+              { store: createKyselyAutoTemplateStore(db) },
+            )
+            const sets = templateRowToMatchSets(created.template)
+            if (sets.reject) {
+              workingTemplates = {
+                ...workingTemplates,
+                rejectTemplates: [
+                  ...workingTemplates.rejectTemplates,
+                  sets.reject,
+                ],
+              }
+            }
+            if (sets.approve) {
+              workingTemplates = {
+                ...workingTemplates,
+                approveTemplates: [
+                  ...workingTemplates.approveTemplates,
+                  sets.approve,
+                ],
+              }
+            }
+            // Keep page-local sets so later messages reuse the new template.
+            templates = workingTemplates
+            console.log(
+              `[mailbox-worker] auto-template mailbox=${mailbox.id} message=${inserted.id} useful=${created.useful} template=${created.template.id}`,
+            )
+          } catch (err) {
+            console.error(
+              `[mailbox-worker] auto-template failed mailbox=${mailbox.id} message=${inserted.id}:`,
+              err instanceof Error ? err.message : String(err),
+            )
+          }
+        }
+
+        const artifacts = extractSpendingCandidates(
+          forExtract,
+          workingTemplates,
+        )
+        for (const art of artifacts) {
+          await insertArtifact(inserted.id, art)
+          extracted += 1
+        }
+      }
+
+      const now = new Date().toISOString()
+      if (backfillMode) {
+        const more = hasMoreBackfillPages(page.nextCursor)
+        await db
+          .updateTable('mailboxes')
+          .set(
+            more
+              ? {
+                sync_backfill_cursor: page.nextCursor,
+                sync_requested: true,
+                last_synced_at: now,
+                updated_at: now,
+              }
+              : {
+                sync_since: null,
+                sync_until: null,
+                sync_backfill_cursor: null,
+                sync_requested: false,
+                last_synced_at: now,
+                updated_at: now,
+              },
+          )
+          .where('id', '=', mailbox.id)
+          .execute()
+      } else {
+        await db
+          .updateTable('mailboxes')
+          .set({
+            sync_cursor: page.nextCursor,
+            sync_requested: false,
+            last_synced_at: now,
+            updated_at: now,
+          })
+          .where('id', '=', mailbox.id)
+          .execute()
       }
     }
-
-    cursor = page.nextCursor
-    const now = new Date().toISOString()
-    await db
-      .updateTable('mailboxes')
-      .set({
-        sync_cursor: cursor,
-        sync_requested: false,
-        last_synced_at: now,
-        updated_at: now,
-      })
-      .where('id', '=', mailbox.id)
-      .execute()
   } catch (err) {
     errorText = err instanceof Error ? err.message : String(err)
   }
@@ -125,9 +280,10 @@ export async function syncMailbox(
   return { fetched, extracted, error: errorText }
 }
 
-async function buildPipelineForMailbox(
+/** Load reject + approve template sets for a mailbox (exported for tests). */
+export async function loadTemplateSetsForMailbox(
   mailboxId: number,
-): Promise<ExtractorPipeline> {
+): Promise<MailboxTemplateSets> {
   const rows = await db
     .selectFrom('parsing_templates')
     .selectAll()
@@ -136,23 +292,31 @@ async function buildPipelineForMailbox(
     .orderBy('id', 'asc')
     .execute()
 
-  const templateExtractors: TemplateSpendingExtractor[] = []
+  const rejectTemplates: TemplateMatchSpec[] = []
+  const approveTemplates: SpendParsingTemplate[] = []
+
   for (const row of rows) {
+    const match: TemplateMatchSpec = {
+      matchFromPattern: row.match_from_pattern,
+      matchSubjectRegex: row.match_subject_regex,
+      enabled: row.enabled,
+    }
+    if (row.kind === 'reject') {
+      rejectTemplates.push(match)
+      continue
+    }
     const extractors = parseSpendTemplateExtractors(row.extractors)
     if (!extractors) continue
-    const template: SpendParsingTemplate = {
+    approveTemplates.push({
       id: row.id,
       matchFromPattern: row.match_from_pattern,
       matchSubjectRegex: row.match_subject_regex,
       extractors,
       enabled: row.enabled,
-    }
-    templateExtractors.push(new TemplateSpendingExtractor(template))
+    })
   }
 
-  return new ExtractorPipeline([...templateExtractors, HEURISTIC], {
-    firstMatchOnly: true,
-  })
+  return { rejectTemplates, approveTemplates }
 }
 
 async function insertArtifact(
@@ -181,6 +345,26 @@ function truncateBody(body: string | null): string | null {
   return body.length > max ? body.slice(0, max) : body
 }
 
+/** Resolve + truncate for unit tests (full insert needs Postgres). */
+export function resolvedStoredTextBody(
+  textBody: string | null | undefined,
+  htmlBody: string | null | undefined,
+): string | null {
+  return truncateBody(resolveTextBody(textBody, htmlBody))
+}
+
+/**
+ * Message passed to extractors: textBody is the same resolved plain text
+ * we persist (and show in the source-email viewer). Keeps provider htmlBody
+ * so source:"html_text" still works at sync time.
+ */
+export function messageForExtraction(msg: EmailMessage): EmailMessage {
+  return {
+    ...msg,
+    textBody: resolvedStoredTextBody(msg.textBody, msg.htmlBody),
+  }
+}
+
 async function hashBody(body: string): Promise<string> {
   const data = new TextEncoder().encode(body)
   const digest = await crypto.subtle.digest('SHA-256', data)
@@ -196,7 +380,7 @@ export async function syncDueMailboxes(options?: {
   const pollIntervalMs = options?.pollIntervalMs ??
     Number(Deno.env.get('POLL_INTERVAL_MS') ?? 300_000)
   const now = options?.now ?? new Date()
-  const cutoff = new Date(now.getTime() - pollIntervalMs).toISOString()
+  const cutoff = new Date(now.getTime() - pollIntervalMs)
 
   const due = await db
     .selectFrom('mailboxes')

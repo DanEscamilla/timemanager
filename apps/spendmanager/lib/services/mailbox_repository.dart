@@ -18,7 +18,7 @@ class MailboxRepository {
       query {
         mailboxes {
           id user_id provider label enabled sync_cursor sync_requested
-          last_synced_at created_at updated_at
+          sync_since sync_until last_synced_at created_at updated_at
         }
       }
     ''');
@@ -38,7 +38,7 @@ class MailboxRepository {
       mutation CreateMailbox(\$input: CreateMailboxInputInput!) {
         createMailbox(input: \$input) {
           id user_id provider label enabled sync_cursor sync_requested
-          last_synced_at created_at updated_at
+          sync_since sync_until last_synced_at created_at updated_at
         }
       }
     ''', variables: {
@@ -62,7 +62,7 @@ class MailboxRepository {
       mutation UpdateMailbox(\$input: UpdateMailboxInputInput!) {
         updateMailbox(input: \$input) {
           id user_id provider label enabled sync_cursor sync_requested
-          last_synced_at created_at updated_at
+          sync_since sync_until last_synced_at created_at updated_at
         }
       }
     ''', variables: {
@@ -83,6 +83,20 @@ class MailboxRepository {
       }
     ''', variables: {'id': id});
     return data['deleteMailbox'] as bool? ?? false;
+  }
+
+  Future<MailboxAccount> clearInbox(int mailboxId) async {
+    final data = await _client.mutate('''
+      mutation ClearInbox(\$mailboxId: Number!) {
+        clearInbox(mailboxId: \$mailboxId) {
+          id user_id provider label enabled sync_cursor sync_requested
+          sync_since sync_until last_synced_at created_at updated_at
+        }
+      }
+    ''', variables: {'mailboxId': mailboxId});
+    return MailboxAccount.fromJson(
+      data['clearInbox'] as Map<String, dynamic>,
+    );
   }
 
   Future<List<DomainFilter>> fetchDomainFilters(int mailboxId) async {
@@ -121,15 +135,27 @@ class MailboxRepository {
         .toList();
   }
 
-  Future<MailboxAccount> triggerSync(int mailboxId) async {
+  Future<MailboxAccount> triggerSync(
+    int mailboxId, {
+    String? since,
+    String? until,
+  }) async {
     final data = await _client.mutate('''
-      mutation TriggerSync(\$mailboxId: Number!) {
-        triggerSync(mailboxId: \$mailboxId) {
+      mutation TriggerSync(
+        \$mailboxId: Number!
+        \$since: String
+        \$until: String
+      ) {
+        triggerSync(mailboxId: \$mailboxId, since: \$since, until: \$until) {
           id user_id provider label enabled sync_cursor sync_requested
-          last_synced_at created_at updated_at
+          sync_since sync_until last_synced_at created_at updated_at
         }
       }
-    ''', variables: {'mailboxId': mailboxId});
+    ''', variables: {
+      'mailboxId': mailboxId,
+      'since': since,
+      'until': until,
+    });
     return MailboxAccount.fromJson(
       data['triggerSync'] as Map<String, dynamic>,
     );
@@ -145,7 +171,7 @@ class MailboxRepository {
       mutation ConnectGmail(\$input: ConnectGmailInputInput!) {
         connectGmail(input: \$input) {
           id user_id provider label enabled sync_cursor sync_requested
-          last_synced_at created_at updated_at
+          sync_since sync_until last_synced_at created_at updated_at
         }
       }
     ''', variables: {
@@ -186,15 +212,27 @@ class MailboxRepository {
     return url;
   }
 
-  Future<List<MailboxMessage>> fetchMessages(int mailboxId) async {
+  Future<List<MailboxMessage>> fetchMessages(
+    int mailboxId, {
+    bool excludeMatchingTemplates = true,
+  }) async {
     final data = await _client.query('''
-      query Messages(\$mailboxId: Number!) {
-        messages(mailboxId: \$mailboxId) {
+      query Messages(
+        \$mailboxId: Number!
+        \$excludeMatchingTemplates: Boolean
+      ) {
+        messages(
+          mailboxId: \$mailboxId
+          excludeMatchingTemplates: \$excludeMatchingTemplates
+        ) {
           id mailbox_id provider_message_id rfc_message_id from_address
-          subject received_at text_body html_body created_at
+          subject received_at text_body created_at
         }
       }
-    ''', variables: {'mailboxId': mailboxId});
+    ''', variables: {
+      'mailboxId': mailboxId,
+      'excludeMatchingTemplates': excludeMatchingTemplates,
+    });
     final list = data['messages'] as List<dynamic>? ?? [];
     return list
         .map((e) => MailboxMessage.fromJson(e as Map<String, dynamic>))
@@ -206,7 +244,7 @@ class MailboxRepository {
       query Message(\$id: Number!) {
         message(id: \$id) {
           id mailbox_id provider_message_id rfc_message_id from_address
-          subject received_at text_body html_body created_at
+          subject received_at text_body created_at
         }
       }
     ''', variables: {'id': id});
@@ -220,7 +258,7 @@ class MailboxRepository {
       query SourceMessageForExpense(\$expenseId: Number!) {
         sourceMessageForExpense(expenseId: \$expenseId) {
           id mailbox_id provider_message_id rfc_message_id from_address
-          subject received_at text_body html_body created_at
+          subject received_at text_body created_at
         }
       }
     ''', variables: {'expenseId': expenseId});
@@ -229,25 +267,43 @@ class MailboxRepository {
     return MailboxMessage.fromJson(raw as Map<String, dynamic>);
   }
 
-  Future<List<ExtractionArtifact>> fetchArtifacts({
+  Future<ExtractionArtifactPage> fetchArtifacts({
     int? mailboxId,
     String? status,
+    int page = 1,
+    int pageSize = 20,
   }) async {
     final data = await _client.query('''
-      query Artifacts(\$mailboxId: Number, \$status: String) {
-        extractionArtifacts(mailboxId: \$mailboxId, status: \$status) {
-          id message_id kind payload confidence status
-          published_expense_id created_at updated_at
+      query Artifacts(
+        \$mailboxId: Number
+        \$status: String
+        \$page: Number
+        \$pageSize: Number
+      ) {
+        extractionArtifacts(
+          mailboxId: \$mailboxId
+          status: \$status
+          page: \$page
+          pageSize: \$pageSize
+        ) {
+          items {
+            id message_id kind payload confidence status
+            published_expense_id created_at updated_at
+          }
+          totalCount
+          page
+          pageSize
         }
       }
     ''', variables: {
       'mailboxId': mailboxId,
       'status': status,
+      'page': page,
+      'pageSize': pageSize,
     });
-    final list = data['extractionArtifacts'] as List<dynamic>? ?? [];
-    return list
-        .map((e) => ExtractionArtifact.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return ExtractionArtifactPage.fromJson(
+      data['extractionArtifacts'] as Map<String, dynamic>,
+    );
   }
 
   Future<ExtractionArtifact> updateArtifactStatus({
@@ -274,11 +330,23 @@ class MailboxRepository {
     );
   }
 
+  Future<int> rejectAllPendingArtifacts(int mailboxId) async {
+    final data = await _client.mutate('''
+      mutation RejectAllPending(\$mailboxId: Number!) {
+        rejectAllPendingArtifacts(mailboxId: \$mailboxId)
+      }
+    ''', variables: {'mailboxId': mailboxId});
+    final count = data['rejectAllPendingArtifacts'];
+    if (count is int) return count;
+    if (count is num) return count.toInt();
+    return 0;
+  }
+
   Future<List<ParsingTemplate>> fetchTemplates(int mailboxId) async {
     final data = await _client.query('''
       query Templates(\$mailboxId: Number!) {
         parsingTemplates(mailboxId: \$mailboxId) {
-          id mailbox_id user_id name enabled match_from_pattern
+          id mailbox_id user_id name kind enabled match_from_pattern
           match_subject_regex extractors source_message_id version
           created_at updated_at
         }
@@ -290,27 +358,33 @@ class MailboxRepository {
         .toList();
   }
 
-  Future<ParsingTemplate> generateTemplate({
+  /// Classify a sample message: `decision` is `approve` or `reject`.
+  Future<GenerateTemplateResult> generateTemplate({
     required int messageId,
+    required String decision,
     String? name,
     String? hints,
   }) async {
     final data = await _client.mutate('''
       mutation GenerateTemplate(\$input: GenerateParsingTemplateInputInput!) {
         generateParsingTemplate(input: \$input) {
-          id mailbox_id user_id name enabled match_from_pattern
-          match_subject_regex extractors source_message_id version
-          created_at updated_at
+          template {
+            id mailbox_id user_id name kind enabled match_from_pattern
+            match_subject_regex extractors source_message_id version
+            created_at updated_at
+          }
+          reevaluatedCount
         }
       }
     ''', variables: {
       'input': {
         'messageId': messageId,
+        'decision': decision,
         if (name != null) 'name': name,
         if (hints != null) 'hints': hints,
       },
     });
-    return ParsingTemplate.fromJson(
+    return GenerateTemplateResult.fromJson(
       data['generateParsingTemplate'] as Map<String, dynamic>,
     );
   }
@@ -326,7 +400,7 @@ class MailboxRepository {
     final data = await _client.mutate('''
       mutation UpdateTemplate(\$input: UpdateParsingTemplateInputInput!) {
         updateParsingTemplate(input: \$input) {
-          id mailbox_id user_id name enabled match_from_pattern
+          id mailbox_id user_id name kind enabled match_from_pattern
           match_subject_regex extractors source_message_id version
           created_at updated_at
         }

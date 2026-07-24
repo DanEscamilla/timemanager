@@ -1,4 +1,5 @@
 import type { Extractor } from '../extractor.ts'
+import { htmlToPlainText } from '../html_to_plain_text.ts'
 import {
   SPENDING_CANDIDATE_KIND,
   type EmailMessage,
@@ -24,13 +25,20 @@ export class SpendingExtractor implements Extractor {
   readonly kind = SPENDING_CANDIDATE_KIND
 
   canHandle(message: EmailMessage): boolean {
-    const haystack = `${message.subject}\n${message.textBody ?? ''}`
+    const body = message.textBody?.trim()
+      ? message.textBody
+      : htmlToPlainText(message.htmlBody)
+    const haystack = `${message.subject}\n${body}`
     if (RECEIPT_HINT.test(haystack)) return true
     return AMOUNT_PATTERNS.some((re) => re.test(haystack))
   }
 
   extract(message: EmailMessage): ExtractionArtifact[] {
-    const text = [message.subject, message.textBody ?? '', stripHtml(message.htmlBody)]
+    const text = [
+      message.subject,
+      message.textBody ?? '',
+      htmlToPlainText(message.htmlBody),
+    ]
       .join('\n')
       .trim()
 
@@ -65,11 +73,6 @@ export class SpendingExtractor implements Extractor {
       },
     ]
   }
-}
-
-function stripHtml(html: string | null): string {
-  if (!html) return ''
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
 }
 
 function parseAmountCents(text: string): number | null {

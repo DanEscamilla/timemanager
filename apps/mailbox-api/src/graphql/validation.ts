@@ -2,6 +2,7 @@ import { ServiceError } from '@getcronit/pylon'
 
 const PROVIDERS = new Set(['fixture', 'gmail'])
 const ARTIFACT_STATUSES = new Set(['pending', 'accepted', 'rejected'])
+const TEMPLATE_KINDS = new Set(['approve', 'reject'])
 
 /**
  * Client-facing validation failure. Extends Pylon ServiceError (GraphQLError)
@@ -16,6 +17,9 @@ export class InvalidMailboxError extends ServiceError {
     this.name = 'InvalidMailboxError'
   }
 }
+
+const DOMAIN_FILTER_HELP =
+  'Allowed patterns: shop.com, user@shop.com (wildcards are not allowed)'
 
 const FROM_PATTERN_HELP =
   'Allowed patterns: shop.com, *.shop.com, user@shop.com, *@shop.com, *@*.shop.com'
@@ -38,9 +42,8 @@ export function validateLabel(label: string): string {
 }
 
 /**
- * Allowed patterns:
- * - `user@shop.com`, `*@shop.com`, `*@*.shop.com`
- * - `shop.com`, `*.shop.com`
+ * Domain allowlist for sync. At least one pattern required.
+ * Allowed: `shop.com`, `user@shop.com`. Wildcards are rejected.
  */
 export function validateDomainPatterns(patterns: string[]): string[] {
   const out: string[] = []
@@ -51,16 +54,43 @@ export function validateDomainPatterns(patterns: string[]): string[] {
     if (p.length > 255) {
       throw new InvalidMailboxError('domain filter pattern is too long')
     }
-    if (!isValidFromPattern(p)) {
-      throw new InvalidMailboxError(describeInvalidFromPattern(raw, 'domain filter'))
+    if (!isValidDomainFilterPattern(p)) {
+      throw new InvalidMailboxError(
+        describeInvalidDomainFilter(raw),
+      )
     }
     if (seen.has(p)) continue
     seen.add(p)
     out.push(p)
   }
+  if (out.length === 0) {
+    throw new InvalidMailboxError('domain filters are required')
+  }
   return out
 }
 
+/** Literal domain or exact address — no wildcards. */
+function isValidDomainFilterPattern(pattern: string): boolean {
+  if (pattern.includes('*')) return false
+
+  if (pattern.includes('@')) {
+    const at = pattern.lastIndexOf('@')
+    if (at <= 0 || at === pattern.length - 1) return false
+    const local = pattern.slice(0, at)
+    const domain = pattern.slice(at + 1)
+    if (!local || local.includes('@')) return false
+    return isValidLiteralDomain(domain)
+  }
+  return isValidLiteralDomain(pattern)
+}
+
+function isValidLiteralDomain(domain: string): boolean {
+  if (domain.includes('*')) return false
+  return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
+    .test(domain)
+}
+
+/** Template matchFromPattern — wildcards allowed. */
 export function isValidFromPattern(pattern: string): boolean {
   const p = pattern.trim().toLowerCase()
   if (!p || p.length > 255) return false
@@ -82,12 +112,10 @@ function isValidDomainPattern(domain: string): boolean {
   if (domain.startsWith('*.')) {
     const rest = domain.slice(2)
     if (!rest || rest.includes('*') || !rest.includes('.')) return false
-    return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
-      .test(rest)
+    return isValidLiteralDomain(rest)
   }
   if (domain.includes('*')) return false
-  return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
-    .test(domain)
+  return isValidLiteralDomain(domain)
 }
 
 export function validateArtifactStatus(status: string): string {
@@ -109,6 +137,17 @@ export function validateTemplateName(name: string): string {
   return trimmed
 }
 
+/** Normalize template kind / classify decision: approve | reject. */
+export function validateTemplateKind(kind: string): 'approve' | 'reject' {
+  const trimmed = kind.trim().toLowerCase()
+  if (!TEMPLATE_KINDS.has(trimmed)) {
+    throw new InvalidMailboxError(
+      `kind must be one of: ${[...TEMPLATE_KINDS].join(', ')}`,
+    )
+  }
+  return trimmed as 'approve' | 'reject'
+}
+
 export function validateMatchFromPattern(pattern: string): string {
   const p = pattern.trim().toLowerCase()
   if (!isValidFromPattern(p)) {
@@ -119,9 +158,43 @@ export function validateMatchFromPattern(pattern: string): string {
   return p
 }
 
+export function describeInvalidDomainFilter(raw: string): string {
+  const p = raw.trim().toLowerCase()
+  const prefix = `invalid domain filter "${raw}"`
+
+  if (!p) {
+    return `${prefix}: pattern is empty. ${DOMAIN_FILTER_HELP}`
+  }
+
+  if (p.includes('*')) {
+    // *.shop.com / *@shop.com / *@*.shop.com → suggest shop.com
+    let candidate = p.replaceAll('*', '').replace(/^@/, '').replace(/^\./, '')
+    if (candidate.includes('@')) {
+      candidate = candidate.slice(candidate.lastIndexOf('@') + 1)
+    }
+    if (isValidLiteralDomain(candidate)) {
+      return (
+        `${prefix}: wildcards are not allowed; use "${candidate}" ` +
+        `for that domain and its subdomains. ${DOMAIN_FILTER_HELP}`
+      )
+    }
+    return `${prefix}: wildcards are not allowed. ${DOMAIN_FILTER_HELP}`
+  }
+
+  if (!p.includes('.') && !p.includes('@')) {
+    return (
+      `${prefix}: must include a domain with a dot (e.g. "shop.com"). ` +
+      DOMAIN_FILTER_HELP
+    )
+  }
+
+  return `${prefix}. ${DOMAIN_FILTER_HELP}`
+}
+
 /**
  * Explains why a from/domain pattern failed validation, with a fix hint when
  * the mistake is recognizable (e.g. `*envio.shop.com` → `*.envio.shop.com`).
+ * Used for template matchFromPattern (wildcards allowed).
  */
 export function describeInvalidFromPattern(
   raw: string,
@@ -195,4 +268,48 @@ export function validateCategoryId(categoryId: unknown): number {
     )
   }
   return categoryId
+}
+
+/**
+ * Parse optional ISO date string for sync range. Empty/null → null.
+ * Returns ISO string suitable for timestamptz columns.
+ */
+export function validateOptionalSyncDate(
+  value: string | null | undefined,
+  field: 'since' | 'until',
+): string | null {
+  if (value === null || value === undefined) return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const ms = Date.parse(trimmed)
+  if (!Number.isFinite(ms)) {
+    throw new InvalidMailboxError(`${field} must be a valid ISO date`)
+  }
+  return new Date(ms).toISOString()
+}
+
+export function validateSyncDateRange(
+  since: string | null,
+  until: string | null,
+): { since: string | null; until: string | null } {
+  if (since && until && Date.parse(since) > Date.parse(until)) {
+    throw new InvalidMailboxError('since must be less than or equal to until')
+  }
+  return { since, until }
+}
+
+export function clampArtifactPage(
+  page?: number | null,
+  pageSize?: number | null,
+): { page: number; pageSize: number; offset: number } {
+  const p = typeof page === 'number' && Number.isFinite(page) ? page : 1
+  const size =
+    typeof pageSize === 'number' && Number.isFinite(pageSize) ? pageSize : 20
+  const safePage = Math.max(1, Math.floor(p))
+  const safeSize = Math.min(100, Math.max(1, Math.floor(size)))
+  return {
+    page: safePage,
+    pageSize: safeSize,
+    offset: (safePage - 1) * safeSize,
+  }
 }

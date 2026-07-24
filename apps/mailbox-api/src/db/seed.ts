@@ -77,8 +77,59 @@ async function seed() {
     ])
     .execute()
 
+  // Approve templates so worker sync produces Review candidates (no heuristic).
+  await db
+    .insertInto('parsing_templates')
+    .values([
+      {
+        mailbox_id: mailbox.id,
+        user_id: user.id,
+        name: 'Amazon receipts',
+        kind: 'approve',
+        enabled: true,
+        match_from_pattern: 'amazon.com',
+        match_subject_regex: 'receipt',
+        extractors: {
+          amount: {
+            source: 'text',
+            regex: 'Order total:\\s*\\$?([0-9.]+)',
+            group: 1,
+          },
+          currency: { source: 'constant', value: 'USD' },
+          merchant: { source: 'from_domain' },
+        },
+        source_message_id: null,
+        version: 1,
+        created_at: now,
+        updated_at: now,
+      },
+      {
+        mailbox_id: mailbox.id,
+        user_id: user.id,
+        name: 'Uber trip receipts',
+        kind: 'approve',
+        enabled: true,
+        match_from_pattern: 'uber.com',
+        match_subject_regex: 'receipt',
+        extractors: {
+          amount: {
+            source: 'text',
+            regex: 'Total:\\s*\\$?([0-9.]+)',
+            group: 1,
+          },
+          currency: { source: 'constant', value: 'USD' },
+          merchant: { source: 'constant', value: 'Uber' },
+        },
+        source_message_id: null,
+        version: 1,
+        created_at: now,
+        updated_at: now,
+      },
+    ])
+    .execute()
+
   console.log(
-    `Seeded fixture mailbox id=${mailbox.id} with domain filters amazon.com, uber.com`,
+    `Seeded fixture mailbox id=${mailbox.id} with domain filters + approve templates (amazon, uber)`,
   )
   console.log(
     'Run mailbox-worker to sync; sign in via SuperTokens to link auth_user_id on first GraphQL request.',

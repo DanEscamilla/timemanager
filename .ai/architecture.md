@@ -46,8 +46,8 @@ flowchart TB
 - **`apps/spendmanager` (Flutter/Dart):** spending tracker client (expenses, categories, budgets + threshold alerts). Same SuperTokens FDI auth pattern as timemanager. Talks to GraphQL on `:3002` and auth on `:3001`. Chrome web port `:4445`.
 - **`apps/spendmanager-api` (Deno + Pylon):** GraphQL API on `:3002`. Same JWKS auth as timemanager-api; scopes categories/expenses/budgets per local user. Shares the Postgres instance with a separate database `spendmanager`.
 - **`apps/mailbox-api` (Deno + Pylon):** GraphQL API on `:3003` for mailboxes, optional domain filters, messages, extraction artifacts, and sync runs. Database name: `mailbox`. Independent from spendmanager; spending is one extractor kind (`spending.candidate`).
-- **`apps/mailbox-worker` (Deno):** Polls enabled mailboxes via `libs/mailbox_kit` providers (fixture / Gmail), applies domain filters, runs extractors, persists messages and artifacts.
-- **`libs/mailbox_kit` (Deno):** Shared `MailboxProvider`, domain filter, `Extractor` pipeline, `SpendingExtractor`, `ExpenseSink` interface (for a future spendmanager bridge).
+- **`apps/mailbox-worker` (Deno):** Polls enabled mailboxes via `libs/mailbox_kit` providers (fixture / Gmail), applies domain filters, auto-classifies unmatched mail via ai-api (approve/reject templates), runs template extractors, persists messages and artifacts.
+- **`libs/mailbox_kit` (Deno):** Shared `MailboxProvider`, domain filter, approve/reject template matching, `Extractor` pipeline, `TemplateSpendingExtractor`, `ExpenseSink` interface (spendmanager bridge via mailbox-api).
 - **`apps/ai-api` (Deno):** Internal REST AI gateway on `:3004`. Backends call code-registered use cases with a shared service key. No Postgres; no SuperTokens. Providers via `libs/ai_kit` (`gemini` now, `openai_compatible` for self-host later).
 - **`libs/ai_kit` (Deno):** Shared `AiProvider` abstraction, `GeminiProvider`, `OpenAiCompatibleProvider`, env factory.
 - **`apps/user-manager-web` (React + Vite):** SuperTokens demo UI; routes `/`, `/auth`, `/dashboard`. Cookie-based sessions against `:3001`.

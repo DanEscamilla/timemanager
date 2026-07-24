@@ -4,7 +4,7 @@ Flutter spending tracker (categories, expenses, budgets). GraphQL API on `:3002`
 
 ## Email import
 
-Settings → **Email import** talks to mailbox-api (`:3003`) for per-user mailbox setup, wildcard domain filters, AI parsing templates, and spending candidate review. Accept publishes into spendmanager via mailbox-api.
+Settings → **Email import** talks to mailbox-api (`:3003`) for per-user mailbox setup, required sender domain filters, AI parsing templates, and spending candidate review. Accept publishes into spendmanager via mailbox-api.
 
 Local services:
 

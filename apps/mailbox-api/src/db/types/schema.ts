@@ -31,6 +31,12 @@ export interface MailboxesTable {
   sync_cursor: string | null
   /** When true, worker should sync ASAP. */
   sync_requested: boolean
+  /** One-shot backfill window start (inclusive); null = open or incremental. */
+  sync_since: ColumnType<Date | null, string | null | undefined, string | null>
+  /** One-shot backfill window end (inclusive); null = open or incremental. */
+  sync_until: ColumnType<Date | null, string | null | undefined, string | null>
+  /** Page cursor for an in-progress backfill; does not replace sync_cursor. */
+  sync_backfill_cursor: string | null
   /** JSON: { accessToken, refreshToken?, expiresAtMs? } for gmail. */
   oauth_tokens_json: string | null
   last_synced_at: ColumnType<Date | null, string | null | undefined, string | null>
@@ -79,10 +85,17 @@ export interface ParsingTemplatesTable {
   mailbox_id: number
   user_id: number
   name: string
+  /** 'approve' | 'reject' */
+  kind: string
   enabled: boolean
   match_from_pattern: string
   match_subject_regex: string | null
-  extractors: ColumnType<unknown, string | unknown, string | unknown>
+  /** Null for reject templates (match-only). */
+  extractors: ColumnType<
+    unknown | null,
+    string | unknown | null | undefined,
+    string | unknown | null
+  >
   source_message_id: number | null
   version: number
   created_at: ColumnType<Date, string | undefined, never>

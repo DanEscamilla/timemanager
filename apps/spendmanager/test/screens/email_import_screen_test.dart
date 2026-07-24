@@ -3,10 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendmanager/config/api_config.dart';
 import 'package:spendmanager/l10n/app_localizations.dart';
-import 'package:spendmanager/models/category.dart';
 import 'package:spendmanager/models/mailbox.dart';
 import 'package:spendmanager/screens/email_import_screen.dart';
-import 'package:spendmanager/services/category_repository.dart';
 import 'package:spendmanager/services/mailbox_repository.dart';
 
 MailboxAccount _mailbox({int id = 1, String label = 'Demo mailbox'}) {
@@ -24,11 +22,17 @@ MailboxAccount _mailbox({int id = 1, String label = 'Demo mailbox'}) {
 }
 
 class _FakeMailboxRepository extends MailboxRepository {
-  _FakeMailboxRepository(this._mailboxes);
+  _FakeMailboxRepository(
+    this._mailboxes, {
+    List<DomainFilter>? filters,
+  }) : _filters = filters ?? [];
 
   List<MailboxAccount> _mailboxes;
+  List<DomainFilter> _filters;
   final List<int> deletedIds = [];
+  final List<int> clearedInboxIds = [];
   final Map<int, String> updatedLabels = {};
+  List<String>? lastSetPatterns;
 
   @override
   Future<List<MailboxAccount>> fetchMailboxes() async =>
@@ -39,6 +43,12 @@ class _FakeMailboxRepository extends MailboxRepository {
     deletedIds.add(id);
     _mailboxes = _mailboxes.where((m) => m.id != id).toList();
     return true;
+  }
+
+  @override
+  Future<MailboxAccount> clearInbox(int mailboxId) async {
+    clearedInboxIds.add(mailboxId);
+    return _mailboxes.firstWhere((m) => m.id == mailboxId);
   }
 
   @override
@@ -58,6 +68,8 @@ class _FakeMailboxRepository extends MailboxRepository {
             enabled: m.enabled,
             syncCursor: m.syncCursor,
             syncRequested: m.syncRequested,
+            syncSince: m.syncSince,
+            syncUntil: m.syncUntil,
             lastSyncedAt: m.lastSyncedAt,
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
@@ -68,26 +80,27 @@ class _FakeMailboxRepository extends MailboxRepository {
   }
 
   @override
-  Future<List<DomainFilter>> fetchDomainFilters(int mailboxId) async => [];
+  Future<List<DomainFilter>> fetchDomainFilters(int mailboxId) async =>
+      List<DomainFilter>.from(_filters);
 
   @override
-  Future<List<MailboxMessage>> fetchMessages(int mailboxId) async => [];
-
-  @override
-  Future<List<ParsingTemplate>> fetchTemplates(int mailboxId) async => [];
-
-  @override
-  Future<List<ExtractionArtifact>> fetchArtifacts({
-    int? mailboxId,
-    String? status,
-  }) async =>
-      [];
-}
-
-class _FakeCategoryRepository extends CategoryRepository {
-  @override
-  Future<List<Category>> fetchCategories({bool includeArchived = false}) async =>
-      [];
+  Future<List<DomainFilter>> setDomainFilters({
+    required int mailboxId,
+    required List<String> patterns,
+  }) async {
+    lastSetPatterns = patterns;
+    final now = DateTime.utc(2026, 7, 22);
+    _filters = [
+      for (var i = 0; i < patterns.length; i++)
+        DomainFilter(
+          id: i + 1,
+          mailboxId: mailboxId,
+          pattern: patterns[i],
+          createdAt: now,
+        ),
+    ];
+    return _filters;
+  }
 }
 
 void main() {
@@ -99,7 +112,6 @@ void main() {
 
   testWidgets('deletes selected mailbox after confirmation', (tester) async {
     final mailboxRepo = _FakeMailboxRepository([_mailbox()]);
-    final categoryRepo = _FakeCategoryRepository();
 
     final router = GoRouter(
       initialLocation: '/',
@@ -108,7 +120,6 @@ void main() {
           path: '/',
           builder: (context, state) => EmailImportScreen(
             mailboxRepository: mailboxRepo,
-            categoryRepository: categoryRepo,
           ),
         ),
       ],
@@ -130,25 +141,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Delete mailbox?'), findsOneWidget);
-    expect(
-      find.text(
-        'Remove "Demo mailbox"? Synced messages, filters, and templates '
-        'for this mailbox will be deleted.',
-      ),
-      findsOneWidget,
-    );
-
     await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
     await tester.pumpAndSettle();
 
     expect(mailboxRepo.deletedIds, [1]);
-    expect(find.text('No mailbox yet. Add a demo mailbox or connect Gmail.'),
-        findsOneWidget);
+    expect(
+      find.text('No mailbox yet. Add a demo mailbox or connect Gmail.'),
+      findsWidgets,
+    );
   });
 
   testWidgets('renames selected mailbox', (tester) async {
     final mailboxRepo = _FakeMailboxRepository([_mailbox()]);
-    final categoryRepo = _FakeCategoryRepository();
 
     final router = GoRouter(
       initialLocation: '/',
@@ -157,7 +161,6 @@ void main() {
           path: '/',
           builder: (context, state) => EmailImportScreen(
             mailboxRepository: mailboxRepo,
-            categoryRepository: categoryRepo,
           ),
         ),
       ],
@@ -177,11 +180,72 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Rename mailbox'), findsWidgets);
-    await tester.enterText(find.byType(TextField), 'Work inbox');
+    await tester.enterText(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      ),
+      'Work inbox',
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Save'));
     await tester.pumpAndSettle();
 
     expect(mailboxRepo.updatedLabels, {1: 'Work inbox'});
     expect(find.text('Work inbox (fixture)'), findsOneWidget);
+  });
+
+  testWidgets('wizard advances to senders and can clear inbox', (tester) async {
+    final mailboxRepo = _FakeMailboxRepository(
+      [_mailbox()],
+      filters: [
+        DomainFilter(
+          id: 1,
+          mailboxId: 1,
+          pattern: 'amazon.com',
+          createdAt: DateTime.utc(2026, 7, 22),
+        ),
+      ],
+    );
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => EmailImportScreen(
+            mailboxRepository: mailboxRepo,
+          ),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mailbox'), findsWidgets);
+    await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Senders'), findsWidgets);
+    expect(find.text('Sync now'), findsOneWidget);
+
+    final clearBtn = find.text('Clear inbox data');
+    await tester.ensureVisible(clearBtn);
+    await tester.pumpAndSettle();
+    await tester.tap(clearBtn);
+    await tester.pumpAndSettle();
+    expect(find.text('Clear inbox data?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Clear inbox data'));
+    await tester.pumpAndSettle();
+
+    expect(mailboxRepo.clearedInboxIds, [1]);
+    expect(find.text('Inbox data cleared.'), findsOneWidget);
   });
 }

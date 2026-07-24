@@ -40,9 +40,22 @@ Deno.test('generate_email_spend_template run parses model JSON', async () => {
               group: 1,
             },
             currency: { source: 'constant', value: 'USD' },
-            spentOn: null,
+            spentOn: {
+              source: 'text',
+              regex: 'Date:\\s*(\\d{1,2})/(\\d{1,2})/(20\\d{2})',
+              dayGroup: 1,
+              monthGroup: 2,
+              yearGroup: 3,
+            },
             merchant: { source: 'from_domain' },
             note: null,
+            direction: {
+              source: 'text',
+              regex: '\\b(purchase|deposit|charged)\\b',
+              group: 1,
+              inboundMatches: ['deposit'],
+              outboundMatches: ['purchase', 'charged'],
+            },
           },
         }),
         model: 'fake',
@@ -54,5 +67,13 @@ Deno.test('generate_email_spend_template run parses model JSON', async () => {
   assertEquals(
     (out.extractors.amount as { source: string }).source,
     'text',
+  )
+  assertEquals(
+    (out.extractors.spentOn as { yearGroup: number }).yearGroup,
+    3,
+  )
+  assertEquals(
+    (out.extractors.direction as { inboundMatches: string[] }).inboundMatches,
+    ['deposit'],
   )
 })

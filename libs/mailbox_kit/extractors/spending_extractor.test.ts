@@ -23,6 +23,23 @@ Deno.test('SpendingExtractor skips newsletter fixture', () => {
   assertEquals(extractor.extract(msg).length, 0)
 })
 
+Deno.test('SpendingExtractor canHandle scans HTML when textBody missing', () => {
+  const extractor = new SpendingExtractor()
+  const msg = {
+    id: 'html-only',
+    rfcMessageId: '<html-only@test>',
+    from: 'orders@shop.example',
+    subject: 'Your confirmation',
+    receivedAt: new Date('2026-07-01T12:00:00Z'),
+    textBody: null,
+    htmlBody: '<html><body><p>Order total: $42.99 USD</p></body></html>',
+  }
+  assertEquals(extractor.canHandle(msg), true)
+  const arts = extractor.extract(msg)
+  assertEquals(arts.length, 1)
+  assertEquals(arts[0]!.payload.amountCents, 4299)
+})
+
 Deno.test('ExtractorPipeline routes only handling extractors', () => {
   const pipeline = new ExtractorPipeline([new SpendingExtractor()])
   const receipts = pipeline.run(FIXTURE_RECEIPT_MESSAGES[1]!)

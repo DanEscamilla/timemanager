@@ -1,19 +1,22 @@
 /**
  * Optional allowlist of sender domains or full email addresses.
- * Empty / undefined list = no filter (accept all).
+ * Empty / undefined list = reject all (filters are required for sync).
  *
  * Pattern grammar:
  * - `user@shop.com` — exact address
  * - `shop.com` — apex + subdomains
- * - `*.shop.com` — subdomains only (not apex)
+ * - `*.shop.com` — subdomains only (not apex); legacy / template patterns
  * - `*@shop.com` — any local-part at that exact domain
  * - `*@*.shop.com` — any local-part at a subdomain of shop.com
+ *
+ * Domain filters no longer accept wildcards at the API; matching still
+ * supports them for parsing-template `matchFromPattern` and legacy rows.
  */
 export function matchesDomainFilter(
   fromAddress: string,
   patterns: readonly string[] | null | undefined,
 ): boolean {
-  if (!patterns || patterns.length === 0) return true
+  if (!patterns || patterns.length === 0) return false
 
   const normalizedFrom = normalizeFrom(fromAddress)
   if (!normalizedFrom) return false
@@ -30,7 +33,7 @@ export function filterMessagesByDomain<T extends { from: string }>(
   messages: readonly T[],
   patterns: readonly string[] | null | undefined,
 ): T[] {
-  if (!patterns || patterns.length === 0) return [...messages]
+  if (!patterns || patterns.length === 0) return []
   return messages.filter((m) => matchesDomainFilter(m.from, patterns))
 }
 

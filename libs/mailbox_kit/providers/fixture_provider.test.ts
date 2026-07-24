@@ -22,3 +22,16 @@ Deno.test('FixtureMailboxProvider getMessage', async () => {
   assertEquals(msg?.subject.includes('Amazon'), true)
   assertEquals(await provider.getMessage('missing'), null)
 })
+
+Deno.test('FixtureMailboxProvider filters by since/until', async () => {
+  const provider = new FixtureMailboxProvider()
+  const page = await provider.listMessages({
+    cursor: null,
+    limit: 50,
+    since: new Date('2026-07-02T00:00:00.000Z'),
+    until: new Date('2026-07-02T23:59:59.999Z'),
+  })
+  assertEquals(page.messages.length, 1)
+  assertEquals(page.messages[0]!.id, 'fixture-2')
+  assertEquals(page.nextCursor, null)
+})

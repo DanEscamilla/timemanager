@@ -79,7 +79,6 @@ GoRouter createAppRouter({
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => EmailImportScreen(
           mailboxRepository: MailboxRepository(),
-          categoryRepository: auth.categoryRepository,
         ),
       ),
       StatefulShellRoute.indexedStack(

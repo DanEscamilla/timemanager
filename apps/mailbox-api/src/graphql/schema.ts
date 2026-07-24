@@ -13,6 +13,8 @@ export const typeDefs = gql`
     enabled: Boolean!
     sync_cursor: String
     sync_requested: Boolean!
+    sync_since: String
+    sync_until: String
     last_synced_at: String
     created_at: String!
     updated_at: String!
@@ -50,6 +52,13 @@ export const typeDefs = gql`
     updated_at: String!
   }
 
+  type ExtractionArtifactPage {
+    items: [ExtractionArtifact!]!
+    totalCount: Int!
+    page: Int!
+    pageSize: Int!
+  }
+
   type SyncRun {
     id: Int!
     mailbox_id: Int!
@@ -65,10 +74,11 @@ export const typeDefs = gql`
     mailbox_id: Int!
     user_id: Int!
     name: String!
+    kind: String!
     enabled: Boolean!
     match_from_pattern: String!
     match_subject_regex: String
-    extractors: String!
+    extractors: String
     source_message_id: Int
     version: Int!
     created_at: String!
@@ -118,9 +128,10 @@ export const typeDefs = gql`
   input CreateParsingTemplateInput {
     mailboxId: Int!
     name: String!
+    kind: String
     matchFromPattern: String!
     matchSubjectRegex: String
-    extractorsJson: String!
+    extractorsJson: String
     enabled: Boolean
     sourceMessageId: Int
   }
@@ -136,17 +147,23 @@ export const typeDefs = gql`
 
   input GenerateParsingTemplateInput {
     messageId: Int!
+    decision: String!
     name: String
     hints: String
+  }
+
+  type GenerateParsingTemplatePayload {
+    template: ParsingTemplate!
+    reevaluatedCount: Int!
   }
 
   type Query {
     mailboxes: [Mailbox!]!
     domainFilters(mailboxId: Int!): [DomainFilter!]!
-    messages(mailboxId: Int!): [Message!]!
+    messages(mailboxId: Int!, excludeMatchingTemplates: Boolean): [Message!]!
     message(id: Int!): Message
     sourceMessageForExpense(expenseId: Int!): Message
-    extractionArtifacts(mailboxId: Int, status: String): [ExtractionArtifact!]!
+    extractionArtifacts(mailboxId: Int, status: String, page: Int, pageSize: Int): ExtractionArtifactPage!
     syncRuns(mailboxId: Int!): [SyncRun!]!
     parsingTemplates(mailboxId: Int!): [ParsingTemplate!]!
   }
@@ -155,14 +172,16 @@ export const typeDefs = gql`
     createMailbox(input: CreateMailboxInput!): Mailbox!
     updateMailbox(input: UpdateMailboxInput!): Mailbox!
     deleteMailbox(id: Int!): Boolean!
+    clearInbox(mailboxId: Int!): Mailbox!
     setDomainFilters(input: SetDomainFiltersInput!): [DomainFilter!]!
-    triggerSync(mailboxId: Int!): Mailbox!
+    triggerSync(mailboxId: Int!, since: String, until: String): Mailbox!
     updateArtifactStatus(input: UpdateArtifactStatusInput!): ExtractionArtifact!
+    rejectAllPendingArtifacts(mailboxId: Int!): Int!
     connectGmail(input: ConnectGmailInput!): Mailbox!
     startGmailOAuth(input: StartGmailOAuthInput!): StartGmailOAuthPayload!
     createParsingTemplate(input: CreateParsingTemplateInput!): ParsingTemplate!
     updateParsingTemplate(input: UpdateParsingTemplateInput!): ParsingTemplate!
     deleteParsingTemplate(id: Int!): Boolean!
-    generateParsingTemplate(input: GenerateParsingTemplateInput!): ParsingTemplate!
+    generateParsingTemplate(input: GenerateParsingTemplateInput!): GenerateParsingTemplatePayload!
   }
 `

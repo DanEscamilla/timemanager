@@ -45,13 +45,23 @@ export class FixtureMailboxProvider implements MailboxProvider {
   async listMessages(options: {
     cursor: SyncCursor
     limit?: number
+    since?: Date
+    until?: Date
   }): Promise<ListMessagesResult> {
-    const start = parseCursor(options.cursor)
     const limit = options.limit ?? 50
-    const slice = this.messages.slice(start, start + limit)
+    const rangeMode = options.since != null || options.until != null
+    const filtered = this.messages.filter((m) => {
+      if (options.since && m.receivedAt < options.since) return false
+      if (options.until && m.receivedAt > options.until) return false
+      return true
+    })
+    const start = parseCursor(options.cursor)
+    const slice = filtered.slice(start, start + limit)
     const nextIndex = start + slice.length
-    const nextCursor =
-      nextIndex >= this.messages.length ? String(this.messages.length) : String(nextIndex)
+    const exhausted = nextIndex >= filtered.length
+    const nextCursor = exhausted
+      ? (rangeMode ? null : String(filtered.length))
+      : String(nextIndex)
     return { messages: slice.map(cloneMessage), nextCursor }
   }
 

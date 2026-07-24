@@ -1,7 +1,11 @@
-import { matchesFromPattern, normalizeFrom } from '../domain_filter.ts'
+import { normalizeFrom } from '../domain_filter.ts'
 import type { Extractor } from '../extractor.ts'
+import { htmlToPlainText, resolveTextBody } from '../html_to_plain_text.ts'
+import { messageMatchesTemplate } from '../template_match.ts'
 import {
   SPENDING_CANDIDATE_KIND,
+  type DatePartsExtractor,
+  type DirectionExtractor,
   type EmailMessage,
   type ExtractionArtifact,
   type FieldExtractor,
@@ -24,23 +28,20 @@ export class TemplateSpendingExtractor implements Extractor {
   }
 
   canHandle(message: EmailMessage): boolean {
-    if (this.template.enabled === false) return false
-    if (!matchesFromPattern(message.from, this.template.matchFromPattern)) {
-      return false
-    }
-    const subjectRe = this.template.matchSubjectRegex?.trim()
-    if (subjectRe) {
-      try {
-        if (!new RegExp(subjectRe, 'i').test(message.subject)) return false
-      } catch {
-        return false
-      }
-    }
-    return true
+    return messageMatchesTemplate(message, this.template)
   }
 
   extract(message: EmailMessage): ExtractionArtifact[] {
     const sources = buildSources(message)
+
+    if (this.template.extractors.direction) {
+      const flow = classifyDirection(
+        this.template.extractors.direction,
+        sources,
+      )
+      if (flow === 'inbound') return []
+    }
+
     const amountRaw = applyField(this.template.extractors.amount, sources)
     const amountCents = parseMoneyToCents(amountRaw)
     if (amountCents === null) return []
@@ -50,10 +51,9 @@ export class TemplateSpendingExtractor implements Extractor {
       : null
     const currency = normalizeCurrency(currencyRaw) ?? 'USD'
 
-    const spentOnRaw = this.template.extractors.spentOn
-      ? applyField(this.template.extractors.spentOn, sources)
-      : null
-    const spentOn = normalizeDate(spentOnRaw) ?? toDateString(message.receivedAt)
+    const spentOn =
+      resolveSpentOn(this.template.extractors.spentOn, sources) ??
+      toDateString(message.receivedAt)
 
     const merchant = this.template.extractors.merchant
       ? applyField(this.template.extractors.merchant, sources)
@@ -93,10 +93,14 @@ type Sources = {
 
 function buildSources(message: EmailMessage): Sources {
   const from = normalizeFrom(message.from)
+  // Same plain text as resolveTextBody / stored messages.text_body (not raw MIME).
+  const text = resolveTextBody(message.textBody, message.htmlBody) ?? ''
+  const fromHtml = htmlToPlainText(message.htmlBody)
   return {
     subject: message.subject ?? '',
-    text: message.textBody ?? '',
-    html_text: stripHtml(message.htmlBody),
+    text,
+    // Prefer extracted HTML; fall back to stored plain text (post-migration).
+    html_text: fromHtml || text,
     from_domain: from?.domain ?? null,
   }
 }
@@ -127,9 +131,89 @@ function applyField(
   }
 }
 
-function stripHtml(html: string | null): string {
-  if (!html) return ''
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+function resolveSpentOn(
+  extractor: FieldExtractor | DatePartsExtractor | null | undefined,
+  sources: Sources,
+): string | null {
+  if (!extractor) return null
+  if (isDatePartsExtractor(extractor)) {
+    return composeDateParts(extractor, sources)
+  }
+  const spentOnRaw = applyField(extractor, sources)
+  return normalizeDate(spentOnRaw)
+}
+
+function composeDateParts(
+  extractor: DatePartsExtractor,
+  sources: Sources,
+): string | null {
+  const haystack = sources[extractor.source]
+  try {
+    const re = new RegExp(extractor.regex, 'i')
+    const m = haystack.match(re)
+    if (!m) return null
+    const year = Number(m[extractor.yearGroup])
+    const month = Number(m[extractor.monthGroup])
+    const day = Number(m[extractor.dayGroup])
+    if (
+      !Number.isInteger(year) ||
+      !Number.isInteger(month) ||
+      !Number.isInteger(day)
+    ) {
+      return null
+    }
+    if (year < 2000 || year > 2100) return null
+    if (month < 1 || month > 12) return null
+    if (day < 1 || day > 31) return null
+    // Soft calendar check: reject e.g. Feb 31 via Date UTC round-trip.
+    const composed = `${year}-${pad2(month)}-${pad2(day)}`
+    const check = new Date(`${composed}T00:00:00.000Z`)
+    if (
+      Number.isNaN(check.getTime()) ||
+      check.getUTCFullYear() !== year ||
+      check.getUTCMonth() + 1 !== month ||
+      check.getUTCDate() !== day
+    ) {
+      return null
+    }
+    return composed
+  } catch {
+    return null
+  }
+}
+
+function classifyDirection(
+  extractor: DirectionExtractor,
+  sources: Sources,
+): 'inbound' | 'outbound' | 'unknown' {
+  const haystack = sources[extractor.source]
+  try {
+    const re = new RegExp(extractor.regex, 'i')
+    const m = haystack.match(re)
+    const group = extractor.group
+    if (!m || group < 0 || group >= m.length) return 'unknown'
+    const raw = m[group]?.trim()
+    if (!raw) return 'unknown'
+    const normalized = foldKey(raw)
+    if (extractor.inboundMatches.some((k) => foldKey(k) === normalized)) {
+      return 'inbound'
+    }
+    if (extractor.outboundMatches.some((k) => foldKey(k) === normalized)) {
+      return 'outbound'
+    }
+    return 'unknown'
+  } catch {
+    return 'unknown'
+  }
+}
+
+/** Case-fold + strip combining marks so "depósito" matches "deposito". */
+function foldKey(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .trim()
 }
 
 function parseMoneyToCents(raw: string | null): number | null {
@@ -158,6 +242,21 @@ function toDateString(d: Date): string {
   return d.toISOString().slice(0, 10)
 }
 
+function pad2(n: number): string {
+  return n < 10 ? `0${n}` : String(n)
+}
+
+function isDatePartsExtractor(
+  raw: FieldExtractor | DatePartsExtractor,
+): raw is DatePartsExtractor {
+  return (
+    'yearGroup' in raw &&
+    'monthGroup' in raw &&
+    'dayGroup' in raw &&
+    typeof (raw as DatePartsExtractor).yearGroup === 'number'
+  )
+}
+
 /** Validate extractors JSON shape (used by API + AI output). */
 export function parseSpendTemplateExtractors(
   raw: unknown,
@@ -166,18 +265,118 @@ export function parseSpendTemplateExtractors(
   const obj = raw as Record<string, unknown>
   const amount = parseFieldExtractor(obj.amount)
   if (!amount) return null
+
+  const spentOn = parseSpentOnExtractor(obj.spentOn)
+  if (obj.spentOn !== undefined && obj.spentOn !== null && spentOn === null) {
+    return null
+  }
+
+  const direction = parseDirectionExtractor(obj.direction)
+  if (
+    obj.direction !== undefined &&
+    obj.direction !== null &&
+    direction === null
+  ) {
+    return null
+  }
+
   return {
     amount,
     currency: parseOptionalField(obj.currency),
-    spentOn: parseOptionalField(obj.spentOn),
+    spentOn,
     merchant: parseOptionalField(obj.merchant),
     note: parseOptionalField(obj.note),
+    direction,
   }
 }
 
 function parseOptionalField(raw: unknown): FieldExtractor | null {
   if (raw === undefined || raw === null) return null
   return parseFieldExtractor(raw)
+}
+
+function parseSpentOnExtractor(
+  raw: unknown,
+): FieldExtractor | DatePartsExtractor | null {
+  if (raw === undefined || raw === null) return null
+  if (typeof raw !== 'object' || Array.isArray(raw)) return null
+  const obj = raw as Record<string, unknown>
+  if (
+    typeof obj.yearGroup === 'number' ||
+    typeof obj.monthGroup === 'number' ||
+    typeof obj.dayGroup === 'number'
+  ) {
+    return parseDatePartsExtractor(obj)
+  }
+  return parseFieldExtractor(raw)
+}
+
+function parseDatePartsExtractor(
+  obj: Record<string, unknown>,
+): DatePartsExtractor | null {
+  const source = obj.source
+  if (source !== 'subject' && source !== 'text' && source !== 'html_text') {
+    return null
+  }
+  if (typeof obj.regex !== 'string' || !obj.regex) return null
+  if (!isNonNegInt(obj.yearGroup)) return null
+  if (!isNonNegInt(obj.monthGroup)) return null
+  if (!isNonNegInt(obj.dayGroup)) return null
+  try {
+    new RegExp(obj.regex, 'i')
+  } catch {
+    return null
+  }
+  return {
+    source,
+    regex: obj.regex,
+    yearGroup: obj.yearGroup,
+    monthGroup: obj.monthGroup,
+    dayGroup: obj.dayGroup,
+  }
+}
+
+function parseDirectionExtractor(raw: unknown): DirectionExtractor | null {
+  if (raw === undefined || raw === null) return null
+  if (typeof raw !== 'object' || Array.isArray(raw)) return null
+  const obj = raw as Record<string, unknown>
+  const source = obj.source
+  if (source !== 'subject' && source !== 'text' && source !== 'html_text') {
+    return null
+  }
+  if (typeof obj.regex !== 'string' || !obj.regex) return null
+  if (!isNonNegInt(obj.group)) return null
+  const inbound = parseStringList(obj.inboundMatches)
+  const outbound = parseStringList(obj.outboundMatches)
+  if (!inbound || !outbound) return null
+  if (inbound.length === 0 && outbound.length === 0) return null
+  try {
+    new RegExp(obj.regex, 'i')
+  } catch {
+    return null
+  }
+  return {
+    source,
+    regex: obj.regex,
+    group: obj.group,
+    inboundMatches: inbound,
+    outboundMatches: outbound,
+  }
+}
+
+function parseStringList(raw: unknown): string[] | null {
+  if (!Array.isArray(raw)) return null
+  const out: string[] = []
+  for (const item of raw) {
+    if (typeof item !== 'string') return null
+    const trimmed = item.trim()
+    if (trimmed) out.push(trimmed)
+  }
+  return out
+}
+
+function isNonNegInt(raw: unknown): raw is number {
+  return typeof raw === 'number' && Number.isInteger(raw) && raw >= 0
 }
 
 function parseFieldExtractor(raw: unknown): FieldExtractor | null {

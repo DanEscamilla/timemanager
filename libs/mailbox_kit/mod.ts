@@ -1,5 +1,7 @@
 export type {
   ArtifactStatus,
+  DatePartsExtractor,
+  DirectionExtractor,
   EmailMessage,
   ExtractionArtifact,
   FieldExtractor,
@@ -19,6 +21,20 @@ export {
   matchesFromPattern,
   normalizeFrom,
 } from './domain_filter.ts'
+
+export type { TemplateMatchSpec } from './template_match.ts'
+export {
+  messageMatchesAnyTemplate,
+  messageMatchesTemplate,
+} from './template_match.ts'
+
+export { extractSpendingCandidates } from './template_extract.ts'
+
+export {
+  htmlToPlainText,
+  looksLikeHtml,
+  resolveTextBody,
+} from './html_to_plain_text.ts'
 
 export type { Extractor } from './extractor.ts'
 export { ExtractorPipeline } from './extractor.ts'

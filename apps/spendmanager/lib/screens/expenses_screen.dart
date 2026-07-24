@@ -9,6 +9,7 @@ import '../services/expense_repository.dart';
 import '../services/graphql_client.dart';
 import '../services/mailbox_repository.dart';
 import '../utils/money.dart';
+import '../widgets/expense_review_tab.dart';
 import 'expense_form_screen.dart';
 
 class ExpensesScreen extends StatefulWidget {
@@ -29,19 +30,31 @@ class ExpensesScreen extends StatefulWidget {
   State<ExpensesScreen> createState() => ExpensesScreenState();
 }
 
-class ExpensesScreenState extends State<ExpensesScreen> {
+class ExpensesScreenState extends State<ExpensesScreen>
+    with SingleTickerProviderStateMixin {
   late Future<_ExpensesData> _future;
+  late final TabController _tabs;
+  final GlobalKey<ExpenseReviewTabState> _reviewKey =
+      GlobalKey<ExpenseReviewTabState>();
 
   @override
   void initState() {
     super.initState();
+    _tabs = TabController(length: 2, vsync: this);
     reload();
+  }
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
   }
 
   void reload() {
     setState(() {
       _future = _load();
     });
+    _reviewKey.currentState?.reload();
   }
 
   Future<_ExpensesData> _load() async {
@@ -112,7 +125,41 @@ class ExpensesScreenState extends State<ExpensesScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final mailboxRepo = widget.mailboxRepository;
 
+    return Column(
+      children: [
+        TabBar(
+          controller: _tabs,
+          tabs: [
+            Tab(text: l10n.expensesTabHistory),
+            Tab(text: l10n.expensesTabReview),
+          ],
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabs,
+            children: [
+              _buildHistory(l10n),
+              mailboxRepo == null
+                  ? Center(child: Text(l10n.errorCouldNotLoad))
+                  : ExpenseReviewTab(
+                      key: _reviewKey,
+                      mailboxRepository: mailboxRepo,
+                      categoryRepository: widget.categoryRepository,
+                      onAccepted: () {
+                        reload();
+                        widget.onChanged?.call();
+                      },
+                    ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHistory(AppLocalizations l10n) {
     return FutureBuilder<_ExpensesData>(
       future: _future,
       builder: (context, snapshot) {
@@ -151,8 +198,8 @@ class ExpensesScreenState extends State<ExpensesScreen> {
             return AppCard(
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor:
-                      category?.colorValue ?? Theme.of(context).colorScheme.primary,
+                  backgroundColor: category?.colorValue ??
+                      Theme.of(context).colorScheme.primary,
                   child: const Icon(
                     Icons.attach_money,
                     color: Colors.white,

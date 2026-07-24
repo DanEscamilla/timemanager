@@ -27,9 +27,10 @@ Return ONLY valid JSON (no markdown) with this exact shape:
   "extractors": {
     "amount": { "source": "subject"|"text"|"html_text", "regex": string, "group": number },
     "currency": FieldExtractor | null,
-    "spentOn": FieldExtractor | null,
+    "spentOn": DatePartsExtractor | null,
     "merchant": FieldExtractor | null,
-    "note": FieldExtractor | null
+    "note": FieldExtractor | null,
+    "direction": DirectionExtractor | null
   }
 }
 FieldExtractor is one of:
@@ -37,12 +38,27 @@ FieldExtractor is one of:
 - { "source": "from_domain" }
 - { "source": "constant", "value": string }
 
+DatePartsExtractor (preferred for dates — locale-agnostic):
+{ "source": "subject"|"text"|"html_text", "regex": string, "yearGroup": number, "monthGroup": number, "dayGroup": number }
+Capture numeric year, month, and day in separate groups. Example for "El 11/07/2026":
+{ "source": "text", "regex": "El\\\\s+(\\\\d{1,2})/(\\\\d{1,2})/(20\\\\d{2})", "dayGroup": 1, "monthGroup": 2, "yearGroup": 3 }
+
+DirectionExtractor (optional — skip inbound money):
+{ "source": "subject"|"text"|"html_text", "regex": string, "group": number, "inboundMatches": string[], "outboundMatches": string[] }
+When the capture matches an inbound keyword (case-insensitive), the message is ignored.
+Use the email's language. Spanish examples: inbound abono/depósito/recibiste; outbound compra/cargo.
+English examples: inbound deposit/received/credit; outbound purchase/charged/paid.
+
 Rules:
 - Prefer robust regexes anchored near labels like Total/Amount/Order total.
 - amount is required; never invent amounts that are not in the email.
+- Prefer DatePartsExtractor for spentOn (numeric parts only; do not capture month names).
+- For bank/transfer emails, include direction so inbound transfers are skipped; outbound charges still extract.
+- Even if the sample email is inbound-only, still emit amount + direction so future similar mails are skipped.
 - matchFromPattern uses domain/wildcard grammar: shop.com, *.shop.com, *@shop.com, user@shop.com.
 - If unsure about optional fields, set them to null.
-- Use "text" source when the body is plain text; "html_text" when only HTML is useful.`
+- Message bodies are pre-extracted plain text. Prefer source "text" for body fields.
+- "html_text" remains valid for backward-compatible templates but usually mirrors plain text.`
 
 export const generateEmailSpendTemplateUseCase: UseCase<
   GenerateEmailSpendTemplateInput,
@@ -66,13 +82,13 @@ export const generateEmailSpendTemplateUseCase: UseCase<
     },
     {
       name: 'textBody',
-      description: 'Plain text body (optional)',
+      description: 'Plain text body (preferred; extracted from HTML at sync)',
       type: 'string',
       required: false,
     },
     {
       name: 'htmlBody',
-      description: 'HTML body (optional)',
+      description: 'Raw HTML body (optional legacy; prefer textBody)',
       type: 'string',
       required: false,
     },
@@ -100,7 +116,7 @@ export const generateEmailSpendTemplateUseCase: UseCase<
     const hints = optionalString(obj.hints, 'hints')
     if (!textBody && !htmlBody) {
       throw new UseCaseInputError(
-        'input.textBody or input.htmlBody is required',
+        'input.textBody is required (htmlBody is legacy-only)',
       )
     }
     return {
@@ -137,7 +153,7 @@ export const generateEmailSpendTemplateUseCase: UseCase<
       messages: [{ role: 'user', content: userContent }],
       temperature: 0.1,
       jsonSchemaHint:
-        'Return JSON with matchFromPattern, matchSubjectRegex, nameSuggestion, extractors',
+        'Return JSON with matchFromPattern, matchSubjectRegex, nameSuggestion, extractors (amount, spentOn date parts, optional direction)',
     })
 
     const parsed = parseModelJson(result.text)

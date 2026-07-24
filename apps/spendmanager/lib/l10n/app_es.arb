@@ -59,9 +59,14 @@
   "delete": "Eliminar",
   "archive": "Archivar",
 
+  "expensesTabHistory": "Historial",
+  "expensesTabReview": "Revisión",
   "expensesEmptyTitle": "Aún no hay gastos",
   "expensesEmptyHint": "Toca + para registrar tu primer gasto.",
   "expensesEmptyAction": "Añadir gasto",
+  "expensesReviewSetupRequiredTitle": "Importación de email no configurada",
+  "expensesReviewSetupRequiredHint": "Conecta un buzón y permite dominios de remitente para importar gastos desde el email.",
+  "expensesReviewSetupCta": "Configurar importación de email",
   "expensesDeleteTitle": "¿Eliminar gasto?",
   "expensesDeleteConfirm": "¿Quitar este gasto?",
   "expensesFormNew": "Nuevo gasto",
@@ -134,13 +139,15 @@
   "settingsThemeDark": "Oscuro",
   "settingsSignOut": "Cerrar sesión",
   "settingsEmailImport": "Importar email",
-  "settingsEmailImportSubtitle": "Conecta buzones, plantillas y revisa gastos",
+  "settingsEmailImportSubtitle": "Conecta un buzón y la lista de remitentes",
 
   "emailImportTitle": "Importar email",
-  "emailImportTabSetup": "Configuración",
-  "emailImportTabTemplates": "Plantillas",
-  "emailImportTabReview": "Revisión",
-  "emailImportSetupBlurb": "Conecta un buzón, permite dominios (comodines), sincroniza y genera plantillas de IA una vez por tipo de remitente.",
+  "emailImportWizardStepMailbox": "Buzón",
+  "emailImportWizardStepSenders": "Remitentes",
+  "emailImportWizardNext": "Siguiente",
+  "emailImportWizardBack": "Atrás",
+  "emailImportWizardDone": "Listo",
+  "emailImportSetupBlurb": "Conecta un buzón y permite dominios o direcciones de remitente para sincronizar y extraer gastos.",
   "emailImportAddFixture": "Añadir buzón demo",
   "emailImportConnectGmail": "Conectar Gmail",
   "emailImportFixtureLabel": "Buzón demo",
@@ -173,30 +180,82 @@
       }
     }
   },
-  "emailImportDomainFilters": "Lista de dominios remitentes",
-  "emailImportDomainFiltersHint": "Un patrón por línea. Ejemplos: amazon.com, *.uber.com, *@shop.com (el comodín necesita *.).",
-  "emailImportNoFilters": "Sin filtros (todos los remitentes)",
+  "emailImportDomainFilters": "Lista de remitentes",
+  "emailImportDomainFiltersHint": "Un patrón por línea. Dominio (todos): amazon.com. Remitente exacto: noreply@uber.com",
+  "emailImportNoFilters": "Añade al menos un dominio o correo de remitente antes de sincronizar",
+  "emailImportFiltersRequired": "Añade al menos un patrón de lista de remitentes antes de sincronizar",
   "emailImportTriggerSync": "Sincronizar ahora",
+  "emailImportSyncFrom": "Desde",
+  "emailImportSyncTo": "Hasta",
+  "emailImportSyncClearDate": "Borrar",
   "emailImportSyncQueued": "Sincronización solicitada. Actualiza en un momento.",
   "emailImportMessages": "Mensajes recientes",
   "emailImportNoMessages": "Aún no hay mensajes. Sincroniza tras conectar.",
-  "emailImportGenerateTemplate": "Generar plantilla con IA",
+  "emailImportApproveEmail": "Aprobar",
+  "emailImportRejectEmail": "Ignorar",
   "emailImportGeneratingTemplate": "Generando plantilla… Esto puede tardar un momento.",
-  "emailImportTemplateGenerated": "Plantilla generada. Puedes editarla en la pestaña Plantillas.",
+  "emailImportApproveTemplateGenerated": "Aprobado. Los correos que coincidan aparecerán en Revisar como candidatos de gasto.",
+  "emailImportRejectTemplateGenerated": "Ignorado. Los correos que coincidan se omitirán.",
+  "emailImportGenerateTemplate": "Generar plantilla con IA",
+  "emailImportTemplateGeneratedWithReeval": "Plantilla generada; se actualizaron {count} elementos de revisión.",
+  "@emailImportTemplateGeneratedWithReeval": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "emailImportTemplateGenerationFailed": "No se pudo generar la plantilla. Inténtalo de nuevo.",
-  "emailImportNoTemplates": "Aún no hay plantillas. Genera una desde un mensaje en Configuración.",
+  "emailImportNoTemplates": "Aún no hay plantillas. Aprueba o ignora un mensaje de ejemplo en Configuración.",
   "emailImportEditTemplate": "Editar plantilla",
   "emailImportTemplateName": "Nombre",
+  "emailImportTemplateKindApprove": "Aprobar",
+  "emailImportTemplateKindReject": "Ignorar",
   "emailImportMatchFrom": "Patrón de remitente",
   "emailImportMatchSubject": "Regex de asunto (opcional)",
   "emailImportExtractorsJson": "JSON de extractores",
-  "emailImportNoPending": "No hay candidatos de gasto pendientes.",
+  "emailImportNoPending": "No hay candidatos de gasto pendientes. Sincroniza tu buzón para importar emails de gasto.",
   "emailImportAcceptTitle": "Aceptar como gasto",
   "emailImportCategory": "Categoría",
   "emailImportAccept": "Aceptar",
   "emailImportReject": "Rechazar",
+  "emailImportRejectAll": "Rechazar todos",
+  "emailImportRejectAllTitle": "¿Rechazar todos los pendientes?",
+  "emailImportRejectAllConfirm": "¿Rechazar {count} candidatos de gasto pendientes? Esta acción no se puede deshacer.",
+  "@emailImportRejectAllConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emailImportRejectAllDone": "Se rechazaron {count} candidatos.",
+  "@emailImportRejectAllDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emailImportClearInbox": "Borrar datos de la bandeja",
+  "emailImportClearInboxTitle": "¿Borrar datos de la bandeja?",
+  "emailImportClearInboxConfirm": "¿Eliminar mensajes sincronizados, elementos de revisión e historial de sincronización de este buzón? Los filtros y plantillas se conservan. La próxima sincronización puede volver a obtener los emails.",
+  "emailImportClearInboxDone": "Datos de la bandeja borrados.",
   "emailImportNeedCategory": "Crea una categoría antes de aceptar gastos.",
   "emailImportViewEmail": "Ver email",
+  "emailImportPagePrevious": "Anterior",
+  "emailImportPageNext": "Siguiente",
+  "emailImportPageOf": "Página {page} de {totalPages}",
+  "@emailImportPageOf": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "totalPages": {
+        "type": "int"
+      }
+    }
+  },
   "sourceEmailTitle": "Email de origen",
   "sourceEmailBodyMissing": "No se guardó el cuerpo de este mensaje.",
   "sourceEmailNotFound": "No hay un email de origen vinculado a este gasto.",
