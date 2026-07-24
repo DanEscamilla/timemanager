@@ -58,6 +58,53 @@ function todayUtc(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
+/** Named return shapes so Pylon can emit GraphQL object types (not `Any!`). */
+export interface Category {
+  id: number
+  user_id: number
+  name: string
+  color: string
+  archived_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Expense {
+  id: number
+  user_id: number
+  category_id: number
+  amount_cents: number
+  currency: string
+  spent_on: string
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Budget {
+  id: number
+  user_id: number
+  name: string
+  category_id: number | null
+  amount_cents: number
+  currency: string
+  interval_unit: string
+  interval_count: number
+  anchor_date: string
+  alert_percent: number
+  archived_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ExpenseTotal {
+  category_id: number
+  category_name: string
+  category_color: string
+  currency: string
+  total_cents: number
+}
+
 function mapCategory(row: {
   id: number
   user_id: number
@@ -66,7 +113,7 @@ function mapCategory(row: {
   archived_at: Date | string | null
   created_at: Date | string
   updated_at: Date | string
-}) {
+}): Category {
   return {
     ...row,
     archived_at: asIsoTimestampOrNull(row.archived_at),
@@ -85,7 +132,7 @@ function mapExpense(row: {
   note: string | null
   created_at: Date | string
   updated_at: Date | string
-}) {
+}): Expense {
   return {
     ...row,
     amount_cents: asNumber(row.amount_cents),
@@ -108,7 +155,7 @@ function mapBudget(row: {
   archived_at: Date | string | null
   created_at: Date | string
   updated_at: Date | string
-}) {
+}): Budget {
   return {
     ...row,
     amount_cents: asNumber(row.amount_cents),
@@ -155,7 +202,9 @@ async function fetchOwnedBudget(budgetId: number, userId: number) {
 }
 
 export const Query = {
-  categories: async (args?: { includeArchived?: boolean }) => {
+  categories: async (args?: {
+    includeArchived?: boolean
+  }): Promise<Category[]> => {
     const userId = requireUserId()
     let query = db
       .selectFrom('categories')
@@ -171,7 +220,7 @@ export const Query = {
     return rows.map(mapCategory)
   },
 
-  category: async (args: { id: number }) => {
+  category: async (args: { id: number }): Promise<Category | null> => {
     const userId = requireUserId()
     const row = await db
       .selectFrom('categories')
@@ -186,7 +235,7 @@ export const Query = {
     fromDate?: string
     toDate?: string
     categoryId?: number
-  }) => {
+  }): Promise<Expense[]> => {
     const userId = requireUserId()
     let query = db
       .selectFrom('expenses')
@@ -209,7 +258,7 @@ export const Query = {
     return rows.map(mapExpense)
   },
 
-  expense: async (args: { id: number }) => {
+  expense: async (args: { id: number }): Promise<Expense | null> => {
     const userId = requireUserId()
     const row = await db
       .selectFrom('expenses')
@@ -220,7 +269,10 @@ export const Query = {
     return row ? mapExpense(row) : null
   },
 
-  expenseTotals: async (args: { fromDate: string; toDate: string }) => {
+  expenseTotals: async (args: {
+    fromDate: string
+    toDate: string
+  }): Promise<ExpenseTotal[]> => {
     const userId = requireUserId()
     const fromDate = validateSpentOn(args.fromDate)
     const toDate = validateSpentOn(args.toDate)
@@ -247,7 +299,7 @@ export const Query = {
       .orderBy('total_cents', 'desc')
       .execute()
 
-    return rows.map((row) => ({
+    return rows.map((row): ExpenseTotal => ({
       category_id: row.category_id,
       category_name: row.category_name,
       category_color: row.category_color,
@@ -256,7 +308,9 @@ export const Query = {
     }))
   },
 
-  budgets: async (args?: { includeArchived?: boolean }) => {
+  budgets: async (args?: {
+    includeArchived?: boolean
+  }): Promise<Budget[]> => {
     const userId = requireUserId()
     let query = db
       .selectFrom('budgets')
@@ -272,7 +326,7 @@ export const Query = {
     return rows.map(mapBudget)
   },
 
-  budget: async (args: { id: number }) => {
+  budget: async (args: { id: number }): Promise<Budget | null> => {
     const userId = requireUserId()
     const row = await fetchOwnedBudget(args.id, userId)
     return row ? mapBudget(row) : null

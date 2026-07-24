@@ -6,6 +6,8 @@ void main() {
     expect(ApiConfig.authApiBaseUrl, contains(':3001'));
     expect(ApiConfig.apiBaseUrl, contains(':3002'));
     expect(ApiConfig.graphqlEndpoint, endsWith('/graphql'));
+    expect(ApiConfig.mailboxApiBaseUrl, contains(':3003'));
+    expect(ApiConfig.mailboxGraphqlEndpoint, endsWith('/graphql'));
   });
 
   test('ApiConfig idleSessionTimeout defaults to 30 minutes', () {

@@ -87,9 +87,14 @@
   "delete": "Delete",
   "archive": "Archive",
 
+  "expensesTabHistory": "History",
+  "expensesTabReview": "Review",
   "expensesEmptyTitle": "No expenses yet",
   "expensesEmptyHint": "Tap + to log your first spend.",
   "expensesEmptyAction": "Add expense",
+  "expensesReviewSetupRequiredTitle": "Email import not set up",
+  "expensesReviewSetupRequiredHint": "Connect a mailbox and allow sender domains to import spending from email.",
+  "expensesReviewSetupCta": "Set up email import",
   "expensesDeleteTitle": "Delete expense?",
   "expensesDeleteConfirm": "Remove this expense?",
   "expensesFormNew": "New expense",
@@ -207,5 +212,148 @@
   "settingsThemeSystem": "System",
   "settingsThemeLight": "Light",
   "settingsThemeDark": "Dark",
-  "settingsSignOut": "Sign out"
+  "settingsSignOut": "Sign out",
+  "settingsEmailImport": "Email import",
+  "settingsEmailImportSubtitle": "Connect a mailbox and sender allowlist",
+
+  "emailImportTitle": "Email import",
+  "emailImportWizardStepMailbox": "Mailbox",
+  "emailImportWizardStepSenders": "Senders",
+  "emailImportWizardNext": "Next",
+  "emailImportWizardBack": "Back",
+  "emailImportWizardDone": "Done",
+  "emailImportSetupBlurb": "Connect a mailbox, then allow sender domains or full addresses so we can sync and extract spending.",
+  "emailImportAddFixture": "Add demo mailbox",
+  "emailImportConnectGmail": "Connect Gmail",
+  "emailImportFixtureLabel": "Demo mailbox",
+  "emailImportGmailLabel": "Gmail",
+  "emailImportGmailConnected": "Gmail connected. Sync to import messages.",
+  "emailImportGmailFailed": "Gmail connection failed: {detail}",
+  "@emailImportGmailFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "emailImportGmailFailedGeneric": "Gmail connection failed. Try again.",
+  "emailImportGmailLaunchFailed": "Could not open Google sign-in.",
+  "emailImportCancel": "Cancel",
+  "emailImportSave": "Save",
+  "emailImportNoMailbox": "No mailbox yet. Add a demo mailbox or connect Gmail.",
+  "emailImportMailbox": "Mailbox",
+  "emailImportRenameMailbox": "Rename mailbox",
+  "emailImportRenameMailboxTitle": "Rename mailbox",
+  "emailImportMailboxName": "Name",
+  "emailImportDeleteMailbox": "Delete mailbox",
+  "emailImportDeleteMailboxTitle": "Delete mailbox?",
+  "emailImportDeleteMailboxConfirm": "Remove \"{label}\"? Synced messages, filters, and templates for this mailbox will be deleted.",
+  "@emailImportDeleteMailboxConfirm": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "emailImportDomainFilters": "Sender allowlist",
+  "emailImportDomainFiltersHint": "One pattern per line. Domain (all senders): amazon.com. Exact sender: noreply@uber.com",
+  "emailImportNoFilters": "Add at least one sender domain or email address before syncing",
+  "emailImportFiltersRequired": "Add at least one sender allowlist pattern before syncing",
+  "emailImportTriggerSync": "Sync now",
+  "emailImportSyncFrom": "From",
+  "emailImportSyncTo": "To",
+  "emailImportSyncClearDate": "Clear",
+  "emailImportSyncQueued": "Sync started…",
+  "emailImportSyncProgress": "Syncing… {percent}%",
+  "@emailImportSyncProgress": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "emailImportSyncProgressIndeterminate": "Syncing…",
+  "emailImportSyncSpendingsFound": "{count} spendings found",
+  "@emailImportSyncSpendingsFound": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "emailImportSyncCompleteNothingToReview": "Sync complete — nothing to review.",
+  "emailImportSyncCompleteReview": "{count} items ready to review",
+  "@emailImportSyncCompleteReview": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "emailImportSyncOpenReview": "Review",
+  "emailImportMessages": "Recent messages",
+  "emailImportNoMessages": "No messages yet. Sync after connecting.",
+  "emailImportApproveEmail": "Approve",
+  "emailImportRejectEmail": "Ignore",
+  "emailImportGeneratingTemplate": "Generating template… This can take a moment.",
+  "emailImportApproveTemplateGenerated": "Approved. Matching emails will appear under Review as spending candidates.",
+  "emailImportRejectTemplateGenerated": "Ignored. Matching emails will be skipped.",
+  "emailImportGenerateTemplate": "Generate template with AI",
+  "emailImportTemplateGeneratedWithReeval": "Template generated; updated {count} review items.",
+  "@emailImportTemplateGeneratedWithReeval": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emailImportTemplateGenerationFailed": "Template generation failed. Please try again.",
+  "emailImportNoTemplates": "No templates yet. Approve or ignore a sample message on the Setup tab.",
+  "emailImportEditTemplate": "Edit template",
+  "emailImportTemplateName": "Name",
+  "emailImportTemplateKindApprove": "Approve",
+  "emailImportTemplateKindReject": "Ignore",
+  "emailImportMatchFrom": "Match from pattern",
+  "emailImportMatchSubject": "Match subject regex (optional)",
+  "emailImportExtractorsJson": "Extractors JSON",
+  "emailImportNoPending": "No pending spending candidates. Sync your mailbox to import spending emails.",
+  "emailImportAcceptTitle": "Accept as expense",
+  "emailImportCategory": "Category",
+  "emailImportAccept": "Accept",
+  "emailImportReject": "Reject",
+  "emailImportRejectAll": "Reject all",
+  "emailImportRejectAllTitle": "Reject all pending?",
+  "emailImportRejectAllConfirm": "Reject {count} pending spending candidates? This cannot be undone.",
+  "@emailImportRejectAllConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emailImportRejectAllDone": "Rejected {count} candidates.",
+  "@emailImportRejectAllDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emailImportClearInbox": "Clear inbox data",
+  "emailImportClearInboxTitle": "Clear inbox data?",
+  "emailImportClearInboxConfirm": "Remove synced messages, review items, and sync history for this mailbox? Filters and templates stay. The next sync can re-fetch emails.",
+  "emailImportClearInboxDone": "Inbox data cleared.",
+  "emailImportNeedCategory": "Create a category before accepting expenses.",
+  "emailImportViewEmail": "View email",
+  "emailImportPagePrevious": "Previous",
+  "emailImportPageNext": "Next",
+  "emailImportPageOf": "Page {page} of {totalPages}",
+  "@emailImportPageOf": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "totalPages": {
+        "type": "int"
+      }
+    }
+  },
+  "sourceEmailTitle": "Source email",
+  "sourceEmailBodyMissing": "No email body was stored for this message.",
+  "sourceEmailNotFound": "No source email is linked to this expense.",
+  "sourceEmailLoadFailed": "Could not load the source email."
 }

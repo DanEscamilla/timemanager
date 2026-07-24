@@ -11,15 +11,20 @@ Apps and infra:
 - `apps/timemanager-api` — Pylon GraphQL + Kysely + Postgres, on `:3000`. Runtime: **Deno** (`deno.json`).
 - `apps/spendmanager` — Flutter spending tracker. Runtime: flutter (`pubspec.yaml`).
 - `apps/spendmanager-api` — Pylon GraphQL + Kysely + Postgres (`spendmanager` DB), on `:3002`. Runtime: **Deno** (`deno.json`).
+- `apps/mailbox-api` — Pylon GraphQL + Kysely + Postgres (`mailbox` DB), on `:3003`. Runtime: **Deno** (`deno.json`).
+- `apps/mailbox-worker` — Email poll / extract worker. Runtime: **Deno** (`deno.json`).
+- `apps/ai-api` — Internal AI gateway (REST), on `:3004`. Runtime: **Deno** (`deno.json`).
 - `apps/user-manager-web` — React + Vite + SuperTokens. Runtime: node (pnpm).
 - `apps/user-manager-api` — Express + SuperTokens, on `:3001`. Runtime: node (pnpm).
-- `infra/timemanager-db` — Postgres `:5432` + pgAdmin `:8080` (docker-compose); hosts `timemanager` and `spendmanager` databases.
+- `infra/timemanager-db` — Postgres `:5432` + pgAdmin `:8080` (docker-compose); hosts `timemanager`, `spendmanager`, and `mailbox` databases.
 - `infra/authentik` — Authentik auth (docker-compose).
 - `libs/design_system` — Shared Flutter Material 3 design system (`scope:shared`, `type:lib`).
 - `libs/app_core` — Shared Flutter auth / GraphQL / prefs (`scope:shared`, `type:lib`).
 - `libs/local_notifications` — Shared local OS / in-session browser notifications (`scope:shared`, `type:lib`).
 - `libs/push_notifications` — Provider-agnostic push / Firebase FCM (`scope:shared`, `type:lib`).
 - `libs/deno_api_kit` — Shared Deno Pylon/Kysely API infra (`scope:shared`, `type:lib`).
+- `libs/mailbox_kit` — Shared Deno email provider / extract pipeline (`scope:shared`, `type:lib`).
+- `libs/ai_kit` — Shared Deno AI provider abstraction (Gemini / OpenAI-compatible) (`scope:shared`, `type:lib`).
 - `libs/` — reserved for additional shared packages.
 
 Golden rules:

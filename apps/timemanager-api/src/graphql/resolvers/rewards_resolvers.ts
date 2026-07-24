@@ -47,6 +47,92 @@ function requireUserId(): number {
   return userId
 }
 
+/** Named return shapes so Pylon emits GraphQL object types (not `Any!`). */
+export interface RewardImage {
+  id: number
+  user_id: number
+  sha256: string
+  content_type: string
+  byte_size: number
+  storage_key: string
+  ref_count: number
+  created_at: Date
+  orphaned_at: Date | null
+  url: string
+}
+
+export interface RewardDefinition {
+  id: number
+  user_id: number
+  name: string
+  description: string | null
+  notes: string | null
+  category: string | null
+  tags: string[]
+  color: string
+  icon: string | null
+  image_asset_id: number | null
+  stackable: boolean
+  default_quantity: number
+  sort_order: number
+  archived_at: Date | null
+  created_at: Date
+  updated_at: Date
+  image_url: string | null
+  image: () => Promise<RewardImage | null>
+}
+
+export interface RewardInventoryItem {
+  id: number
+  user_id: number
+  reward_definition_id: number
+  quantity: number
+  stack_key: string | null
+  first_earned_at: Date
+  last_earned_at: Date
+  updated_at: Date
+  definition: () => Promise<RewardDefinition | null>
+}
+
+export interface RewardHistoryItem {
+  id: number
+  user_id: number
+  type: string
+  reward_definition_id: number | null
+  inventory_id: number | null
+  quantity: number
+  definition_name: string
+  definition_color: string
+  definition_icon: string | null
+  image_asset_id: number | null
+  source_type: string | null
+  source_id: number | null
+  trigger_key: string | null
+  rule_id: number | null
+  activity_id: number | null
+  goal_id: number | null
+  completion_id: number | null
+  cycle_id: number | null
+  note: string | null
+  metadata: Record<string, unknown> | null
+  created_at: Date
+}
+
+export interface RewardRule {
+  id: number
+  user_id: number
+  source_type: string
+  source_id: number
+  reward_definition_id: number
+  quantity: number
+  mode: string
+  config: RewardRuleConfig
+  enabled: boolean
+  created_at: Date
+  updated_at: Date
+  definition: () => Promise<RewardDefinition | null>
+}
+
 function parseTags(value: unknown): string[] {
   if (value == null) return []
   if (Array.isArray(value)) return value.map(String)
@@ -73,14 +159,14 @@ function parseConfig(value: unknown): RewardRuleConfig {
   return value as RewardRuleConfig
 }
 
-function withDefinitionRelations(row: RewardDefinitionRow) {
+function withDefinitionRelations(row: RewardDefinitionRow): RewardDefinition {
   return {
     ...row,
     tags: parseTags(row.tags),
     image_url: row.image_asset_id
       ? assetPublicPath(row.image_asset_id)
       : null,
-    image: async () => {
+    image: async (): Promise<RewardImage | null> => {
       if (row.image_asset_id == null) return null
       const repo = createDefaultAssetRepository(db)
       const asset = await repo.getMetadata(row.image_asset_id, row.user_id)
@@ -93,10 +179,10 @@ function withDefinitionRelations(row: RewardDefinitionRow) {
   }
 }
 
-function withInventoryRelations(row: RewardInventoryRow) {
+function withInventoryRelations(row: RewardInventoryRow): RewardInventoryItem {
   return {
     ...row,
-    definition: async () => {
+    definition: async (): Promise<RewardDefinition | null> => {
       const def = await db
         .selectFrom('reward_definitions')
         .where('id', '=', row.reward_definition_id)
@@ -107,11 +193,11 @@ function withInventoryRelations(row: RewardInventoryRow) {
   }
 }
 
-function withRuleRelations(row: RewardRuleRow) {
+function withRuleRelations(row: RewardRuleRow): RewardRule {
   return {
     ...row,
     config: parseConfig(row.config),
-    definition: async () => {
+    definition: async (): Promise<RewardDefinition | null> => {
       const def = await db
         .selectFrom('reward_definitions')
         .where('id', '=', row.reward_definition_id)
@@ -122,7 +208,7 @@ function withRuleRelations(row: RewardRuleRow) {
   }
 }
 
-function mapTransaction(row: RewardTransactionRow) {
+function mapTransaction(row: RewardTransactionRow): RewardHistoryItem {
   return {
     ...row,
     metadata:
@@ -142,7 +228,7 @@ function validateName(name: string): string {
 export const RewardQuery = {
   rewardDefinitions: async (args: {
     filter?: RewardDefinitionsFilter | null
-  }) => {
+  }): Promise<RewardDefinition[]> => {
     const userId = requireUserId()
     const filter = args.filter ?? {}
     let q = db
@@ -180,7 +266,9 @@ export const RewardQuery = {
     return rows.map(withDefinitionRelations)
   },
 
-  rewardDefinition: async (args: { id: number }) => {
+  rewardDefinition: async (args: {
+    id: number
+  }): Promise<RewardDefinition | null> => {
     const userId = requireUserId()
     const row = await db
       .selectFrom('reward_definitions')
@@ -193,7 +281,7 @@ export const RewardQuery = {
 
   rewardInventory: async (args: {
     filter?: RewardInventoryFilter | null
-  }) => {
+  }): Promise<RewardInventoryItem[]> => {
     const userId = requireUserId()
     const filter = args.filter ?? {}
     let q = db
@@ -234,7 +322,9 @@ export const RewardQuery = {
     return rows.map(withInventoryRelations)
   },
 
-  rewardHistory: async (args: { filter?: RewardHistoryFilter | null }) => {
+  rewardHistory: async (args: {
+    filter?: RewardHistoryFilter | null
+  }): Promise<RewardHistoryItem[]> => {
     const userId = requireUserId()
     const filter = args.filter ?? {}
     let q = db
@@ -265,7 +355,7 @@ export const RewardQuery = {
   rewardRules: async (args: {
     sourceType: string
     sourceId: number
-  }) => {
+  }): Promise<RewardRule[]> => {
     const userId = requireUserId()
     const rows = await db
       .selectFrom('reward_rules')
@@ -330,7 +420,7 @@ export const RewardQuery = {
 export const RewardMutation = {
   createRewardDefinition: async (args: {
     input: CreateRewardDefinitionInput
-  }) => {
+  }): Promise<RewardDefinition> => {
     const userId = requireUserId()
     const { input } = args
     const name = validateName(input.name)
@@ -372,7 +462,7 @@ export const RewardMutation = {
   updateRewardDefinition: async (args: {
     id: number
     input: UpdateRewardDefinitionInput
-  }) => {
+  }): Promise<RewardDefinition> => {
     const userId = requireUserId()
     const existing = await db
       .selectFrom('reward_definitions')
@@ -436,7 +526,9 @@ export const RewardMutation = {
     return withDefinitionRelations(row)
   },
 
-  archiveRewardDefinition: async (args: { id: number }) => {
+  archiveRewardDefinition: async (args: {
+    id: number
+  }): Promise<RewardDefinition> => {
     const userId = requireUserId()
     const row = await db
       .updateTable('reward_definitions')
@@ -452,7 +544,9 @@ export const RewardMutation = {
     return withDefinitionRelations(row)
   },
 
-  unarchiveRewardDefinition: async (args: { id: number }) => {
+  unarchiveRewardDefinition: async (args: {
+    id: number
+  }): Promise<RewardDefinition> => {
     const userId = requireUserId()
     const row = await db
       .updateTable('reward_definitions')

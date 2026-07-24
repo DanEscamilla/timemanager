@@ -18,7 +18,7 @@ Source layout (`lib/`):
 
 Auth: email/password + OAuth against `user-manager-api`. Tokens are stored via `shared_preferences` and sent as `Authorization: Bearer` (header mode). The official `supertokens_flutter` package is Android/iOS-only; this app targets Chrome, so FDI is called directly. `AuthController` bootstraps the session (including OAuth query params) and drives router redirects.
 
-Dev workflow: `pnpm timemanager` starts the API stack only; launch the Flutter client from the IDE (**Run and Debug → timemanager**, Chrome `:4444`, hot reload on save). CLI alternatives: `nx serve timemanager` (`flutter run -d chrome --web-port=4444`; also starts `user-manager-api`), `nx test timemanager`, `nx run timemanager:analyze`, `nx run timemanager:pub-get`.
+Dev workflow: `pnpm timemanager` ensures shared services, then serves GraphQL `:3000` and Flutter web on Chrome `:4444`. IDE (**Run and Debug → timemanager**) remains useful for device/debug launches when APIs are already up. CLI alternatives: `nx serve timemanager` (`flutter run -d chrome --web-port=4444`; start shared services separately), `nx test timemanager`, `nx run timemanager:analyze`, `nx run timemanager:pub-get`.
 
 Cloud APIs: `DOMAIN=… nx run timemanager:build-web|build-macos|build-ios|build-ipa|build-apk|build-appbundle|build-linux|build-windows` / `serve-cloud`, or IDE **timemanager (cloud)** / **(macos, cloud)** with `config/cloud.dart-defines.json` (see `.ai/workflows.md`).
 

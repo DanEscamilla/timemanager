@@ -1,16 +1,18 @@
 # spendmanager
 
-A new Flutter project.
+Flutter spending tracker (categories, expenses, budgets). GraphQL API on `:3002`.
 
-## Getting Started
+## Email import
 
-This project is a starting point for a Flutter application.
+Settings → **Email import** talks to mailbox-api (`:3003`) for per-user mailbox setup, required sender domain filters, AI parsing templates, and spending candidate review. Accept publishes into spendmanager via mailbox-api.
 
-A few resources to get you started if this is your first Flutter project:
+Local services:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+pnpm services       # auth + ai + mailbox
+pnpm spendmanager   # ensures services, then GraphQL :3002 + Flutter :4445
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Optional dart-define: `MAILBOX_API_BASE_URL` (default `http://localhost:3003`).
+
+See [`.ai/mailbox.md`](../../.ai/mailbox.md).

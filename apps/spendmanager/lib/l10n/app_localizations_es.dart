@@ -126,10 +126,12 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get authAuthorisationUrlMissing => 'Falta la URL de autorización en la respuesta';
+  String get authAuthorisationUrlMissing =>
+      'Falta la URL de autorización en la respuesta';
 
   @override
-  String get authCouldNotGetAuthorisationUrl => 'No se pudo obtener la URL de autorización';
+  String get authCouldNotGetAuthorisationUrl =>
+      'No se pudo obtener la URL de autorización';
 
   @override
   String authCouldNotOpenLogin(String provider) {
@@ -140,7 +142,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorNotSignedIn => 'No has iniciado sesión';
 
   @override
-  String get errorSessionExpired => 'La sesión caducó. Vuelve a iniciar sesión.';
+  String get errorSessionExpired =>
+      'La sesión caducó. Vuelve a iniciar sesión.';
 
   @override
   String errorRequestFailed(int statusCode, String body) {
@@ -172,6 +175,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get archive => 'Archivar';
 
   @override
+  String get expensesTabHistory => 'Historial';
+
+  @override
+  String get expensesTabReview => 'Revisión';
+
+  @override
   String get expensesEmptyTitle => 'Aún no hay gastos';
 
   @override
@@ -179,6 +188,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get expensesEmptyAction => 'Añadir gasto';
+
+  @override
+  String get expensesReviewSetupRequiredTitle =>
+      'Importación de email no configurada';
+
+  @override
+  String get expensesReviewSetupRequiredHint =>
+      'Conecta un buzón y permite dominios de remitente para importar gastos desde el email.';
+
+  @override
+  String get expensesReviewSetupCta => 'Configurar importación de email';
 
   @override
   String get expensesDeleteTitle => '¿Eliminar gasto?';
@@ -199,7 +219,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get expensesFormAmountRequired => 'Introduce un importe';
 
   @override
-  String get expensesFormAmountInvalid => 'Introduce un importe válido (p. ej. 12.50)';
+  String get expensesFormAmountInvalid =>
+      'Introduce un importe válido (p. ej. 12.50)';
 
   @override
   String get expensesFormCategory => 'Categoría';
@@ -220,7 +241,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoriesEmptyTitle => 'Aún no hay categorías';
 
   @override
-  String get categoriesEmptyHint => 'Crea categorías para organizar tus gastos.';
+  String get categoriesEmptyHint =>
+      'Crea categorías para organizar tus gastos.';
 
   @override
   String get categoriesEmptyAction => 'Añadir categoría';
@@ -319,7 +341,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsFormAmountRequired => 'Introduce un importe';
 
   @override
-  String get budgetsFormAmountInvalid => 'Introduce un importe válido (p. ej. 12.50)';
+  String get budgetsFormAmountInvalid =>
+      'Introduce un importe válido (p. ej. 12.50)';
 
   @override
   String get budgetsFormInterval => 'Se repite cada';
@@ -364,7 +387,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsFormAlertPercent => 'Avisar al';
 
   @override
-  String get budgetsFormAlertPercentInvalid => 'Introduce un porcentaje entre 1 y 100';
+  String get budgetsFormAlertPercentInvalid =>
+      'Introduce un porcentaje entre 1 y 100';
 
   @override
   String budgetsAlertAt(int percent) {
@@ -398,4 +422,289 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSignOut => 'Cerrar sesión';
+
+  @override
+  String get settingsEmailImport => 'Importar email';
+
+  @override
+  String get settingsEmailImportSubtitle =>
+      'Conecta un buzón y la lista de remitentes';
+
+  @override
+  String get emailImportTitle => 'Importar email';
+
+  @override
+  String get emailImportWizardStepMailbox => 'Buzón';
+
+  @override
+  String get emailImportWizardStepSenders => 'Remitentes';
+
+  @override
+  String get emailImportWizardNext => 'Siguiente';
+
+  @override
+  String get emailImportWizardBack => 'Atrás';
+
+  @override
+  String get emailImportWizardDone => 'Listo';
+
+  @override
+  String get emailImportSetupBlurb =>
+      'Conecta un buzón y permite dominios o direcciones de remitente para sincronizar y extraer gastos.';
+
+  @override
+  String get emailImportAddFixture => 'Añadir buzón demo';
+
+  @override
+  String get emailImportConnectGmail => 'Conectar Gmail';
+
+  @override
+  String get emailImportFixtureLabel => 'Buzón demo';
+
+  @override
+  String get emailImportGmailLabel => 'Gmail';
+
+  @override
+  String get emailImportGmailConnected =>
+      'Gmail conectado. Sincroniza para importar mensajes.';
+
+  @override
+  String emailImportGmailFailed(String detail) {
+    return 'Falló la conexión con Gmail: $detail';
+  }
+
+  @override
+  String get emailImportGmailFailedGeneric =>
+      'Falló la conexión con Gmail. Inténtalo de nuevo.';
+
+  @override
+  String get emailImportGmailLaunchFailed =>
+      'No se pudo abrir el inicio de sesión de Google.';
+
+  @override
+  String get emailImportCancel => 'Cancelar';
+
+  @override
+  String get emailImportSave => 'Guardar';
+
+  @override
+  String get emailImportNoMailbox =>
+      'Aún no hay buzón. Añade uno demo o conecta Gmail.';
+
+  @override
+  String get emailImportMailbox => 'Buzón';
+
+  @override
+  String get emailImportRenameMailbox => 'Renombrar buzón';
+
+  @override
+  String get emailImportRenameMailboxTitle => 'Renombrar buzón';
+
+  @override
+  String get emailImportMailboxName => 'Nombre';
+
+  @override
+  String get emailImportDeleteMailbox => 'Eliminar buzón';
+
+  @override
+  String get emailImportDeleteMailboxTitle => '¿Eliminar buzón?';
+
+  @override
+  String emailImportDeleteMailboxConfirm(String label) {
+    return '¿Quitar \"$label\"? Se eliminarán los mensajes, filtros y plantillas sincronizados de este buzón.';
+  }
+
+  @override
+  String get emailImportDomainFilters => 'Lista de remitentes';
+
+  @override
+  String get emailImportDomainFiltersHint =>
+      'Un patrón por línea. Dominio (todos): amazon.com. Remitente exacto: noreply@uber.com';
+
+  @override
+  String get emailImportNoFilters =>
+      'Añade al menos un dominio o correo de remitente antes de sincronizar';
+
+  @override
+  String get emailImportFiltersRequired =>
+      'Añade al menos un patrón de lista de remitentes antes de sincronizar';
+
+  @override
+  String get emailImportTriggerSync => 'Sincronizar ahora';
+
+  @override
+  String get emailImportSyncFrom => 'Desde';
+
+  @override
+  String get emailImportSyncTo => 'Hasta';
+
+  @override
+  String get emailImportSyncClearDate => 'Borrar';
+
+  @override
+  String get emailImportSyncQueued => 'Sincronización iniciada…';
+
+  @override
+  String emailImportSyncProgress(int percent) {
+    return 'Sincronizando… $percent%';
+  }
+
+  @override
+  String get emailImportSyncProgressIndeterminate => 'Sincronizando…';
+
+  @override
+  String emailImportSyncSpendingsFound(int count) {
+    return '$count gastos encontrados';
+  }
+
+  @override
+  String get emailImportSyncCompleteNothingToReview =>
+      'Sincronización completa — nada que revisar.';
+
+  @override
+  String emailImportSyncCompleteReview(int count) {
+    return '$count elementos listos para revisar';
+  }
+
+  @override
+  String get emailImportSyncOpenReview => 'Revisar';
+
+  @override
+  String get emailImportMessages => 'Mensajes recientes';
+
+  @override
+  String get emailImportNoMessages =>
+      'Aún no hay mensajes. Sincroniza tras conectar.';
+
+  @override
+  String get emailImportApproveEmail => 'Aprobar';
+
+  @override
+  String get emailImportRejectEmail => 'Ignorar';
+
+  @override
+  String get emailImportGeneratingTemplate =>
+      'Generando plantilla… Esto puede tardar un momento.';
+
+  @override
+  String get emailImportApproveTemplateGenerated =>
+      'Aprobado. Los correos que coincidan aparecerán en Revisar como candidatos de gasto.';
+
+  @override
+  String get emailImportRejectTemplateGenerated =>
+      'Ignorado. Los correos que coincidan se omitirán.';
+
+  @override
+  String get emailImportGenerateTemplate => 'Generar plantilla con IA';
+
+  @override
+  String emailImportTemplateGeneratedWithReeval(int count) {
+    return 'Plantilla generada; se actualizaron $count elementos de revisión.';
+  }
+
+  @override
+  String get emailImportTemplateGenerationFailed =>
+      'No se pudo generar la plantilla. Inténtalo de nuevo.';
+
+  @override
+  String get emailImportNoTemplates =>
+      'Aún no hay plantillas. Aprueba o ignora un mensaje de ejemplo en Configuración.';
+
+  @override
+  String get emailImportEditTemplate => 'Editar plantilla';
+
+  @override
+  String get emailImportTemplateName => 'Nombre';
+
+  @override
+  String get emailImportTemplateKindApprove => 'Aprobar';
+
+  @override
+  String get emailImportTemplateKindReject => 'Ignorar';
+
+  @override
+  String get emailImportMatchFrom => 'Patrón de remitente';
+
+  @override
+  String get emailImportMatchSubject => 'Regex de asunto (opcional)';
+
+  @override
+  String get emailImportExtractorsJson => 'JSON de extractores';
+
+  @override
+  String get emailImportNoPending =>
+      'No hay candidatos de gasto pendientes. Sincroniza tu buzón para importar emails de gasto.';
+
+  @override
+  String get emailImportAcceptTitle => 'Aceptar como gasto';
+
+  @override
+  String get emailImportCategory => 'Categoría';
+
+  @override
+  String get emailImportAccept => 'Aceptar';
+
+  @override
+  String get emailImportReject => 'Rechazar';
+
+  @override
+  String get emailImportRejectAll => 'Rechazar todos';
+
+  @override
+  String get emailImportRejectAllTitle => '¿Rechazar todos los pendientes?';
+
+  @override
+  String emailImportRejectAllConfirm(int count) {
+    return '¿Rechazar $count candidatos de gasto pendientes? Esta acción no se puede deshacer.';
+  }
+
+  @override
+  String emailImportRejectAllDone(int count) {
+    return 'Se rechazaron $count candidatos.';
+  }
+
+  @override
+  String get emailImportClearInbox => 'Borrar datos de la bandeja';
+
+  @override
+  String get emailImportClearInboxTitle => '¿Borrar datos de la bandeja?';
+
+  @override
+  String get emailImportClearInboxConfirm =>
+      '¿Eliminar mensajes sincronizados, elementos de revisión e historial de sincronización de este buzón? Los filtros y plantillas se conservan. La próxima sincronización puede volver a obtener los emails.';
+
+  @override
+  String get emailImportClearInboxDone => 'Datos de la bandeja borrados.';
+
+  @override
+  String get emailImportNeedCategory =>
+      'Crea una categoría antes de aceptar gastos.';
+
+  @override
+  String get emailImportViewEmail => 'Ver email';
+
+  @override
+  String get emailImportPagePrevious => 'Anterior';
+
+  @override
+  String get emailImportPageNext => 'Siguiente';
+
+  @override
+  String emailImportPageOf(int page, int totalPages) {
+    return 'Página $page de $totalPages';
+  }
+
+  @override
+  String get sourceEmailTitle => 'Email de origen';
+
+  @override
+  String get sourceEmailBodyMissing =>
+      'No se guardó el cuerpo de este mensaje.';
+
+  @override
+  String get sourceEmailNotFound =>
+      'No hay un email de origen vinculado a este gasto.';
+
+  @override
+  String get sourceEmailLoadFailed => 'No se pudo cargar el email de origen.';
 }

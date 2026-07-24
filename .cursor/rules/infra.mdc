@@ -5,7 +5,7 @@ globs: infra/**
 
 `infra/` holds docker-compose stacks and AWS Terraform, driven via Nx targets (`nx:run-commands`).
 
-- `infra/timemanager-db` — Postgres 15 (`:5432`, db `timemanager` + `spendmanager`, user `postgres`) + pgAdmin (`:8080`). Volumes live under `./data/` (gitignored). Init scripts in `./init/` create `spendmanager` on fresh volumes. Start with `pnpm db:up` (also runs timemanager migrations) or `nx run timemanager-db:up` (containers only).
+- `infra/timemanager-db` — Postgres 15 (`:5432`, db `timemanager` + `spendmanager` + `mailbox`, user `postgres`) + pgAdmin (`:8080`). Volumes live under `./data/` (gitignored). Init scripts in `./init/` create `spendmanager` / `mailbox` on fresh volumes. Start with `pnpm db:up` (also runs timemanager migrations) or `nx run timemanager-db:up` (containers only).
 - `infra/authentik` — Authentik auth stack; independent from the DB stack. Keep `.env` gitignored and `.env.example` in sync (`PG_PASS`, `AUTHENTIK_SECRET_KEY`). Compose expects `media/`, `certs/`, `custom-templates/` dirs.
 - `infra/aws` — Terraform for ECS Fargate, RDS, ECR, ALB, S3/CloudFront, Secrets Manager. Deploy scripts in `infra/aws/scripts/`. See [`.ai/deploy-aws.md`](mdc:.ai/deploy-aws.md). Do not commit `terraform.tfvars` or state files.
 

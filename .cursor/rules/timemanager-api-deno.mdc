@@ -18,7 +18,7 @@ Auth: every `/graphql` request requires `Authorization: Bearer <SuperTokens acce
 
 Commands (via `deno task`, or the Nx wrappers `nx serve|build|run timemanager-api`):
 
-- `deno task dev` — dev server (Nx `serve` / `pnpm timemanager`, which also runs `migrate` → DB and starts `user-manager-api`).
+- `deno task dev` — dev server (Nx `serve` / `pnpm timemanager`, which runs `migrate` → DB and ensures shared services via `scripts/ensure-dev-services.sh`).
 - `deno task build` — build.
 - `deno task migrate` — apply pending Kysely migrations (`nx run timemanager-api:migrate`).
 - `deno task seed` — seed the DB (`nx run timemanager-api:seed`).

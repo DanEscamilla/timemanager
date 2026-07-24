@@ -1,0 +1,182 @@
+input CreateMailboxInputInput {
+	provider: String!
+	label: String!
+	enabled: Boolean
+	domainFilters: [String!]
+	oauthTokensJson: String
+}
+input UpdateMailboxInputInput {
+	id: Number!
+	label: String!
+}
+input SetDomainFiltersInputInput {
+	mailboxId: Number!
+	patterns: [String!]!
+}
+input UpdateArtifactStatusInputInput {
+	artifactId: Number!
+	status: String!
+	categoryId: Number
+}
+input ConnectGmailInputInput {
+	mailboxId: Number!
+	accessToken: String!
+	refreshToken: String
+	expiresAtMs: Number
+}
+input StartGmailOAuthInputInput {
+	mailboxId: Number!
+	returnTo: String!
+}
+input CreateParsingTemplateInputInput {
+	mailboxId: Number!
+	name: String!
+	kind: String
+	matchFromPattern: String!
+	matchSubjectRegex: String
+	extractorsJson: String
+	enabled: Boolean
+	sourceMessageId: Number
+}
+input UpdateParsingTemplateInputInput {
+	id: Number!
+	name: String
+	matchFromPattern: String
+	matchSubjectRegex: String
+	extractorsJson: String
+	enabled: Boolean
+}
+input GenerateParsingTemplateInputInput {
+	messageId: Number!
+	decision: String!
+	name: String
+	hints: String
+}
+type Query {
+mailboxes: [Mailbox!]!
+domainFilters(mailboxId: Number!): [DomainFilter!]!
+messages(mailboxId: Number!, excludeMatchingTemplates: Boolean): [Message!]!
+message(id: Number!): Message
+sourceMessageForExpense(expenseId: Number!): Message
+extractionArtifacts(mailboxId: Number, status: String, page: Number, pageSize: Number): ExtractionArtifactPage!
+syncRuns(mailboxId: Number!): [SyncRun!]!
+syncStatus(mailboxId: Number!): MailboxSyncStatus!
+parsingTemplates(mailboxId: Number!): [ParsingTemplate!]!
+}
+type Mailbox {
+id: Number!
+user_id: Number!
+provider: String!
+label: String!
+enabled: Boolean!
+sync_cursor: String
+sync_requested: Boolean!
+sync_since: String
+sync_until: String
+last_synced_at: String
+created_at: String!
+updated_at: String!
+}
+type DomainFilter {
+id: Number!
+mailbox_id: Number!
+pattern: String!
+created_at: String!
+}
+type Message {
+id: Number!
+mailbox_id: Number!
+provider_message_id: String!
+rfc_message_id: String!
+from_address: String!
+subject: String!
+received_at: String!
+text_body: String
+html_body: String
+created_at: String!
+}
+type ExtractionArtifactPage {
+items: [ExtractionArtifact!]!
+totalCount: Number!
+page: Number!
+pageSize: Number!
+}
+type ExtractionArtifact {
+id: Number!
+message_id: Number!
+kind: String!
+payload: String!
+confidence: Number!
+status: String!
+published_expense_id: Number
+created_at: String!
+updated_at: String!
+}
+type SyncRun {
+id: Number!
+mailbox_id: Number!
+started_at: String!
+finished_at: String
+fetched_count: Number!
+extracted_count: Number!
+error_text: String
+}
+type MailboxSyncStatus {
+active: Boolean!
+syncSince: String
+syncUntil: String
+progressPercent: Number
+spendingsFound: Number!
+oldestSyncedAt: String
+errorText: String
+}
+type ParsingTemplate {
+id: Number!
+mailbox_id: Number!
+user_id: Number!
+name: String!
+kind: String!
+enabled: Boolean!
+match_from_pattern: String!
+match_subject_regex: String
+extractors: String
+source_message_id: Number
+version: Number!
+created_at: String!
+updated_at: String!
+}
+type Mutation {
+createMailbox(input: CreateMailboxInputInput!): Mailbox!
+updateMailbox(input: UpdateMailboxInputInput!): Mailbox!
+deleteMailbox(id: Number!): Boolean!
+clearInbox(mailboxId: Number!): Mailbox!
+setDomainFilters(input: SetDomainFiltersInputInput!): [DomainFilter!]!
+triggerSync(mailboxId: Number!, since: String, until: String): Mailbox!
+rejectAllPendingArtifacts(mailboxId: Number!): Number!
+updateArtifactStatus(input: UpdateArtifactStatusInputInput!): ExtractionArtifact!
+connectGmail(input: ConnectGmailInputInput!): Mailbox!
+startGmailOAuth(input: StartGmailOAuthInputInput!): StartGmailOAuthPayload!
+createParsingTemplate(input: CreateParsingTemplateInputInput!): ParsingTemplate!
+updateParsingTemplate(input: UpdateParsingTemplateInputInput!): ParsingTemplate!
+deleteParsingTemplate(id: Number!): Boolean!
+generateParsingTemplate(input: GenerateParsingTemplateInputInput!): GenerateParsingTemplatePayload!
+}
+type StartGmailOAuthPayload {
+authorizationUrl: String!
+}
+type GenerateParsingTemplatePayload {
+template: ParsingTemplate!
+reevaluatedCount: Number!
+}
+scalar ID
+scalar Int
+scalar Float
+scalar Number
+scalar Any
+scalar Void
+scalar Object
+scalar File
+scalar Date
+scalar JSON
+scalar String
+scalar Boolean

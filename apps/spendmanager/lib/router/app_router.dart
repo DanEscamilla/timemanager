@@ -4,11 +4,13 @@ import 'package:design_system/design_system.dart';
 
 import '../screens/budgets_screen.dart';
 import '../screens/categories_screen.dart';
+import '../screens/email_import_screen.dart';
 import '../screens/expenses_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/overview_screen.dart';
 import '../screens/settings_screen.dart';
+import '../services/mailbox_repository.dart';
 import 'app_routes.dart';
 import 'auth_controller.dart';
 
@@ -72,6 +74,13 @@ GoRouter createAppRouter({
           );
         },
       ),
+      GoRoute(
+        path: AppRoutes.emailImport,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => EmailImportScreen(
+          mailboxRepository: MailboxRepository(),
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return HomeScreen(
@@ -96,12 +105,18 @@ GoRouter createAppRouter({
             routes: [
               GoRoute(
                 path: AppRoutes.expenses,
-                builder: (context, state) => ExpensesScreen(
-                  key: auth.expensesKey,
-                  expenseRepository: auth.expenseRepository,
-                  categoryRepository: auth.categoryRepository,
-                  onChanged: auth.reloadAll,
-                ),
+                builder: (context, state) {
+                  final tab = state.uri.queryParameters['tab'];
+                  final initialTabIndex = tab == 'review' ? 1 : 0;
+                  return ExpensesScreen(
+                    key: auth.expensesKey,
+                    expenseRepository: auth.expenseRepository,
+                    categoryRepository: auth.categoryRepository,
+                    mailboxRepository: MailboxRepository(),
+                    onChanged: auth.reloadAll,
+                    initialTabIndex: initialTabIndex,
+                  );
+                },
               ),
             ],
           ),

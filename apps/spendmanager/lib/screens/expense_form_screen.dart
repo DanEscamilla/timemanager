@@ -7,18 +7,22 @@ import '../models/expense.dart';
 import '../services/category_repository.dart';
 import '../services/expense_repository.dart';
 import '../services/graphql_client.dart';
+import '../services/mailbox_repository.dart';
 import '../utils/money.dart';
+import '../widgets/source_email_sheet.dart';
 
 class ExpenseFormScreen extends StatefulWidget {
   const ExpenseFormScreen({
     super.key,
     required this.expenseRepository,
     required this.categoryRepository,
+    this.mailboxRepository,
     this.expense,
   });
 
   final ExpenseRepository expenseRepository;
   final CategoryRepository categoryRepository;
+  final MailboxRepository? mailboxRepository;
   final Expense? expense;
 
   bool get isEditing => expense != null;
@@ -36,6 +40,10 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   List<Category> _categories = [];
   bool _loadingCategories = true;
   bool _saving = false;
+  bool _loadingSourceEmail = false;
+
+  bool get _canViewSourceEmail =>
+      widget.isEditing && widget.mailboxRepository != null;
 
   @override
   void initState() {
@@ -48,6 +56,32 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     _spentOn = expense?.spentOn ?? DateTime.now();
     _categoryId = expense?.categoryId;
     _loadCategories();
+  }
+
+  Future<void> _viewSourceEmail() async {
+    final expense = widget.expense;
+    final mailbox = widget.mailboxRepository;
+    if (expense == null || mailbox == null) return;
+    final l10n = AppLocalizations.of(context);
+    setState(() => _loadingSourceEmail = true);
+    try {
+      final message = await mailbox.fetchSourceMessageForExpense(expense.id);
+      if (!mounted) return;
+      if (message == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.sourceEmailNotFound)),
+        );
+        return;
+      }
+      await showSourceEmailSheet(context, message: message);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.sourceEmailLoadFailed)),
+      );
+    } finally {
+      if (mounted) setState(() => _loadingSourceEmail = false);
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -142,6 +176,20 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
         title: Text(
           widget.isEditing ? l10n.expensesFormEdit : l10n.expensesFormNew,
         ),
+        actions: [
+          if (_canViewSourceEmail)
+            IconButton(
+              tooltip: l10n.emailImportViewEmail,
+              onPressed: _loadingSourceEmail ? null : _viewSourceEmail,
+              icon: _loadingSourceEmail
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.mail_outline),
+            ),
+        ],
       ),
       body: _loadingCategories
           ? const Center(child: CircularProgressIndicator())
@@ -215,6 +263,15 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                       ],
                     ),
                   ),
+                  if (_canViewSourceEmail) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    OutlinedButton.icon(
+                      onPressed:
+                          _loadingSourceEmail ? null : _viewSourceEmail,
+                      icon: const Icon(Icons.mail_outline),
+                      label: Text(l10n.emailImportViewEmail),
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.lg),
                   FilledButton(
                     onPressed: _saving ? null : _save,

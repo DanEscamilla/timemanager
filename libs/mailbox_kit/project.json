@@ -1,0 +1,16 @@
+{
+  "name": "mailbox_kit",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/mailbox_kit",
+  "tags": ["scope:shared", "type:lib", "runtime:deno"],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "deno task test",
+        "cwd": "libs/mailbox_kit"
+      }
+    }
+  }
+}

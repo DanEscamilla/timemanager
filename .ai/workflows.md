@@ -15,28 +15,44 @@ Full inventory, manual steps, and how to keep the scripts in sync: [local-setup.
 ## Run the apps
 
 ```bash
-# timemanager APIs (GraphQL + auth; also starts DB via migrate)
-pnpm timemanager            # nx serve timemanager-api
+# all backends + Flutter apps in one terminal (omit user-manager-web)
+pnpm serve
 
-# spendmanager APIs (GraphQL :3002 + auth; also starts DB via migrate)
-pnpm spendmanager           # nx serve spendmanager-api
+# shared backends only (auth :3001 + ai :3004 + mailbox :3003 + worker)
+pnpm services
 
-# Flutter clients — Run and Debug in the IDE
-# timemanager → Chrome :4444; spendmanager → Chrome :4445
+# product stacks — ensure shared services (skip if already healthy), then API + Flutter
+pnpm timemanager            # ensure-dev-services.sh → GraphQL :3000 (+ DB) + Flutter :4444
+pnpm spendmanager           # ensure-dev-services.sh → GraphQL :3002 (+ DB) + Flutter :4445
+pnpm mailbox                # ensure auth/ai; start mailbox API + worker if needed
 
-# user-manager stack (React web + Express API)
+# internal AI gateway alone (also covered by pnpm services)
+pnpm ai                     # nx serve ai-api
+pnpm ai:cli                 # guided HTTP CLI against a running ai-api
+
+# Flutter clients alone / IDE — use when APIs are already up
+# IDE: Run and Debug → timemanager (:4444) / spendmanager (:4445)
+# CLI: nx serve timemanager | nx serve spendmanager
+
+# user-manager stack (React web + Express API; web stays separate from pnpm services)
 pnpm user-manager           # nx run-many -t serve -p user-manager-web,user-manager-api
 
-# individual projects
-nx serve timemanager        # flutter run -d chrome --web-port=4444 (also starts user-manager-api)
-nx serve spendmanager       # flutter run -d chrome --web-port=4445 (also starts user-manager-api)
-nx serve timemanager-api    # deno task dev on :3000 (migrate → DB + user-manager-api)
-nx serve spendmanager-api   # deno task dev on :3002 (migrate → DB + user-manager-api)
+# individual projects (do not auto-start shared services — use pnpm services / product scripts)
+nx serve timemanager        # flutter run -d chrome --web-port=4444
+nx serve spendmanager       # flutter run -d chrome --web-port=4445
+nx serve timemanager-api    # deno task dev on :3000 (migrate → DB)
+nx serve spendmanager-api   # deno task dev on :3002 (migrate → DB)
+nx serve mailbox-api        # deno task dev on :3003 (migrate → DB)
+nx serve mailbox-worker     # poll / extract loop (depends on mailbox-api:migrate)
+nx serve ai-api             # deno task dev on :3004 (service key; no auth/DB deps)
+nx run ai-api:cli           # interactive use-case CLI (requires serve)
 nx serve user-manager-web   # vite dev server
 nx serve user-manager-api   # express server
 ```
 
-`pnpm timemanager` starts GraphQL on `:3000`, SuperTokens on `:3001`, and Postgres. `pnpm spendmanager` starts GraphQL on `:3002` (same auth + DB stack). Launch Flutter from the IDE (**spendmanager** / **timemanager**).
+Typical flow: `pnpm serve` for everything, or `pnpm timemanager` / `pnpm spendmanager` for one product (ensures shared services, then API + Flutter web). Flutter can also be launched from the IDE (**spendmanager** / **timemanager**) when APIs are already up.
+
+Email spend import (spendmanager Settings → Email import) needs shared services (`pnpm services` or ensure via `pnpm spendmanager` / `pnpm mailbox`) so mailbox + ai are up with spendmanager. See [mailbox.md](mailbox.md).
 
 ## Database
 
@@ -45,11 +61,13 @@ pnpm db:up                  # start Postgres + pgAdmin, then run timemanager mig
 pnpm db:down                # stop the DB stack
 nx run timemanager-api:migrate
 nx run spendmanager-api:migrate  # also CREATE DATABASE spendmanager if missing
+nx run mailbox-api:migrate       # also CREATE DATABASE mailbox if missing
 nx run timemanager-api:seed
 nx run spendmanager-api:seed
+nx run mailbox-api:seed
 ```
 
-pgAdmin: `http://localhost:8080` (default creds in `infra/timemanager-db/docker-compose.yml`). Databases on the same instance: `timemanager`, `spendmanager`.
+pgAdmin: `http://localhost:8080` (default creds in `infra/timemanager-db/docker-compose.yml`). Databases on the same instance: `timemanager`, `spendmanager`, `mailbox`.
 
 ## Migrations
 
@@ -176,6 +194,10 @@ cd apps/spendmanager && flutter pub get && cd -
 nx run timemanager-db:up
 nx serve timemanager-api    # confirm GraphQL responds on :3000 (requires Bearer JWT)
 nx serve spendmanager-api   # confirm GraphQL responds on :3002 (requires Bearer JWT)
+nx serve mailbox-api        # confirm GraphQL responds on :3003 (requires Bearer JWT)
+nx serve mailbox-worker     # confirm poll loop logs sync for fixture mailbox after seed
+nx serve ai-api             # confirm GET /health on :3004 (service key for /v1/*)
+nx test ai_kit && nx test ai-api
 nx serve user-manager-api   # :3001 SuperTokens SSO
 nx serve timemanager        # Flutter login → GraphQL with Authorization header
 nx serve spendmanager       # Chrome :4445 → categories/expenses CRUD

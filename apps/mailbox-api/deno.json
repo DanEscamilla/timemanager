@@ -1,0 +1,23 @@
+{
+  "imports": {
+    "@getcronit/pylon": "npm:@getcronit/pylon@latest",
+    "jose": "npm:jose@^5.9.6",
+    "kysely": "npm:kysely@^0.28.1",
+    "pg": "npm:pg@^8.11.3",
+    "@types/pg": "npm:@types/pg@^8.10.9",
+    "deno_api_kit/": "../../libs/deno_api_kit/",
+    "mailbox_kit/": "../../libs/mailbox_kit/"
+  },
+  "tasks": {
+    "dev": "PORT=3003 pylon dev",
+    "start": "PORT=3003 bun run .pylon/index.js",
+    "build": "pylon build",
+    "migrate": "deno run --allow-net --allow-env --allow-read --allow-sys src/db/migrations/migration.ts",
+    "seed": "deno run --allow-net --allow-env src/db/seed.ts"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "nodeModulesDir": "auto"
+}

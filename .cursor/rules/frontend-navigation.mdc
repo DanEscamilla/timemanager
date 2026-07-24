@@ -1,0 +1,36 @@
+---
+description: Prefer navigator-accessible screens over modals when adding frontend views (Flutter go_router / React routes).
+globs: apps/timemanager/**,apps/spendmanager/**,apps/user-manager-web/**
+alwaysApply: false
+---
+
+# Frontend navigation over modals
+
+When adding a **view** (form, detail, settings subsection, multi-step flow, list drill-in), make it a **navigator-accessible screen/route**, not a modal.
+
+## Prefer
+
+- Flutter: `go_router` / `Navigator.push` routes under `lib/router/` with a clear way **back** (AppBar leading, `context.pop` / `Navigator.pop`, or shell tab).
+- React (`user-manager-web`): a real route the user can open, leave, and deep-link when useful.
+- The new surface must work in a **navigator context** — never a dead-end with no exit.
+
+## Modals are OK only for
+
+- Confirmations (delete / discard)
+- Short information dialogs
+- Very simple one-shot forms (e.g. rename, single field)
+
+## Avoid modals for
+
+- Full create/edit flows, multi-section settings, rich detail pages, or anything that needs its own back stack or URL
+
+```dart
+// ❌ BAD — non-trivial form as a dialog
+showDialog(context: context, builder: (_) => ActivityFormDialog(...));
+
+// ✅ GOOD — push a screen the user can leave
+Navigator.of(context).push(
+  MaterialPageRoute(builder: (_) => const ActivityFormScreen()),
+);
+// or a GoRoute under lib/router/
+```

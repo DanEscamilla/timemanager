@@ -62,7 +62,8 @@ import 'app_localizations_es.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,17 +84,18 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('es')
+    Locale('es'),
   ];
 
   /// No description provided for @appTitle.
@@ -401,6 +404,18 @@ abstract class AppLocalizations {
   /// **'Archive'**
   String get archive;
 
+  /// No description provided for @expensesTabHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get expensesTabHistory;
+
+  /// No description provided for @expensesTabReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get expensesTabReview;
+
   /// No description provided for @expensesEmptyTitle.
   ///
   /// In en, this message translates to:
@@ -418,6 +433,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add expense'**
   String get expensesEmptyAction;
+
+  /// No description provided for @expensesReviewSetupRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email import not set up'**
+  String get expensesReviewSetupRequiredTitle;
+
+  /// No description provided for @expensesReviewSetupRequiredHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect a mailbox and allow sender domains to import spending from email.'**
+  String get expensesReviewSetupRequiredHint;
+
+  /// No description provided for @expensesReviewSetupCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up email import'**
+  String get expensesReviewSetupCta;
 
   /// No description provided for @expensesDeleteTitle.
   ///
@@ -820,9 +853,502 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out'**
   String get settingsSignOut;
+
+  /// No description provided for @settingsEmailImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Email import'**
+  String get settingsEmailImport;
+
+  /// No description provided for @settingsEmailImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect a mailbox and sender allowlist'**
+  String get settingsEmailImportSubtitle;
+
+  /// No description provided for @emailImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email import'**
+  String get emailImportTitle;
+
+  /// No description provided for @emailImportWizardStepMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Mailbox'**
+  String get emailImportWizardStepMailbox;
+
+  /// No description provided for @emailImportWizardStepSenders.
+  ///
+  /// In en, this message translates to:
+  /// **'Senders'**
+  String get emailImportWizardStepSenders;
+
+  /// No description provided for @emailImportWizardNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get emailImportWizardNext;
+
+  /// No description provided for @emailImportWizardBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get emailImportWizardBack;
+
+  /// No description provided for @emailImportWizardDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get emailImportWizardDone;
+
+  /// No description provided for @emailImportSetupBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect a mailbox, then allow sender domains or full addresses so we can sync and extract spending.'**
+  String get emailImportSetupBlurb;
+
+  /// No description provided for @emailImportAddFixture.
+  ///
+  /// In en, this message translates to:
+  /// **'Add demo mailbox'**
+  String get emailImportAddFixture;
+
+  /// No description provided for @emailImportConnectGmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Gmail'**
+  String get emailImportConnectGmail;
+
+  /// No description provided for @emailImportFixtureLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo mailbox'**
+  String get emailImportFixtureLabel;
+
+  /// No description provided for @emailImportGmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gmail'**
+  String get emailImportGmailLabel;
+
+  /// No description provided for @emailImportGmailConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Gmail connected. Sync to import messages.'**
+  String get emailImportGmailConnected;
+
+  /// No description provided for @emailImportGmailFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Gmail connection failed: {detail}'**
+  String emailImportGmailFailed(String detail);
+
+  /// No description provided for @emailImportGmailFailedGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Gmail connection failed. Try again.'**
+  String get emailImportGmailFailedGeneric;
+
+  /// No description provided for @emailImportGmailLaunchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open Google sign-in.'**
+  String get emailImportGmailLaunchFailed;
+
+  /// No description provided for @emailImportCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get emailImportCancel;
+
+  /// No description provided for @emailImportSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get emailImportSave;
+
+  /// No description provided for @emailImportNoMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'No mailbox yet. Add a demo mailbox or connect Gmail.'**
+  String get emailImportNoMailbox;
+
+  /// No description provided for @emailImportMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Mailbox'**
+  String get emailImportMailbox;
+
+  /// No description provided for @emailImportRenameMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename mailbox'**
+  String get emailImportRenameMailbox;
+
+  /// No description provided for @emailImportRenameMailboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename mailbox'**
+  String get emailImportRenameMailboxTitle;
+
+  /// No description provided for @emailImportMailboxName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get emailImportMailboxName;
+
+  /// No description provided for @emailImportDeleteMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete mailbox'**
+  String get emailImportDeleteMailbox;
+
+  /// No description provided for @emailImportDeleteMailboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete mailbox?'**
+  String get emailImportDeleteMailboxTitle;
+
+  /// No description provided for @emailImportDeleteMailboxConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{label}\"? Synced messages, filters, and templates for this mailbox will be deleted.'**
+  String emailImportDeleteMailboxConfirm(String label);
+
+  /// No description provided for @emailImportDomainFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Sender allowlist'**
+  String get emailImportDomainFilters;
+
+  /// No description provided for @emailImportDomainFiltersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One pattern per line. Domain (all senders): amazon.com. Exact sender: noreply@uber.com'**
+  String get emailImportDomainFiltersHint;
+
+  /// No description provided for @emailImportNoFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one sender domain or email address before syncing'**
+  String get emailImportNoFilters;
+
+  /// No description provided for @emailImportFiltersRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one sender allowlist pattern before syncing'**
+  String get emailImportFiltersRequired;
+
+  /// No description provided for @emailImportTriggerSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get emailImportTriggerSync;
+
+  /// No description provided for @emailImportSyncFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get emailImportSyncFrom;
+
+  /// No description provided for @emailImportSyncTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get emailImportSyncTo;
+
+  /// No description provided for @emailImportSyncClearDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get emailImportSyncClearDate;
+
+  /// No description provided for @emailImportSyncQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync started…'**
+  String get emailImportSyncQueued;
+
+  /// No description provided for @emailImportSyncProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing… {percent}%'**
+  String emailImportSyncProgress(int percent);
+
+  /// No description provided for @emailImportSyncProgressIndeterminate.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing…'**
+  String get emailImportSyncProgressIndeterminate;
+
+  /// No description provided for @emailImportSyncSpendingsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} spendings found'**
+  String emailImportSyncSpendingsFound(int count);
+
+  /// No description provided for @emailImportSyncCompleteNothingToReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync complete — nothing to review.'**
+  String get emailImportSyncCompleteNothingToReview;
+
+  /// No description provided for @emailImportSyncCompleteReview.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items ready to review'**
+  String emailImportSyncCompleteReview(int count);
+
+  /// No description provided for @emailImportSyncOpenReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get emailImportSyncOpenReview;
+
+  /// No description provided for @emailImportMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent messages'**
+  String get emailImportMessages;
+
+  /// No description provided for @emailImportNoMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet. Sync after connecting.'**
+  String get emailImportNoMessages;
+
+  /// No description provided for @emailImportApproveEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get emailImportApproveEmail;
+
+  /// No description provided for @emailImportRejectEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore'**
+  String get emailImportRejectEmail;
+
+  /// No description provided for @emailImportGeneratingTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating template… This can take a moment.'**
+  String get emailImportGeneratingTemplate;
+
+  /// No description provided for @emailImportApproveTemplateGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved. Matching emails will appear under Review as spending candidates.'**
+  String get emailImportApproveTemplateGenerated;
+
+  /// No description provided for @emailImportRejectTemplateGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored. Matching emails will be skipped.'**
+  String get emailImportRejectTemplateGenerated;
+
+  /// No description provided for @emailImportGenerateTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate template with AI'**
+  String get emailImportGenerateTemplate;
+
+  /// No description provided for @emailImportTemplateGeneratedWithReeval.
+  ///
+  /// In en, this message translates to:
+  /// **'Template generated; updated {count} review items.'**
+  String emailImportTemplateGeneratedWithReeval(int count);
+
+  /// No description provided for @emailImportTemplateGenerationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Template generation failed. Please try again.'**
+  String get emailImportTemplateGenerationFailed;
+
+  /// No description provided for @emailImportNoTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates yet. Approve or ignore a sample message on the Setup tab.'**
+  String get emailImportNoTemplates;
+
+  /// No description provided for @emailImportEditTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit template'**
+  String get emailImportEditTemplate;
+
+  /// No description provided for @emailImportTemplateName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get emailImportTemplateName;
+
+  /// No description provided for @emailImportTemplateKindApprove.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get emailImportTemplateKindApprove;
+
+  /// No description provided for @emailImportTemplateKindReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore'**
+  String get emailImportTemplateKindReject;
+
+  /// No description provided for @emailImportMatchFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Match from pattern'**
+  String get emailImportMatchFrom;
+
+  /// No description provided for @emailImportMatchSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Match subject regex (optional)'**
+  String get emailImportMatchSubject;
+
+  /// No description provided for @emailImportExtractorsJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Extractors JSON'**
+  String get emailImportExtractorsJson;
+
+  /// No description provided for @emailImportNoPending.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending spending candidates. Sync your mailbox to import spending emails.'**
+  String get emailImportNoPending;
+
+  /// No description provided for @emailImportAcceptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept as expense'**
+  String get emailImportAcceptTitle;
+
+  /// No description provided for @emailImportCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get emailImportCategory;
+
+  /// No description provided for @emailImportAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get emailImportAccept;
+
+  /// No description provided for @emailImportReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get emailImportReject;
+
+  /// No description provided for @emailImportRejectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject all'**
+  String get emailImportRejectAll;
+
+  /// No description provided for @emailImportRejectAllTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject all pending?'**
+  String get emailImportRejectAllTitle;
+
+  /// No description provided for @emailImportRejectAllConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject {count} pending spending candidates? This cannot be undone.'**
+  String emailImportRejectAllConfirm(int count);
+
+  /// No description provided for @emailImportRejectAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected {count} candidates.'**
+  String emailImportRejectAllDone(int count);
+
+  /// No description provided for @emailImportClearInbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear inbox data'**
+  String get emailImportClearInbox;
+
+  /// No description provided for @emailImportClearInboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear inbox data?'**
+  String get emailImportClearInboxTitle;
+
+  /// No description provided for @emailImportClearInboxConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove synced messages, review items, and sync history for this mailbox? Filters and templates stay. The next sync can re-fetch emails.'**
+  String get emailImportClearInboxConfirm;
+
+  /// No description provided for @emailImportClearInboxDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox data cleared.'**
+  String get emailImportClearInboxDone;
+
+  /// No description provided for @emailImportNeedCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a category before accepting expenses.'**
+  String get emailImportNeedCategory;
+
+  /// No description provided for @emailImportViewEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'View email'**
+  String get emailImportViewEmail;
+
+  /// No description provided for @emailImportPagePrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get emailImportPagePrevious;
+
+  /// No description provided for @emailImportPageNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get emailImportPageNext;
+
+  /// No description provided for @emailImportPageOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {totalPages}'**
+  String emailImportPageOf(int page, int totalPages);
+
+  /// No description provided for @sourceEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Source email'**
+  String get sourceEmailTitle;
+
+  /// No description provided for @sourceEmailBodyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No email body was stored for this message.'**
+  String get sourceEmailBodyMissing;
+
+  /// No description provided for @sourceEmailNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No source email is linked to this expense.'**
+  String get sourceEmailNotFound;
+
+  /// No description provided for @sourceEmailLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the source email.'**
+  String get sourceEmailLoadFailed;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -831,25 +1357,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'es'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'es'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'es': return AppLocalizationsEs();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }
