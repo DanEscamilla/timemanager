@@ -49,7 +49,7 @@ Per-mailbox templates live in `parsing_templates` with `kind`:
 | `approve` | Parse matching mail into spending candidates | Required JSON (`amount`, optional `direction`, …) |
 | `reject` | Ignore matching mail forever | `null` (match-only) |
 
-Users can still call `generateParsingTemplate(decision: approve|reject)` via GraphQL (AI). On sync, the **worker** auto-classifies unmatched emails via ai-api `classify_email_spend_relevance`, then generates an approve (`generate_email_spend_template`) or reject (`generate_email_reject_template`) template and continues extraction. Approve templates include optional `direction` so inbound money is skipped. Reject templates are match patterns only.
+Users can still call `generateParsingTemplate(decision: approve|reject)` via GraphQL (AI). On sync, the **worker** auto-classifies unmatched emails via ai-api `classify_email_spend_relevance` (low-tier model), then generates an approve (`generate_email_spend_template`) or reject (`generate_email_reject_template`) template with the high-tier model and continues extraction. Approve templates include optional `direction` so inbound money is skipped. Reject templates are match patterns only. Tier model IDs are configured on ai-api (`AI_MODEL_LOW` / `AI_MODEL_HIGH`).
 
 After create/update/generate (GraphQL), mailbox-api **immediately reprocesses** stored messages for that mailbox: reject matches drop pending candidates; approve matches insert pending candidates when the message has none pending/accepted yet. `generateParsingTemplate` also **reevaluates** existing pending review artifacts whose messages match the new approve template (updates payload/confidence/`templateId` in place) and returns `reevaluatedCount` on `GenerateParsingTemplatePayload`.
 
@@ -60,6 +60,9 @@ Pipeline order on sync / apply:
 3. Enabled **approve** templates (first match wins) → extract spending candidates
 4. No heuristic fallback — only approve templates produce Review items
 
+**Re-sync behavior:** Already-stored messages that still match no enabled template are retried for AI classify + template generation from the DB (no provider re-download). Date-range backfill only fetches **uncovered** gaps outside `MIN`/`MAX(received_at)` already stored in the requested window (empty edge gaps are marked covered so they are not re-queried forever).
+
+**Allowlist expansion:** When Sync runs after new sender patterns are added, mailbox-api diffs the current allowlist against `synced_domain_filters_json` (patterns covered by a completed backfill). New patterns trigger an **expansion** backfill: the worker ignores prior message coverage for that window and re-fetches only mail matching the new patterns (Gmail `from:` query / fixture filter). Already-stored messages for existing domains are skipped by `rfc_message_id`. On successful completion, the new patterns are merged into `synced_domain_filters_json`. Saving filters alone does not start a sync — Sync (or `triggerSync`) does.
 Templates are not edited in the Flutter UI; Review lives under Expenses.
 
 ## GraphQL (authenticated)

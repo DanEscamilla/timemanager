@@ -77,3 +77,35 @@ Deno.test('OpenAiCompatibleProvider maps auth failures', async () => {
   )
   assertEquals(err.code, 'auth')
 })
+
+Deno.test('OpenAiCompatibleProvider listModels hits /models', async () => {
+  let seenUrl = ''
+  let seenAuth = ''
+  const fetchImpl: typeof fetch = async (input, init) => {
+    seenUrl = String(input)
+    seenAuth = new Headers(init?.headers).get('Authorization') ?? ''
+    return new Response(
+      JSON.stringify({
+        data: [
+          { id: 'llama3.2', owned_by: 'ollama' },
+          { id: 'mistral' },
+        ],
+      }),
+      { status: 200 },
+    )
+  }
+
+  const provider = new OpenAiCompatibleProvider({
+    baseUrl: 'http://localhost:11434/v1/',
+    apiKey: 'ollama-key',
+    fetchImpl,
+  })
+  const models = await provider.listModels()
+
+  assertEquals(seenUrl, 'http://localhost:11434/v1/models')
+  assertEquals(seenAuth, 'Bearer ollama-key')
+  assertEquals(models, [
+    { id: 'llama3.2', displayName: 'llama3.2 (ollama)' },
+    { id: 'mistral' },
+  ])
+})

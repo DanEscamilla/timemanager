@@ -263,7 +263,28 @@
   "emailImportSyncFrom": "From",
   "emailImportSyncTo": "To",
   "emailImportSyncClearDate": "Clear",
-  "emailImportSyncQueued": "Sync requested. Refresh in a moment.",
+  "emailImportSyncQueued": "Sync started…",
+  "emailImportSyncProgress": "Syncing… {percent}%",
+  "@emailImportSyncProgress": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "emailImportSyncProgressIndeterminate": "Syncing…",
+  "emailImportSyncSpendingsFound": "{count} spendings found",
+  "@emailImportSyncSpendingsFound": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "emailImportSyncCompleteNothingToReview": "Sync complete — nothing to review.",
+  "emailImportSyncCompleteReview": "{count} items ready to review",
+  "@emailImportSyncCompleteReview": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "emailImportSyncOpenReview": "Review",
   "emailImportMessages": "Recent messages",
   "emailImportNoMessages": "No messages yet. Sync after connecting.",
   "emailImportApproveEmail": "Approve",

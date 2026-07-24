@@ -1,4 +1,5 @@
 import { LazyAiProvider } from './lazy_provider.ts'
+import { withDevRequestLogging } from './request_log.ts'
 import { createHandler } from './server.ts'
 
 const port = Number(Deno.env.get('PORT') ?? 3004)
@@ -10,7 +11,9 @@ if (!serviceKey) {
 }
 
 const provider = new LazyAiProvider()
-const handler = createHandler({ serviceKey, provider })
+const handler = withDevRequestLogging(
+  createHandler({ serviceKey, provider }),
+)
 
 console.log(
   `[ai-api] listening on :${port} (provider=${provider.name})`,

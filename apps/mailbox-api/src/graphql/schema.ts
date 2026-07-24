@@ -69,6 +69,16 @@ export const typeDefs = gql`
     error_text: String
   }
 
+  type MailboxSyncStatus {
+    active: Boolean!
+    syncSince: String
+    syncUntil: String
+    progressPercent: Float
+    spendingsFound: Int!
+    oldestSyncedAt: String
+    errorText: String
+  }
+
   type ParsingTemplate {
     id: Int!
     mailbox_id: Int!
@@ -165,6 +175,7 @@ export const typeDefs = gql`
     sourceMessageForExpense(expenseId: Int!): Message
     extractionArtifacts(mailboxId: Int, status: String, page: Int, pageSize: Int): ExtractionArtifactPage!
     syncRuns(mailboxId: Int!): [SyncRun!]!
+    syncStatus(mailboxId: Int!): MailboxSyncStatus!
     parsingTemplates(mailboxId: Int!): [ParsingTemplate!]!
   }
 

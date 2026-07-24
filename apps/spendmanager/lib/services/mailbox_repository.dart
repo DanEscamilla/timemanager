@@ -161,6 +161,25 @@ class MailboxRepository {
     );
   }
 
+  Future<MailboxSyncStatus> fetchSyncStatus(int mailboxId) async {
+    final data = await _client.query('''
+      query SyncStatus(\$mailboxId: Number!) {
+        syncStatus(mailboxId: \$mailboxId) {
+          active
+          syncSince
+          syncUntil
+          progressPercent
+          spendingsFound
+          oldestSyncedAt
+          errorText
+        }
+      }
+    ''', variables: {'mailboxId': mailboxId});
+    return MailboxSyncStatus.fromJson(
+      data['syncStatus'] as Map<String, dynamic>,
+    );
+  }
+
   Future<MailboxAccount> connectGmail({
     required int mailboxId,
     required String accessToken,

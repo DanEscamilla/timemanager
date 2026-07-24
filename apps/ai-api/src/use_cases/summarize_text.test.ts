@@ -27,6 +27,7 @@ Deno.test('summarize_text parseInput rejects empty text', () => {
 Deno.test('summarize_text run uses provider completion', async () => {
   const provider: AiProvider = {
     name: 'fake',
+    listModels: () => Promise.resolve([]),
     complete: () =>
       Promise.resolve({
         text: '  Done.  ',
@@ -41,6 +42,7 @@ Deno.test('summarize_text run forwards model override', async () => {
   let seenModel: string | undefined
   const provider: AiProvider = {
     name: 'fake',
+    listModels: () => Promise.resolve([]),
     complete: (req) => {
       seenModel = req.model
       return Promise.resolve({

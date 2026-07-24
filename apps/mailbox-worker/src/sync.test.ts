@@ -8,10 +8,19 @@ import {
 } from 'mailbox_kit/mod.ts'
 import {
   DOMAIN_FILTERS_REQUIRED,
+  computeUncoveredFetchRanges,
+  dbCoverageForGapWalk,
+  extendSoftCoverageForGap,
+  formatCursor,
+  mergeCoverage,
   messageForExtraction,
   messageNeedsAutoTemplate,
   missingDomainFiltersError,
+  parseBackfillCursorState,
   resolvedStoredTextBody,
+  selectMessagesNeedingAutoTemplate,
+  serializeBackfillCursorState,
+  summarizeDroppedSenders,
 } from './sync.ts'
 
 /**
@@ -227,4 +236,225 @@ Deno.test('messageNeedsAutoTemplate when no templates match', () => {
     }),
     false,
   )
+})
+
+Deno.test('formatCursor truncates long values', () => {
+  assertEquals(formatCursor(null), '(none)')
+  assertEquals(formatCursor(''), '(none)')
+  assertEquals(formatCursor('done:1700000000'), 'done:1700000000')
+  const long = `page:${'x'.repeat(80)}`
+  const formatted = formatCursor(long)
+  assertEquals(formatted.endsWith('…'), true)
+  assertEquals(formatted.length <= 49, true)
+})
+
+Deno.test('summarizeDroppedSenders lists unique non-matching Froms', () => {
+  const summary = summarizeDroppedSenders(
+    [
+      { from: 'a@amazon.com' },
+      { from: 'news@other.com' },
+      { from: 'News <news@other.com>' },
+      { from: 'promo@spam.com' },
+    ],
+    ['amazon.com'],
+  )
+  assertStringIncludes(summary, 'news@other.com')
+  assertStringIncludes(summary, 'promo@spam.com')
+  assertEquals(summary.includes('amazon.com'), false)
+})
+
+Deno.test('computeUncoveredFetchRanges returns full window when no coverage', () => {
+  const since = new Date('2026-07-01T00:00:00.000Z')
+  const until = new Date('2026-07-31T23:59:59.999Z')
+  const gaps = computeUncoveredFetchRanges(since, until, undefined, undefined)
+  assertEquals(gaps.length, 1)
+  assertEquals(gaps[0]!.since, since)
+  assertEquals(gaps[0]!.until, until)
+})
+
+Deno.test('computeUncoveredFetchRanges empty when fully covered', () => {
+  const since = new Date('2026-07-01T00:00:00.000Z')
+  const until = new Date('2026-07-31T23:59:59.999Z')
+  const gaps = computeUncoveredFetchRanges(since, until, since, until)
+  assertEquals(gaps.length, 0)
+})
+
+Deno.test('dbCoverageForGapWalk clears coverage in expansion mode', () => {
+  const since = new Date('2026-07-01T00:00:00.000Z')
+  const until = new Date('2026-07-31T23:59:59.999Z')
+  const dbCov = { min: since, max: until }
+  assertEquals(dbCoverageForGapWalk(false, dbCov), dbCov)
+  assertEquals(dbCoverageForGapWalk(true, dbCov), {})
+  const gaps = computeUncoveredFetchRanges(
+    since,
+    until,
+    dbCoverageForGapWalk(true, dbCov).min,
+    dbCoverageForGapWalk(true, dbCov).max,
+  )
+  assertEquals(gaps.length, 1)
+  assertEquals(gaps[0]!.since, since)
+  assertEquals(gaps[0]!.until, until)
+})
+
+Deno.test('expansion fromPatterns fetches only new domain; existing skipped by id', async () => {
+  const provider = new FixtureMailboxProvider()
+  // Simulate prior sync that already stored amazon; expansion fetches uber only.
+  const page = await provider.listMessages({
+    cursor: null,
+    limit: 50,
+    since: new Date('2026-07-01T00:00:00.000Z'),
+    until: new Date('2026-07-03T23:59:59.999Z'),
+    fromPatterns: ['uber.com'],
+  })
+  assertEquals(page.messages.map((m) => m.id), ['fixture-2'])
+  const alreadyStored = new Set(['<receipt-1@amazon.com>'])
+  const toInsert = page.messages.filter(
+    (m) => !alreadyStored.has(m.rfcMessageId),
+  )
+  assertEquals(toInsert.length, 1)
+  assertEquals(toInsert[0]!.id, 'fixture-2')
+})
+
+Deno.test('computeUncoveredFetchRanges returns newer then older gaps', () => {
+  const since = new Date('2026-07-01T00:00:00.000Z')
+  const until = new Date('2026-07-31T23:59:59.999Z')
+  const coveredMin = new Date('2026-07-10T00:00:00.000Z')
+  const coveredMax = new Date('2026-07-20T00:00:00.000Z')
+  const gaps = computeUncoveredFetchRanges(
+    since,
+    until,
+    coveredMin,
+    coveredMax,
+  )
+  assertEquals(gaps.length, 2)
+  // Newest gap first
+  assertEquals(gaps[0]!.since!.getTime(), coveredMax.getTime() + 1)
+  assertEquals(gaps[0]!.until, until)
+  assertEquals(gaps[1]!.since, since)
+  assertEquals(gaps[1]!.until!.getTime(), coveredMin.getTime() - 1)
+})
+
+Deno.test('computeUncoveredFetchRanges supports open-ended bounds', () => {
+  const coveredMin = new Date('2026-07-10T00:00:00.000Z')
+  const coveredMax = new Date('2026-07-20T00:00:00.000Z')
+  const sinceOnly = computeUncoveredFetchRanges(
+    new Date('2026-07-01T00:00:00.000Z'),
+    undefined,
+    coveredMin,
+    coveredMax,
+  )
+  assertEquals(sinceOnly.length, 2)
+  assertEquals(sinceOnly[0]!.until, undefined)
+  assertEquals(sinceOnly[1]!.since!.toISOString(), '2026-07-01T00:00:00.000Z')
+
+  const untilOnly = computeUncoveredFetchRanges(
+    undefined,
+    new Date('2026-07-31T00:00:00.000Z'),
+    coveredMin,
+    coveredMax,
+  )
+  assertEquals(untilOnly.length, 2)
+  assertEquals(untilOnly[0]!.until!.toISOString(), '2026-07-31T00:00:00.000Z')
+  assertEquals(untilOnly[1]!.since, undefined)
+})
+
+Deno.test('mergeCoverage combines DB and soft spans', () => {
+  const merged = mergeCoverage(
+    new Date('2026-07-10T00:00:00.000Z'),
+    new Date('2026-07-20T00:00:00.000Z'),
+    new Date('2026-07-01T00:00:00.000Z'),
+    new Date('2026-07-31T00:00:00.000Z'),
+  )
+  assertEquals(merged.min!.toISOString(), '2026-07-01T00:00:00.000Z')
+  assertEquals(merged.max!.toISOString(), '2026-07-31T00:00:00.000Z')
+})
+
+Deno.test('backfill cursor soft + page round-trips', () => {
+  const encoded = serializeBackfillCursorState({
+    softMinMs: 1000,
+    softMaxMs: 2000,
+    pageToken: 'page:abc',
+  })
+  assertEquals(encoded, 'c:1000:2000:page:abc')
+  assertEquals(parseBackfillCursorState(encoded), {
+    softMinMs: 1000,
+    softMaxMs: 2000,
+    pageToken: 'page:abc',
+  })
+  // Legacy provider cursor passthrough
+  assertEquals(parseBackfillCursorState('page:xyz'), {
+    softMinMs: null,
+    softMaxMs: null,
+    pageToken: 'page:xyz',
+  })
+  assertEquals(
+    serializeBackfillCursorState({
+      softMinMs: null,
+      softMaxMs: null,
+      pageToken: '1',
+    }),
+    '1',
+  )
+})
+
+Deno.test('extendSoftCoverageForGap marks empty edge done', () => {
+  const gap = {
+    since: new Date('2026-07-20T00:00:00.001Z'),
+    until: new Date('2026-07-31T23:59:59.999Z'),
+  }
+  const next = extendSoftCoverageForGap(
+    { softMinMs: null, softMaxMs: null, pageToken: 'page:x' },
+    gap,
+  )
+  assertEquals(next.pageToken, null)
+  assertEquals(next.softMinMs, gap.since.getTime())
+  assertEquals(next.softMaxMs, gap.until.getTime())
+})
+
+Deno.test('selectMessagesNeedingAutoTemplate picks unmatched only', () => {
+  const rows = [
+    {
+      id: 1,
+      provider_message_id: 'p1',
+      rfc_message_id: '<1@x>',
+      from_address: 'a@shop.com',
+      subject: 'Receipt',
+      received_at: '2026-07-02T00:00:00.000Z',
+      text_body: 'hi',
+      html_body: null,
+    },
+    {
+      id: 2,
+      provider_message_id: 'p2',
+      rfc_message_id: '<2@x>',
+      from_address: 'b@other.com',
+      subject: 'Hello',
+      received_at: '2026-07-01T00:00:00.000Z',
+      text_body: 'yo',
+      html_body: null,
+    },
+  ]
+  const needing = selectMessagesNeedingAutoTemplate(
+    rows,
+    {
+      rejectTemplates: [],
+      approveTemplates: [{
+        id: 1,
+        matchFromPattern: 'shop.com',
+        matchSubjectRegex: null,
+        extractors: {
+          amount: {
+            source: 'text',
+            regex: '\\$([0-9.]+)',
+            group: 1,
+          },
+          currency: { source: 'constant', value: 'USD' },
+        },
+        enabled: true,
+      }],
+    },
+    50,
+  )
+  assertEquals(needing.length, 1)
+  assertEquals(needing[0]!.id, 2)
 })

@@ -14,6 +14,7 @@ export type SummarizeTextOutput = {
 export const summarizeTextUseCase: UseCase<SummarizeTextInput, SummarizeTextOutput> = {
   id: 'summarize_text',
   description: 'Summarize plain text into a short paragraph',
+  modelTier: 'low',
   inputFields: [
     {
       name: 'text',

@@ -1,6 +1,10 @@
 import { AiProviderError, mapHttpStatusToCode } from '../errors.ts'
 import type { AiProvider } from '../provider.ts'
-import type { CompletionRequest, CompletionResult } from '../types.ts'
+import type {
+  CompletionRequest,
+  CompletionResult,
+  ModelInfo,
+} from '../types.ts'
 
 const DEFAULT_MODEL = 'llama3.2'
 
@@ -17,6 +21,11 @@ type OpenAiChatResponse = {
     message?: { content?: string | null }
     finish_reason?: string
   }>
+  error?: { message?: string; type?: string; code?: string | number }
+}
+
+type OpenAiListModelsResponse = {
+  data?: Array<{ id?: string; owned_by?: string }>
   error?: { message?: string; type?: string; code?: string | number }
 }
 
@@ -116,6 +125,46 @@ export class OpenAiCompatibleProvider implements AiProvider {
       model: payload.model || String(body.model),
       finishReason: payload.choices?.[0]?.finish_reason,
     }
+  }
+
+  async listModels(): Promise<ModelInfo[]> {
+    const url = `${this.#baseUrl}/models`
+    const headers: Record<string, string> = {}
+    if (this.#apiKey) {
+      headers.Authorization = `Bearer ${this.#apiKey}`
+    }
+
+    const response = await this.#fetch(url, { headers })
+    const rawText = await response.text()
+    let payload: OpenAiListModelsResponse = {}
+    try {
+      payload = rawText ? JSON.parse(rawText) as OpenAiListModelsResponse : {}
+    } catch {
+      // keep empty payload
+    }
+
+    if (!response.ok) {
+      const message = payload.error?.message ||
+        rawText ||
+        `OpenAI-compatible ListModels failed with status ${response.status}`
+      throw new AiProviderError(message, {
+        code: mapHttpStatusToCode(response.status),
+        provider: this.name,
+        status: response.status,
+      })
+    }
+
+    const models: ModelInfo[] = []
+    for (const entry of payload.data ?? []) {
+      const id = entry.id?.trim()
+      if (!id) continue
+      const info: ModelInfo = { id }
+      if (entry.owned_by) {
+        info.displayName = `${id} (${entry.owned_by})`
+      }
+      models.push(info)
+    }
+    return models
   }
 }
 

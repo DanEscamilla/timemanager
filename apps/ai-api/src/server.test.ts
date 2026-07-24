@@ -13,6 +13,10 @@ class FakeProvider implements AiProvider {
       model: 'fake-model',
     })
   }
+
+  listModels() {
+    return Promise.resolve([{ id: 'fake-model', displayName: 'Fake Model' }])
+  }
 }
 
 const serviceKey = 'test-service-key'
@@ -70,6 +74,21 @@ Deno.test('GET /v1/use-cases lists registry', async () => {
   )
 })
 
+Deno.test('GET /v1/models lists provider models', async () => {
+  const handler = createHandler({
+    serviceKey,
+    provider: new FakeProvider(),
+  })
+  const res = await handler(
+    new Request('http://localhost/v1/models', { headers: authHeaders() }),
+  )
+  assertEquals(res.status, 200)
+  assertEquals(await res.json(), {
+    provider: 'fake',
+    models: [{ id: 'fake-model', displayName: 'Fake Model' }],
+  })
+})
+
 Deno.test('POST unknown use case returns 404', async () => {
   const handler = createHandler({
     serviceKey,
@@ -104,7 +123,11 @@ Deno.test('POST summarize_text runs with fake provider', async () => {
 
 Deno.test('POST summarize_text forwards model override', async () => {
   const provider = new FakeProvider()
-  const handler = createHandler({ serviceKey, provider })
+  const handler = createHandler({
+    serviceKey,
+    provider,
+    env: { AI_MODEL_LOW: 'tier-low', AI_MODEL_HIGH: 'tier-high' },
+  })
   const res = await handler(
     new Request('http://localhost/v1/use-cases/summarize_text/run', {
       method: 'POST',
@@ -117,6 +140,137 @@ Deno.test('POST summarize_text forwards model override', async () => {
   )
   assertEquals(res.status, 200)
   assertEquals(provider.lastRequest?.model, 'gemini-2.0-flash')
+})
+
+Deno.test('POST summarize_text uses AI_MODEL_LOW when model omitted', async () => {
+  const provider = new FakeProvider()
+  const handler = createHandler({
+    serviceKey,
+    provider,
+    env: { AI_MODEL_LOW: 'tier-low', AI_MODEL_HIGH: 'tier-high' },
+  })
+  const res = await handler(
+    new Request('http://localhost/v1/use-cases/summarize_text/run', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: { text: 'Short note.' } }),
+    }),
+  )
+  assertEquals(res.status, 200)
+  assertEquals(provider.lastRequest?.model, 'tier-low')
+})
+
+Deno.test('POST classify_email_spend_relevance uses AI_MODEL_LOW', async () => {
+  const provider = new FakeProvider()
+  provider.complete = (request) => {
+    provider.lastRequest = request
+    return Promise.resolve({
+      text: JSON.stringify({ useful: false, reason: 'marketing' }),
+      model: request.model ?? 'fake',
+    })
+  }
+  const handler = createHandler({
+    serviceKey,
+    provider,
+    env: { AI_MODEL_LOW: 'tier-low', AI_MODEL_HIGH: 'tier-high' },
+  })
+  const res = await handler(
+    new Request(
+      'http://localhost/v1/use-cases/classify_email_spend_relevance/run',
+      {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          input: {
+            from: 'promo@shop.com',
+            subject: 'Sale',
+            textBody: 'Buy now',
+          },
+        }),
+      },
+    ),
+  )
+  assertEquals(res.status, 200)
+  assertEquals(provider.lastRequest?.model, 'tier-low')
+})
+
+Deno.test('POST generate_email_spend_template uses AI_MODEL_HIGH', async () => {
+  const provider = new FakeProvider()
+  provider.complete = (request) => {
+    provider.lastRequest = request
+    return Promise.resolve({
+      text: JSON.stringify({
+        matchFromPattern: '*@shop.com',
+        matchSubjectRegex: null,
+        nameSuggestion: 'Shop receipt',
+        extractors: {
+          amount: { source: 'text', regex: '(\\d+)', group: 1 },
+        },
+      }),
+      model: request.model ?? 'fake',
+    })
+  }
+  const handler = createHandler({
+    serviceKey,
+    provider,
+    env: { AI_MODEL_LOW: 'tier-low', AI_MODEL_HIGH: 'tier-high' },
+  })
+  const res = await handler(
+    new Request(
+      'http://localhost/v1/use-cases/generate_email_spend_template/run',
+      {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          input: {
+            from: 'orders@shop.com',
+            subject: 'Your order',
+            textBody: 'Total $12.00',
+          },
+        }),
+      },
+    ),
+  )
+  assertEquals(res.status, 200)
+  assertEquals(provider.lastRequest?.model, 'tier-high')
+})
+
+Deno.test('POST generate_email_reject_template uses AI_MODEL_HIGH', async () => {
+  const provider = new FakeProvider()
+  provider.complete = (request) => {
+    provider.lastRequest = request
+    return Promise.resolve({
+      text: JSON.stringify({
+        matchFromPattern: '*@shop.com',
+        matchSubjectRegex: null,
+        nameSuggestion: 'Shop promo',
+      }),
+      model: request.model ?? 'fake',
+    })
+  }
+  const handler = createHandler({
+    serviceKey,
+    provider,
+    env: { AI_MODEL_LOW: 'tier-low', AI_MODEL_HIGH: 'tier-high' },
+  })
+  const res = await handler(
+    new Request(
+      'http://localhost/v1/use-cases/generate_email_reject_template/run',
+      {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          input: {
+            from: 'promo@shop.com',
+            subject: 'Sale',
+            textBody: 'Buy now',
+          },
+        }),
+      },
+    ),
+  )
+  assertEquals(res.status, 200)
+  assertEquals(provider.lastRequest?.model, 'tier-high')
 })
 
 Deno.test('POST run rejects empty model override', async () => {

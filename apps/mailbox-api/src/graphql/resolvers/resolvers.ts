@@ -43,6 +43,11 @@ import {
   signOAuthState,
 } from '../../services/gmail_oauth.ts'
 import { asIsoTimestamp, asIsoTimestampOrNull } from '../timestamps.ts'
+import { computeSyncProgressPercent } from '../../services/sync_progress.ts'
+import {
+  parseDomainPatternsJson,
+  resolveSyncFetchPlan,
+} from '../../services/domain_filter_sync.ts'
 import type {
   ConnectGmailInput,
   CreateMailboxInput,
@@ -175,6 +180,25 @@ export interface StartGmailOAuthPayload {
 export interface GenerateParsingTemplatePayload {
   template: ParsingTemplate
   reevaluatedCount: number
+}
+
+export interface MailboxSyncStatus {
+  active: boolean
+  syncSince: string | null
+  syncUntil: string | null
+  progressPercent: number | null
+  spendingsFound: number
+  oldestSyncedAt: string | null
+  errorText: string | null
+}
+
+function toDateOrNull(value: Date | string | null | undefined): Date | null {
+  if (value == null) return null
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value
+  }
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
 }
 
 function mapMailbox(row: {
@@ -529,6 +553,61 @@ const Query = {
     return rows.map(mapSyncRun)
   },
 
+  async syncStatus(mailboxId: number): Promise<MailboxSyncStatus> {
+    const userId = requireUserId()
+    const mailbox = await requireOwnedMailbox(userId, mailboxId)
+    const syncSince = toDateOrNull(mailbox.sync_since)
+    const syncUntil = toDateOrNull(mailbox.sync_until)
+    const active = mailbox.sync_requested
+
+    let oldestQ = db
+      .selectFrom('messages')
+      .select((eb) => eb.fn.min('received_at').as('oldest'))
+      .where('mailbox_id', '=', mailboxId)
+    if (syncSince != null) {
+      oldestQ = oldestQ.where('received_at', '>=', syncSince.toISOString())
+    }
+    if (syncUntil != null) {
+      oldestQ = oldestQ.where('received_at', '<=', syncUntil.toISOString())
+    }
+    const oldestRow = await oldestQ.executeTakeFirst()
+    const oldestSyncedAt = toDateOrNull(
+      (oldestRow?.oldest as Date | string | null | undefined) ?? null,
+    )
+
+    const pendingRow = await db
+      .selectFrom('extraction_artifacts')
+      .innerJoin('messages', 'messages.id', 'extraction_artifacts.message_id')
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .where('messages.mailbox_id', '=', mailboxId)
+      .where('extraction_artifacts.status', '=', 'pending')
+      .executeTakeFirstOrThrow()
+
+    const errorRow = await db
+      .selectFrom('sync_runs')
+      .select('error_text')
+      .where('mailbox_id', '=', mailboxId)
+      .where('error_text', 'is not', null)
+      .orderBy('id', 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    return {
+      active,
+      syncSince: asIsoTimestampOrNull(mailbox.sync_since),
+      syncUntil: asIsoTimestampOrNull(mailbox.sync_until),
+      progressPercent: computeSyncProgressPercent({
+        active,
+        syncSince,
+        syncUntil,
+        oldestSyncedAt,
+      }),
+      spendingsFound: Number(pendingRow.count),
+      oldestSyncedAt: asIsoTimestampOrNull(oldestSyncedAt),
+      errorText: errorRow?.error_text ?? null,
+    }
+  },
+
   async parsingTemplates(mailboxId: number): Promise<ParsingTemplate[]> {
     const userId = requireUserId()
     await requireOwnedMailbox(userId, mailboxId)
@@ -664,13 +743,13 @@ const Mutation = {
     until?: string | null,
   ): Promise<Mailbox> {
     const userId = requireUserId()
-    await requireOwnedMailbox(userId, mailboxId)
-    const filterCount = await db
+    const mailbox = await requireOwnedMailbox(userId, mailboxId)
+    const filterRows = await db
       .selectFrom('domain_filters')
-      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .select('pattern')
       .where('mailbox_id', '=', mailboxId)
-      .executeTakeFirstOrThrow()
-    if (Number(filterCount.count) < 1) {
+      .execute()
+    if (filterRows.length < 1) {
       throw new InvalidMailboxError(
         'domain filters are required before sync',
       )
@@ -679,6 +758,12 @@ const Mutation = {
       validateOptionalSyncDate(since, 'since'),
       validateOptionalSyncDate(until, 'until'),
     )
+    const plan = resolveSyncFetchPlan({
+      currentPatterns: filterRows.map((r) => r.pattern),
+      syncedPatterns: parseDomainPatternsJson(
+        mailbox.synced_domain_filters_json,
+      ),
+    })
     const now = new Date().toISOString()
     const row = await db
       .updateTable('mailboxes')
@@ -686,7 +771,9 @@ const Mutation = {
         sync_requested: true,
         sync_since: range.since,
         sync_until: range.until,
+        // Expansion (and any new trigger) starts a fresh soft-coverage walk.
         sync_backfill_cursor: null,
+        sync_fetch_patterns_json: plan.syncFetchPatternsJson,
         updated_at: now,
       })
       .where('id', '=', mailboxId)

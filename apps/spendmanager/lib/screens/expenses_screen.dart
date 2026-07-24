@@ -19,12 +19,16 @@ class ExpensesScreen extends StatefulWidget {
     required this.categoryRepository,
     this.mailboxRepository,
     this.onChanged,
+    this.initialTabIndex = 0,
   });
 
   final ExpenseRepository expenseRepository;
   final CategoryRepository categoryRepository;
   final MailboxRepository? mailboxRepository;
   final VoidCallback? onChanged;
+
+  /// 0 = History, 1 = Review.
+  final int initialTabIndex;
 
   @override
   State<ExpensesScreen> createState() => ExpensesScreenState();
@@ -40,8 +44,25 @@ class ExpensesScreenState extends State<ExpensesScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 2, vsync: this);
+    final initial = widget.initialTabIndex.clamp(0, 1);
+    _tabs = TabController(length: 2, vsync: this, initialIndex: initial);
     reload();
+  }
+
+  @override
+  void didUpdateWidget(ExpensesScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTabIndex != oldWidget.initialTabIndex &&
+        widget.initialTabIndex == 1) {
+      openReviewTab();
+    }
+  }
+
+  /// Switch to the Review tab (e.g. after email sync).
+  void openReviewTab() {
+    if (!_tabs.indexIsChanging && _tabs.index != 1) {
+      _tabs.animateTo(1);
+    }
   }
 
   @override

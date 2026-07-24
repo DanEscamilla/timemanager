@@ -22,4 +22,14 @@ export type CompletionResult = {
   finishReason?: string
 }
 
+/** Normalized model entry from provider list-models APIs. */
+export type ModelInfo = {
+  /** ID usable as `CompletionRequest.model` / env `AI_MODEL_*`. */
+  id: string
+  displayName?: string
+  description?: string
+  /** e.g. Gemini `supportedGenerationMethods`. */
+  supportedMethods?: string[]
+}
+
 export type AiProviderKind = 'gemini' | 'openai_compatible'

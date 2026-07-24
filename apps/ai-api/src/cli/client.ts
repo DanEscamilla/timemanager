@@ -1,8 +1,10 @@
+import type { ModelInfo } from 'ai_kit/mod.ts'
 import type { UseCaseSummary } from '../use_cases/registry.ts'
 
 export type AiApiClient = {
   health(): Promise<void>
   listUseCases(): Promise<UseCaseSummary[]>
+  listModels(): Promise<{ provider: string; models: ModelInfo[] }>
   runUseCase(
     id: string,
     input: Record<string, unknown>,
@@ -55,6 +57,27 @@ export function createAiApiClient(options: {
         throw new Error('list use cases response missing useCases array')
       }
       return body.useCases
+    },
+
+    async listModels(): Promise<{ provider: string; models: ModelInfo[] }> {
+      const res = await fetchImpl(`${baseUrl}/v1/models`, {
+        headers: authHeaders(),
+      })
+      const body = await res.json() as {
+        provider?: string
+        models?: ModelInfo[]
+        error?: string
+      }
+      if (!res.ok) {
+        throw new Error(body.error ?? `list models failed (${res.status})`)
+      }
+      if (!Array.isArray(body.models)) {
+        throw new Error('list models response missing models array')
+      }
+      return {
+        provider: body.provider ?? 'unknown',
+        models: body.models,
+      }
     },
 
     async runUseCase(

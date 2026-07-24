@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:app_core/app_core.dart';
 import 'package:design_system/design_system.dart';
@@ -24,6 +26,9 @@ class EmailImportScreen extends StatefulWidget {
 }
 
 class _EmailImportScreenState extends State<EmailImportScreen> {
+  static const _syncPollInterval = Duration(seconds: 2);
+  static const _syncPollTimeout = Duration(minutes: 30);
+
   bool _loading = true;
   String? _error;
   int _step = 0;
@@ -33,6 +38,12 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
   final TextEditingController _filtersCtrl = TextEditingController();
   DateTime? _syncFrom = DateTime.now().subtract(const Duration(days: 30));
   DateTime? _syncTo = DateTime.now();
+
+  bool _syncing = false;
+  bool _awaitingSyncCompletion = false;
+  MailboxSyncStatus? _syncStatus;
+  Timer? _syncPollTimer;
+  DateTime? _syncPollStartedAt;
 
   @override
   void initState() {
@@ -45,8 +56,15 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
 
   @override
   void dispose() {
+    _stopSyncPolling();
     _filtersCtrl.dispose();
     super.dispose();
+  }
+
+  void _stopSyncPolling() {
+    _syncPollTimer?.cancel();
+    _syncPollTimer = null;
+    _syncPollStartedAt = null;
   }
 
   void _handleGmailOAuthReturn() {
@@ -218,6 +236,12 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
       await widget.mailboxRepository.deleteMailbox(mailbox.id);
       if (_selected?.id == mailbox.id) {
         _selected = null;
+        _stopSyncPolling();
+        setState(() {
+          _syncing = false;
+          _syncStatus = null;
+          _awaitingSyncCompletion = false;
+        });
       }
       await _reload();
     } catch (e) {
@@ -361,9 +385,84 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
           content: Text(AppLocalizations.of(context).emailImportSyncQueued),
         ),
       );
-      await _reload();
+      // Start polling immediately — avoid full-page reload that would hide progress.
+      _startSyncPolling(mailbox.id);
     } catch (e) {
       _showError(e);
+    }
+  }
+
+  void _startSyncPolling(int mailboxId) {
+    _stopSyncPolling();
+    setState(() {
+      _syncing = true;
+      _awaitingSyncCompletion = true;
+      _syncStatus = null;
+    });
+    _syncPollStartedAt = DateTime.now();
+    // Poll immediately, then on an interval.
+    unawaited(_pollSyncStatus(mailboxId));
+    _syncPollTimer = Timer.periodic(_syncPollInterval, (_) {
+      unawaited(_pollSyncStatus(mailboxId));
+    });
+  }
+
+  Future<void> _pollSyncStatus(int mailboxId) async {
+    if (!mounted || _selected?.id != mailboxId) return;
+    final started = _syncPollStartedAt;
+    if (started != null &&
+        DateTime.now().difference(started) > _syncPollTimeout) {
+      _stopSyncPolling();
+      if (mounted) {
+        setState(() {
+          _syncing = false;
+          _awaitingSyncCompletion = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      final status =
+          await widget.mailboxRepository.fetchSyncStatus(mailboxId);
+      if (!mounted || _selected?.id != mailboxId) return;
+
+      setState(() => _syncStatus = status);
+
+      if (!status.active && _awaitingSyncCompletion) {
+        _awaitingSyncCompletion = false;
+        _stopSyncPolling();
+        setState(() => _syncing = false);
+        _onSyncComplete(status);
+      }
+    } catch (_) {
+      // Keep polling; transient errors should not abort progress UI.
+    }
+  }
+
+  void _onSyncComplete(MailboxSyncStatus status) {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    if (status.spendingsFound > 0) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.emailImportSyncCompleteReview(status.spendingsFound),
+          ),
+          action: SnackBarAction(
+            label: l10n.emailImportSyncOpenReview,
+            onPressed: () => context.go(AppRoutes.expensesReview),
+          ),
+        ),
+      );
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.emailImportSyncCompleteNothingToReview),
+        ),
+      );
     }
   }
 
@@ -593,6 +692,35 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
     );
   }
 
+  Widget _buildSyncProgress(AppLocalizations l10n) {
+    final status = _syncStatus;
+    final percent = status?.progressPercent;
+    final spendings = status?.spendingsFound ?? 0;
+    final label = percent != null
+        ? l10n.emailImportSyncProgress(percent.round())
+        : l10n.emailImportSyncProgressIndeterminate;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: AppSpacing.sm),
+            if (percent != null)
+              LinearProgressIndicator(value: (percent / 100).clamp(0.0, 1.0))
+            else
+              const LinearProgressIndicator(),
+            const SizedBox(height: AppSpacing.sm),
+            Text(l10n.emailImportSyncSpendingsFound(spendings)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSendersStep(AppLocalizations l10n) {
     if (_selected == null) {
       return Text(l10n.emailImportNoMailbox);
@@ -614,7 +742,7 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () => _pickSyncDate(isFrom: true),
+                onPressed: _syncing ? null : () => _pickSyncDate(isFrom: true),
                 child: Text(
                   _syncFrom == null
                       ? l10n.emailImportSyncFrom
@@ -622,7 +750,7 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
                 ),
               ),
             ),
-            if (_syncFrom != null)
+            if (_syncFrom != null && !_syncing)
               IconButton(
                 tooltip: l10n.emailImportSyncClearDate,
                 icon: const Icon(Icons.clear),
@@ -631,7 +759,7 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
             const SizedBox(width: AppSpacing.xs),
             Expanded(
               child: OutlinedButton(
-                onPressed: () => _pickSyncDate(isFrom: false),
+                onPressed: _syncing ? null : () => _pickSyncDate(isFrom: false),
                 child: Text(
                   _syncTo == null
                       ? l10n.emailImportSyncTo
@@ -639,7 +767,7 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
                 ),
               ),
             ),
-            if (_syncTo != null)
+            if (_syncTo != null && !_syncing)
               IconButton(
                 tooltip: l10n.emailImportSyncClearDate,
                 icon: const Icon(Icons.clear),
@@ -649,13 +777,17 @@ class _EmailImportScreenState extends State<EmailImportScreen> {
         ),
         const SizedBox(height: AppSpacing.sm),
         FilledButton.tonalIcon(
-          onPressed: _sync,
+          onPressed: _syncing ? null : _sync,
           icon: const Icon(Icons.sync),
           label: Text(l10n.emailImportTriggerSync),
         ),
+        if (_syncing) ...[
+          const SizedBox(height: AppSpacing.md),
+          _buildSyncProgress(l10n),
+        ],
         const SizedBox(height: AppSpacing.md),
         TextButton.icon(
-          onPressed: () => _confirmClearInbox(_selected!),
+          onPressed: _syncing ? null : () => _confirmClearInbox(_selected!),
           icon: const Icon(Icons.delete_sweep_outlined),
           label: Text(l10n.emailImportClearInbox),
         ),

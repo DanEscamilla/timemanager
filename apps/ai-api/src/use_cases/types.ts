@@ -1,4 +1,5 @@
 import type { AiProvider } from 'ai_kit/mod.ts'
+import type { ModelTier } from '../model_tiers.ts'
 
 export type UseCaseInputField = {
   name: string
@@ -17,6 +18,8 @@ export type UseCaseRunOptions = {
 export type UseCase<TIn, TOut> = {
   id: string
   description: string
+  /** Which env model tier to use when the request omits `model`. */
+  modelTier: ModelTier
   inputFields: UseCaseInputField[]
   parseInput(raw: unknown): TIn
   run(

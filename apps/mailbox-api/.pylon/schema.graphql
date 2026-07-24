@@ -60,6 +60,7 @@ message(id: Number!): Message
 sourceMessageForExpense(expenseId: Number!): Message
 extractionArtifacts(mailboxId: Number, status: String, page: Number, pageSize: Number): ExtractionArtifactPage!
 syncRuns(mailboxId: Number!): [SyncRun!]!
+syncStatus(mailboxId: Number!): MailboxSyncStatus!
 parsingTemplates(mailboxId: Number!): [ParsingTemplate!]!
 }
 type Mailbox {
@@ -119,6 +120,15 @@ finished_at: String
 fetched_count: Number!
 extracted_count: Number!
 error_text: String
+}
+type MailboxSyncStatus {
+active: Boolean!
+syncSince: String
+syncUntil: String
+progressPercent: Number
+spendingsFound: Number!
+oldestSyncedAt: String
+errorText: String
 }
 type ParsingTemplate {
 id: Number!

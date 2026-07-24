@@ -45,6 +45,8 @@ export function createKyselyInboxOpsStore(
           sync_since: null,
           sync_until: null,
           sync_requested: false,
+          synced_domain_filters_json: null,
+          sync_fetch_patterns_json: null,
           last_synced_at: null,
           updated_at: updatedAt,
         })
@@ -72,7 +74,8 @@ export function createKyselyInboxOpsStore(
 }
 
 /**
- * Wipe synced messages (artifacts cascade), sync runs, and reset sync cursors.
+ * Wipe synced messages (artifacts cascade), sync runs, and reset sync cursors
+ * (including synced/fetch domain-filter snapshots).
  * Does not remove domain filters, parsing templates, or the mailbox itself.
  */
 export async function clearInboxData(

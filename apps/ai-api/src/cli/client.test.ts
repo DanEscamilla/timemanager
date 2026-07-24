@@ -37,6 +37,25 @@ Deno.test('client.listUseCases returns registry payload', async () => {
   assertEquals(list[0]?.id, 'summarize_text')
 })
 
+Deno.test('client.listModels returns provider models', async () => {
+  const client = createAiApiClient({
+    baseUrl: 'http://localhost:3004',
+    serviceKey: 'key',
+    fetchImpl: (input) => {
+      assertEquals(String(input), 'http://localhost:3004/v1/models')
+      return Promise.resolve(
+        Response.json({
+          provider: 'gemini',
+          models: [{ id: 'gemini-2.0-flash', supportedMethods: ['generateContent'] }],
+        }),
+      )
+    },
+  })
+  const result = await client.listModels()
+  assertEquals(result.provider, 'gemini')
+  assertEquals(result.models[0]?.id, 'gemini-2.0-flash')
+})
+
 Deno.test('client.runUseCase posts input and returns status/body', async () => {
   const client = createAiApiClient({
     baseUrl: 'http://localhost:3004/',

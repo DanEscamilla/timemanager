@@ -188,7 +188,28 @@
   "emailImportSyncFrom": "Desde",
   "emailImportSyncTo": "Hasta",
   "emailImportSyncClearDate": "Borrar",
-  "emailImportSyncQueued": "Sincronización solicitada. Actualiza en un momento.",
+  "emailImportSyncQueued": "Sincronización iniciada…",
+  "emailImportSyncProgress": "Sincronizando… {percent}%",
+  "@emailImportSyncProgress": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "emailImportSyncProgressIndeterminate": "Sincronizando…",
+  "emailImportSyncSpendingsFound": "{count} gastos encontrados",
+  "@emailImportSyncSpendingsFound": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "emailImportSyncCompleteNothingToReview": "Sincronización completa — nada que revisar.",
+  "emailImportSyncCompleteReview": "{count} elementos listos para revisar",
+  "@emailImportSyncCompleteReview": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "emailImportSyncOpenReview": "Revisar",
   "emailImportMessages": "Mensajes recientes",
   "emailImportNoMessages": "Aún no hay mensajes. Sincroniza tras conectar.",
   "emailImportApproveEmail": "Aprobar",

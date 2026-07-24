@@ -28,7 +28,26 @@ async function promptFields(
   return buildInputFromAnswers(fields, answers)
 }
 
-async function runOnce(client: AiApiClient): Promise<'again' | 'quit'> {
+async function listModelsOnce(client: AiApiClient): Promise<'again' | 'quit'> {
+  console.log('\nCalling ModelService.ListModels via ai-api…')
+  const { provider, models } = await client.listModels()
+  console.log(`Provider: ${provider}`)
+  console.log(`Models (${models.length}):`)
+  for (const model of models) {
+    const methods = model.supportedMethods?.length
+      ? ` [${model.supportedMethods.join(', ')}]`
+      : ''
+    const label = model.displayName && model.displayName !== model.id
+      ? `${model.id} — ${model.displayName}`
+      : model.id
+    console.log(`  ${label}${methods}`)
+  }
+
+  const again = await confirm('Back to menu?', true)
+  return again ? 'again' : 'quit'
+}
+
+async function runUseCaseOnce(client: AiApiClient): Promise<'again' | 'quit'> {
   const useCases = await client.listUseCases()
   if (useCases.length === 0) {
     console.log('No use cases registered.')
@@ -39,10 +58,10 @@ async function runOnce(client: AiApiClient): Promise<'again' | 'quit'> {
   useCases.forEach((uc, i) => {
     console.log(`  ${i + 1}. ${uc.id} — ${uc.description}`)
   })
-  console.log('  q. Quit')
+  console.log('  q. Back')
 
   const index = await chooseIndex('Select use case', useCases.length)
-  if (index === null) return 'quit'
+  if (index === null) return 'again'
 
   const selected = useCases[index]!
   console.log(`\nRunning ${selected.id}`)
@@ -64,7 +83,7 @@ async function runOnce(client: AiApiClient): Promise<'again' | 'quit'> {
 
   const ok = await confirm('Run with this request?', true)
   if (!ok) {
-    const again = await confirm('Pick another use case?', true)
+    const again = await confirm('Pick another action?', true)
     return again ? 'again' : 'quit'
   }
 
@@ -77,6 +96,18 @@ async function runOnce(client: AiApiClient): Promise<'again' | 'quit'> {
 
   const again = await confirm('Run another?', true)
   return again ? 'again' : 'quit'
+}
+
+async function runOnce(client: AiApiClient): Promise<'again' | 'quit'> {
+  console.log('\nActions:')
+  console.log('  1. List models (ModelService.ListModels)')
+  console.log('  2. Run a use case')
+  console.log('  q. Quit')
+
+  const index = await chooseIndex('Select action', 2)
+  if (index === null) return 'quit'
+  if (index === 0) return await listModelsOnce(client)
+  return await runUseCaseOnce(client)
 }
 
 async function main(): Promise<void> {

@@ -1,6 +1,11 @@
 import { AiProviderError, mapHttpStatusToCode } from '../errors.ts'
 import type { AiProvider } from '../provider.ts'
-import type { ChatMessage, CompletionRequest, CompletionResult } from '../types.ts'
+import type {
+  ChatMessage,
+  CompletionRequest,
+  CompletionResult,
+  ModelInfo,
+} from '../types.ts'
 
 const DEFAULT_MODEL = 'gemini-2.0-flash'
 const DEFAULT_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta'
@@ -20,6 +25,17 @@ type GeminiResponse = {
     content?: GeminiContent
     finishReason?: string
   }>
+  error?: { message?: string; status?: string; code?: number }
+}
+
+type GeminiListModelsResponse = {
+  models?: Array<{
+    name?: string
+    displayName?: string
+    description?: string
+    supportedGenerationMethods?: string[]
+  }>
+  nextPageToken?: string
   error?: { message?: string; status?: string; code?: number }
 }
 
@@ -108,6 +124,64 @@ export class GeminiProvider implements AiProvider {
       finishReason: payload.candidates?.[0]?.finishReason,
     }
   }
+
+  /** Gemini `ModelService.ListModels` (`GET /v1beta/models`). */
+  async listModels(): Promise<ModelInfo[]> {
+    const models: ModelInfo[] = []
+    let pageToken: string | undefined
+
+    do {
+      const params = new URLSearchParams({
+        key: this.#apiKey,
+        pageSize: '100',
+      })
+      if (pageToken) params.set('pageToken', pageToken)
+
+      const url = `${this.#baseUrl}/models?${params}`
+      const response = await this.#fetch(url)
+      const rawText = await response.text()
+      let payload: GeminiListModelsResponse = {}
+      try {
+        payload = rawText ? JSON.parse(rawText) as GeminiListModelsResponse : {}
+      } catch {
+        // keep empty payload
+      }
+
+      if (!response.ok) {
+        const message = payload.error?.message ||
+          rawText ||
+          `Gemini ListModels failed with status ${response.status}`
+        throw new AiProviderError(message, {
+          code: mapHttpStatusToCode(response.status),
+          provider: this.name,
+          status: response.status,
+        })
+      }
+
+      for (const entry of payload.models ?? []) {
+        const id = normalizeGeminiModelId(entry.name)
+        if (!id) continue
+        const info: ModelInfo = { id }
+        if (entry.displayName) info.displayName = entry.displayName
+        if (entry.description) info.description = entry.description
+        if (entry.supportedGenerationMethods?.length) {
+          info.supportedMethods = entry.supportedGenerationMethods
+        }
+        models.push(info)
+      }
+
+      pageToken = payload.nextPageToken?.trim() || undefined
+    } while (pageToken)
+
+    return models
+  }
+}
+
+/** Strip Gemini resource prefix (`models/gemini-2.0-flash` → `gemini-2.0-flash`). */
+export function normalizeGeminiModelId(name: string | undefined): string | undefined {
+  const trimmed = name?.trim()
+  if (!trimmed) return undefined
+  return trimmed.startsWith('models/') ? trimmed.slice('models/'.length) : trimmed
 }
 
 function composeSystemText(request: CompletionRequest): string | undefined {

@@ -55,6 +55,7 @@ export {
 
 export {
   GmailMailboxProvider,
+  buildGmailFromPatternsQuery,
   parseGmailCursor,
   serializeGmailCursor,
 } from './providers/gmail_provider.ts'

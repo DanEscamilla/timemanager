@@ -105,13 +105,18 @@ GoRouter createAppRouter({
             routes: [
               GoRoute(
                 path: AppRoutes.expenses,
-                builder: (context, state) => ExpensesScreen(
-                  key: auth.expensesKey,
-                  expenseRepository: auth.expenseRepository,
-                  categoryRepository: auth.categoryRepository,
-                  mailboxRepository: MailboxRepository(),
-                  onChanged: auth.reloadAll,
-                ),
+                builder: (context, state) {
+                  final tab = state.uri.queryParameters['tab'];
+                  final initialTabIndex = tab == 'review' ? 1 : 0;
+                  return ExpensesScreen(
+                    key: auth.expensesKey,
+                    expenseRepository: auth.expenseRepository,
+                    categoryRepository: auth.categoryRepository,
+                    mailboxRepository: MailboxRepository(),
+                    onChanged: auth.reloadAll,
+                    initialTabIndex: initialTabIndex,
+                  );
+                },
               ),
             ],
           ),

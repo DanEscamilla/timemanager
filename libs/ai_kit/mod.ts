@@ -4,6 +4,7 @@ export type {
   ChatRole,
   CompletionRequest,
   CompletionResult,
+  ModelInfo,
 } from './types.ts'
 
 export type { AiProvider } from './provider.ts'
@@ -19,6 +20,7 @@ export { createAiProvider, type CreateAiProviderOptions } from './factory.ts'
 export {
   GeminiProvider,
   buildGeminiRequestBody,
+  normalizeGeminiModelId,
   type GeminiProviderOptions,
 } from './providers/gemini_provider.ts'
 

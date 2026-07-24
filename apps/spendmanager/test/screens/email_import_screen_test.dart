@@ -25,14 +25,21 @@ class _FakeMailboxRepository extends MailboxRepository {
   _FakeMailboxRepository(
     this._mailboxes, {
     List<DomainFilter>? filters,
-  }) : _filters = filters ?? [];
+    List<MailboxSyncStatus>? syncStatusSequence,
+  })  : _filters = filters ?? [],
+        _syncStatusSequence = List<MailboxSyncStatus>.from(
+          syncStatusSequence ?? const [],
+        );
 
   List<MailboxAccount> _mailboxes;
   List<DomainFilter> _filters;
+  final List<MailboxSyncStatus> _syncStatusSequence;
+  int _syncStatusIndex = 0;
   final List<int> deletedIds = [];
   final List<int> clearedInboxIds = [];
   final Map<int, String> updatedLabels = {};
   List<String>? lastSetPatterns;
+  int? lastTriggeredMailboxId;
 
   @override
   Future<List<MailboxAccount>> fetchMailboxes() async =>
@@ -100,6 +107,32 @@ class _FakeMailboxRepository extends MailboxRepository {
         ),
     ];
     return _filters;
+  }
+
+  @override
+  Future<MailboxAccount> triggerSync(
+    int mailboxId, {
+    String? since,
+    String? until,
+  }) async {
+    lastTriggeredMailboxId = mailboxId;
+    return _mailboxes.firstWhere((m) => m.id == mailboxId);
+  }
+
+  int syncStatusCalls = 0;
+
+  @override
+  Future<MailboxSyncStatus> fetchSyncStatus(int mailboxId) async {
+    syncStatusCalls += 1;
+    if (_syncStatusSequence.isEmpty) {
+      return MailboxSyncStatus(active: false, spendingsFound: 0);
+    }
+    final index = _syncStatusIndex.clamp(0, _syncStatusSequence.length - 1);
+    final status = _syncStatusSequence[index];
+    if (_syncStatusIndex < _syncStatusSequence.length - 1) {
+      _syncStatusIndex += 1;
+    }
+    return status;
   }
 }
 
@@ -247,5 +280,204 @@ void main() {
 
     expect(mailboxRepo.clearedInboxIds, [1]);
     expect(find.text('Inbox data cleared.'), findsOneWidget);
+  });
+
+  testWidgets('sync complete with pending shows Review snackbar action',
+      (tester) async {
+    final mailboxRepo = _FakeMailboxRepository(
+      [_mailbox()],
+      filters: [
+        DomainFilter(
+          id: 1,
+          mailboxId: 1,
+          pattern: 'amazon.com',
+          createdAt: DateTime.utc(2026, 7, 22),
+        ),
+      ],
+      // First poll already inactive: worker finished before the client polled.
+      syncStatusSequence: [
+        MailboxSyncStatus(
+          active: false,
+          progressPercent: null,
+          spendingsFound: 3,
+        ),
+      ],
+    );
+
+    var openedReview = false;
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => EmailImportScreen(
+            mailboxRepository: mailboxRepo,
+          ),
+        ),
+        GoRoute(
+          path: '/expenses',
+          builder: (context, state) {
+            openedReview = state.uri.queryParameters['tab'] == 'review';
+            return const Scaffold(body: Text('Expenses review route'));
+          },
+        ),
+      ],
+    );
+
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+    await tester.pumpAndSettle();
+
+    final syncBtn = find.widgetWithText(FilledButton, 'Sync now');
+    await tester.ensureVisible(syncBtn);
+    await tester.pumpAndSettle();
+    await tester.tap(syncBtn);
+    await tester.pump();
+    await tester.pump();
+
+    expect(mailboxRepo.lastTriggeredMailboxId, 1);
+    expect(find.text('3 items ready to review'), findsOneWidget);
+    expect(find.widgetWithText(SnackBarAction, 'Review'), findsOneWidget);
+
+    tester.widget<SnackBarAction>(find.byType(SnackBarAction)).onPressed!();
+    await tester.pumpAndSettle();
+    expect(openedReview, isTrue);
+    expect(find.text('Expenses review route'), findsOneWidget);
+  });
+
+  testWidgets('sync complete with nothing to review shows success snackbar',
+      (tester) async {
+    final mailboxRepo = _FakeMailboxRepository(
+      [_mailbox()],
+      filters: [
+        DomainFilter(
+          id: 1,
+          mailboxId: 1,
+          pattern: 'amazon.com',
+          createdAt: DateTime.utc(2026, 7, 22),
+        ),
+      ],
+      syncStatusSequence: [
+        MailboxSyncStatus(
+          active: false,
+          progressPercent: null,
+          spendingsFound: 0,
+        ),
+      ],
+    );
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => EmailImportScreen(
+            mailboxRepository: mailboxRepo,
+          ),
+        ),
+      ],
+    );
+
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+    await tester.pumpAndSettle();
+
+    final syncBtn = find.widgetWithText(FilledButton, 'Sync now');
+    await tester.ensureVisible(syncBtn);
+    await tester.pumpAndSettle();
+    await tester.tap(syncBtn);
+    await tester.pump();
+    await tester.pump();
+
+    expect(mailboxRepo.lastTriggeredMailboxId, 1);
+    expect(
+      find.text('Sync complete — nothing to review.'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(SnackBarAction, 'Review'), findsNothing);
+  });
+
+  testWidgets('sync progress shows percent and spendings while active',
+      (tester) async {
+    final mailboxRepo = _FakeMailboxRepository(
+      [_mailbox()],
+      filters: [
+        DomainFilter(
+          id: 1,
+          mailboxId: 1,
+          pattern: 'amazon.com',
+          createdAt: DateTime.utc(2026, 7, 22),
+        ),
+      ],
+      syncStatusSequence: [
+        MailboxSyncStatus(
+          active: true,
+          progressPercent: 40,
+          spendingsFound: 2,
+        ),
+      ],
+    );
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => EmailImportScreen(
+            mailboxRepository: mailboxRepo,
+          ),
+        ),
+      ],
+    );
+
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+    await tester.pumpAndSettle();
+
+    final syncBtn = find.widgetWithText(FilledButton, 'Sync now');
+    await tester.ensureVisible(syncBtn);
+    await tester.pumpAndSettle();
+    await tester.tap(syncBtn);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Syncing… 40%'), findsOneWidget);
+    expect(find.text('2 spendings found'), findsOneWidget);
   });
 }

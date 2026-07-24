@@ -78,6 +78,7 @@ export class GmailMailboxProvider implements MailboxProvider {
     limit?: number
     since?: Date
     until?: Date
+    fromPatterns?: string[]
   }): Promise<ListMessagesResult> {
     const limit = Math.min(options.limit ?? 25, 100)
     const rangeMode = options.since != null || options.until != null
@@ -100,15 +101,26 @@ export class GmailMailboxProvider implements MailboxProvider {
     } else if (parsed.afterUnix) {
       qParts.push(`after:${parsed.afterUnix}`)
     }
+    const fromClause = buildGmailFromPatternsQuery(options.fromPatterns)
+    if (fromClause) qParts.push(fromClause)
     if (qParts.length > 0) {
       params.set('q', qParts.join(' '))
     }
+
+    console.log(
+      `[gmail] listMessages maxResults=${limit} pageToken=${parsed.pageToken ?? '(none)'} ` +
+        `q=${params.get('q') ?? '(none)'} rangeMode=${rangeMode}`,
+    )
 
     const list = await this.gmailFetch<GmailListResponse>(
       `/users/me/messages?${params.toString()}`,
     )
 
     const ids = (list.messages ?? []).map((m) => m.id)
+    console.log(
+      `[gmail] listMessages result ids=${ids.length} nextPageToken=${list.nextPageToken ? 'yes' : 'no'} ` +
+        `estimate=${list.resultSizeEstimate ?? '-'}`,
+    )
     const messages: EmailMessage[] = []
     for (const id of ids) {
       const full = await this.getMessage(id)
@@ -217,6 +229,28 @@ export class GmailMailboxProvider implements MailboxProvider {
     }
     await this.onTokensUpdated?.(this.tokens)
   }
+}
+
+/**
+ * Build a Gmail `q` fragment for sender allowlist patterns.
+ * Returns null when patterns are empty/absent.
+ */
+export function buildGmailFromPatternsQuery(
+  patterns: readonly string[] | undefined,
+): string | null {
+  if (patterns == null || patterns.length === 0) return null
+  const parts: string[] = []
+  const seen = new Set<string>()
+  for (const raw of patterns) {
+    const p = raw.trim().toLowerCase()
+    if (!p || seen.has(p)) continue
+    seen.add(p)
+    // Quote addresses so @ is not misparsed; bare domains stay unquoted.
+    parts.push(p.includes('@') ? `from:"${p}"` : `from:${p}`)
+  }
+  if (parts.length === 0) return null
+  if (parts.length === 1) return parts[0]!
+  return `(${parts.join(' OR ')})`
 }
 
 export function parseGmailCursor(cursor: SyncCursor): {

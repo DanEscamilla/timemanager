@@ -27,6 +27,7 @@ Deno.test('generate_email_reject_template parseInput requires body', () => {
 Deno.test('generate_email_reject_template run parses model JSON', async () => {
   const provider: AiProvider = {
     name: 'fake',
+    listModels: () => Promise.resolve([]),
     complete: () =>
       Promise.resolve({
         text: JSON.stringify({
@@ -49,6 +50,7 @@ Deno.test('generate_email_reject_template run parses model JSON', async () => {
 Deno.test('generate_email_reject_template ignores extractors in output', async () => {
   const provider: AiProvider = {
     name: 'fake',
+    listModels: () => Promise.resolve([]),
     complete: () =>
       Promise.resolve({
         text: JSON.stringify({

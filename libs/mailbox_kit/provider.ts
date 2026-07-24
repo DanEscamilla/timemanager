@@ -8,6 +8,12 @@ export interface ListMessagesOptions {
   since?: Date
   /** Inclusive upper bound for receivedAt (one-shot backfill). */
   until?: Date
+  /**
+   * Optional sender allowlist (domains or exact addresses). When set, providers
+   * should only return messages matching these patterns (Gmail `from:` query;
+   * fixture in-memory filter).
+   */
+  fromPatterns?: string[]
 }
 
 /**

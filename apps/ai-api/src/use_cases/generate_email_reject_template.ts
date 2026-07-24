@@ -42,6 +42,7 @@ export const generateEmailRejectTemplateUseCase: UseCase<
   id: 'generate_email_reject_template',
   description:
     'Generate a match-only ignore template from a sample email (no field extractors)',
+  modelTier: 'high',
   inputFields: [
     {
       name: 'from',

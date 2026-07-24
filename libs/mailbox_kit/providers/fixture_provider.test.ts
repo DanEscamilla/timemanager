@@ -23,15 +23,27 @@ Deno.test('FixtureMailboxProvider getMessage', async () => {
   assertEquals(await provider.getMessage('missing'), null)
 })
 
-Deno.test('FixtureMailboxProvider filters by since/until', async () => {
+Deno.test('FixtureMailboxProvider filters by fromPatterns', async () => {
   const provider = new FixtureMailboxProvider()
   const page = await provider.listMessages({
     cursor: null,
     limit: 50,
-    since: new Date('2026-07-02T00:00:00.000Z'),
-    until: new Date('2026-07-02T23:59:59.999Z'),
+    fromPatterns: ['uber.com'],
   })
   assertEquals(page.messages.length, 1)
   assertEquals(page.messages[0]!.id, 'fixture-2')
+})
+
+Deno.test('FixtureMailboxProvider fromPatterns + date range', async () => {
+  const provider = new FixtureMailboxProvider()
+  const page = await provider.listMessages({
+    cursor: null,
+    limit: 50,
+    since: new Date('2026-07-01T00:00:00.000Z'),
+    until: new Date('2026-07-03T23:59:59.999Z'),
+    fromPatterns: ['amazon.com'],
+  })
+  assertEquals(page.messages.length, 1)
+  assertEquals(page.messages[0]!.id, 'fixture-1')
   assertEquals(page.nextCursor, null)
 })

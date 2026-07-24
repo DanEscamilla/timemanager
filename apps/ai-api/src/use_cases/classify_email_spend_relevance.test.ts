@@ -27,6 +27,7 @@ Deno.test('classify_email_spend_relevance parseInput requires body', () => {
 Deno.test('classify_email_spend_relevance run parses useful=true', async () => {
   const provider: AiProvider = {
     name: 'fake',
+    listModels: () => Promise.resolve([]),
     complete: () =>
       Promise.resolve({
         text: JSON.stringify({
@@ -47,6 +48,7 @@ Deno.test('classify_email_spend_relevance run parses useful=true', async () => {
 Deno.test('classify_email_spend_relevance run parses useful=false', async () => {
   const provider: AiProvider = {
     name: 'fake',
+    listModels: () => Promise.resolve([]),
     complete: () =>
       Promise.resolve({
         text: JSON.stringify({

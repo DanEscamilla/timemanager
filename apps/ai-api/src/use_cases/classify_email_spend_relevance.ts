@@ -50,6 +50,7 @@ export const classifyEmailSpendRelevanceUseCase: UseCase<
   id: 'classify_email_spend_relevance',
   description:
     'Classify whether an email type is useful for spending extraction',
+  modelTier: 'low',
   inputFields: [
     {
       name: 'from',

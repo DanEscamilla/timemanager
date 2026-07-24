@@ -8,6 +8,7 @@ console.log(
 )
 
 async function tick() {
+  console.log('[mailbox-worker] tick')
   try {
     await syncDueMailboxes({ pollIntervalMs })
   } catch (err) {

@@ -281,6 +281,44 @@ class ParsingTemplate {
   }
 }
 
+/// Live mailbox sync progress from [MailboxRepository.fetchSyncStatus].
+class MailboxSyncStatus {
+  MailboxSyncStatus({
+    required this.active,
+    this.syncSince,
+    this.syncUntil,
+    this.progressPercent,
+    required this.spendingsFound,
+    this.oldestSyncedAt,
+    this.errorText,
+  });
+
+  final bool active;
+  final DateTime? syncSince;
+  final DateTime? syncUntil;
+  final double? progressPercent;
+  final int spendingsFound;
+  final DateTime? oldestSyncedAt;
+  final String? errorText;
+
+  factory MailboxSyncStatus.fromJson(Map<String, dynamic> json) {
+    final rawPercent = json['progressPercent'] ?? json['progress_percent'];
+    return MailboxSyncStatus(
+      active: json['active'] as bool? ?? false,
+      syncSince: parseJsonDateOrNull(json['syncSince'] ?? json['sync_since']),
+      syncUntil: parseJsonDateOrNull(json['syncUntil'] ?? json['sync_until']),
+      progressPercent: rawPercent == null ? null : (rawPercent as num).toDouble(),
+      spendingsFound: asInt(
+        json['spendingsFound'] ?? json['spendings_found'] ?? 0,
+      ),
+      oldestSyncedAt: parseJsonDateOrNull(
+        json['oldestSyncedAt'] ?? json['oldest_synced_at'],
+      ),
+      errorText: (json['errorText'] ?? json['error_text']) as String?,
+    );
+  }
+}
+
 /// Result of [MailboxRepository.generateTemplate].
 class GenerateTemplateResult {
   GenerateTemplateResult({

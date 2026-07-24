@@ -67,6 +67,7 @@ export const generateEmailSpendTemplateUseCase: UseCase<
   id: 'generate_email_spend_template',
   description:
     'Generate a deterministic spending email parsing template from a sample message',
+  modelTier: 'high',
   inputFields: [
     {
       name: 'from',

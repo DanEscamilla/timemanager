@@ -27,6 +27,7 @@ Deno.test('generate_email_spend_template parseInput requires body', () => {
 Deno.test('generate_email_spend_template run parses model JSON', async () => {
   const provider: AiProvider = {
     name: 'fake',
+    listModels: () => Promise.resolve([]),
     complete: () =>
       Promise.resolve({
         text: JSON.stringify({

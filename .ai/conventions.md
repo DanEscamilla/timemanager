@@ -52,6 +52,16 @@ Every `project.json` carries tags used for filtering and scope reasoning:
 - **Deno:** rely on `deno.json` `compilerOptions` (`strict: true`); prefer `deno lint`/`deno fmt` conventions.
 - **Dart/Flutter:** lints from `flutter_lints` via `analysis_options.yaml`; check with `nx run <app>:analyze`.
 
+## Frontend navigation
+
+- New views (forms, details, multi-step flows) should be **navigator-accessible routes/screens** with a clear way out (back / pop / shell navigation). Prefer `go_router` / `Navigator.push` (Flutter) or real routes (React) over modals.
+- Modals are reserved for confirmations, short info dialogs, and very simple one-shot forms.
+
+## Backend development logging
+
+- In development, backend endpoints should log at least the **route accessed** and the **status returned**. Log unexpected errors (`console.error` or equivalent).
+- Keep non-dev noise low; avoid logging secrets or full request bodies by default. See `apps/ai-api/src/request_log.ts` for a reference wrapper.
+
 ## Database & migrations
 
 - Schema types in each API's `src/db/types/schema.ts`; connection/pool in `src/db/database.ts`.

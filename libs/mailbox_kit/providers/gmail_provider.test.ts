@@ -1,6 +1,7 @@
 import { assertEquals } from 'jsr:@std/assert@1'
 import {
   GmailMailboxProvider,
+  buildGmailFromPatternsQuery,
   parseGmailCursor,
   serializeGmailCursor,
 } from './gmail_provider.ts'
@@ -11,6 +12,20 @@ Deno.test('gmail cursor serialize/parse', () => {
   const page = serializeGmailCursor({ pageToken: 'abc', afterUnix: 1 })
   assertEquals(page, 'page:abc|1')
   assertEquals(parseGmailCursor(page), { pageToken: 'abc', afterUnix: 1 })
+})
+
+Deno.test('buildGmailFromPatternsQuery domains and addresses', () => {
+  assertEquals(buildGmailFromPatternsQuery(undefined), null)
+  assertEquals(buildGmailFromPatternsQuery([]), null)
+  assertEquals(buildGmailFromPatternsQuery(['amazon.com']), 'from:amazon.com')
+  assertEquals(
+    buildGmailFromPatternsQuery(['noreply@shop.com']),
+    'from:"noreply@shop.com"',
+  )
+  assertEquals(
+    buildGmailFromPatternsQuery(['amazon.com', 'uber.com']),
+    '(from:amazon.com OR from:uber.com)',
+  )
 })
 
 Deno.test('GmailMailboxProvider listMessages maps headers', async () => {
@@ -109,6 +124,34 @@ Deno.test('GmailMailboxProvider range mode uses after/before and ignores done wa
   assertEquals(listUrl.includes('after:'), true)
   assertEquals(listUrl.includes('before:'), true)
   assertEquals(listUrl.includes('1700000000'), false)
+})
+
+Deno.test('GmailMailboxProvider includes fromPatterns in q', async () => {
+  const calls: string[] = []
+  const fetchImpl: typeof fetch = async (input) => {
+    const url = String(input)
+    calls.push(url)
+    if (url.includes('/messages?')) {
+      return new Response(JSON.stringify({ messages: [] }), { status: 200 })
+    }
+    return new Response('not found', { status: 404 })
+  }
+
+  const provider = new GmailMailboxProvider({
+    tokens: { accessToken: 'tok' },
+    fetchImpl,
+  })
+  await provider.listMessages({
+    cursor: null,
+    since: new Date('2026-06-01T00:00:00.000Z'),
+    until: new Date('2026-06-30T23:59:59.000Z'),
+    fromPatterns: ['uber.com', 'noreply@shop.com'],
+  })
+  const listUrl = calls.find((u) => u.includes('/messages?'))!
+  const q = new URL(listUrl).searchParams.get('q') ?? ''
+  assertEquals(q.includes('from:uber.com'), true)
+  assertEquals(q.includes('from:"noreply@shop.com"'), true)
+  assertEquals(q.includes(' OR '), true)
 })
 
 Deno.test('GmailMailboxProvider range mode paginates with page token only', async () => {

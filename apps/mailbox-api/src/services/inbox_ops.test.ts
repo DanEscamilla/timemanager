@@ -18,6 +18,8 @@ function sampleMailbox(overrides: Partial<MailboxRow> = {}): MailboxRow {
     sync_since: new Date('2026-01-01T00:00:00.000Z'),
     sync_until: new Date('2026-07-01T00:00:00.000Z'),
     sync_backfill_cursor: 'page-2',
+    synced_domain_filters_json: '["amazon.com"]',
+    sync_fetch_patterns_json: '["uber.com"]',
     oauth_tokens_json: null,
     last_synced_at: new Date('2026-07-20T00:00:00.000Z'),
     created_at: new Date('2026-07-01T00:00:00.000Z'),
@@ -61,6 +63,8 @@ function fakeStore(opts: {
         sync_since: null,
         sync_until: null,
         sync_requested: false,
+        synced_domain_filters_json: null,
+        sync_fetch_patterns_json: null,
         last_synced_at: null,
         updated_at: new Date(updatedAt),
       })
@@ -91,6 +95,8 @@ Deno.test('clearInboxData deletes messages and sync runs then resets sync state'
   assertEquals(row.sync_since, null)
   assertEquals(row.sync_until, null)
   assertEquals(row.sync_requested, false)
+  assertEquals(row.synced_domain_filters_json, null)
+  assertEquals(row.sync_fetch_patterns_json, null)
   assertEquals(row.last_synced_at, null)
 })
 

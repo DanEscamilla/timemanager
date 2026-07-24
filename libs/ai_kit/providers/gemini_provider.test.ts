@@ -1,6 +1,10 @@
 import { assertEquals, assertRejects } from 'jsr:@std/assert@1'
 import { AiProviderError } from '../errors.ts'
-import { buildGeminiRequestBody, GeminiProvider } from './gemini_provider.ts'
+import {
+  buildGeminiRequestBody,
+  GeminiProvider,
+  normalizeGeminiModelId,
+} from './gemini_provider.ts'
 
 Deno.test('buildGeminiRequestBody maps roles and system + json hint', () => {
   const body = buildGeminiRequestBody({
@@ -71,4 +75,63 @@ Deno.test('GeminiProvider maps 429 quota to AiProviderError', async () => {
   )
   assertEquals(err.code, 'quota')
   assertEquals(err.status, 429)
+})
+
+Deno.test('normalizeGeminiModelId strips models/ prefix', () => {
+  assertEquals(normalizeGeminiModelId('models/gemini-2.0-flash'), 'gemini-2.0-flash')
+  assertEquals(normalizeGeminiModelId('gemini-2.0-flash'), 'gemini-2.0-flash')
+  assertEquals(normalizeGeminiModelId('  '), undefined)
+})
+
+Deno.test('GeminiProvider listModels calls ModelService.ListModels', async () => {
+  const urls: string[] = []
+  const fetchImpl: typeof fetch = async (input) => {
+    urls.push(String(input))
+    if (urls.length === 1) {
+      return new Response(
+        JSON.stringify({
+          models: [{
+            name: 'models/gemini-2.0-flash',
+            displayName: 'Gemini 2.0 Flash',
+            supportedGenerationMethods: ['generateContent'],
+          }],
+          nextPageToken: 'page-2',
+        }),
+        { status: 200 },
+      )
+    }
+    return new Response(
+      JSON.stringify({
+        models: [{
+          name: 'models/gemini-2.5-pro',
+          displayName: 'Gemini 2.5 Pro',
+          supportedGenerationMethods: ['generateContent', 'countTokens'],
+        }],
+      }),
+      { status: 200 },
+    )
+  }
+
+  const provider = new GeminiProvider({
+    apiKey: 'test-key',
+    fetchImpl,
+  })
+  const models = await provider.listModels()
+
+  assertEquals(urls.length, 2)
+  assertEquals(urls[0]!.includes('/models?'), true)
+  assertEquals(urls[0]!.includes('key=test-key'), true)
+  assertEquals(urls[1]!.includes('pageToken=page-2'), true)
+  assertEquals(models, [
+    {
+      id: 'gemini-2.0-flash',
+      displayName: 'Gemini 2.0 Flash',
+      supportedMethods: ['generateContent'],
+    },
+    {
+      id: 'gemini-2.5-pro',
+      displayName: 'Gemini 2.5 Pro',
+      supportedMethods: ['generateContent', 'countTokens'],
+    },
+  ])
 })

@@ -37,6 +37,16 @@ export interface MailboxesTable {
   sync_until: ColumnType<Date | null, string | null | undefined, string | null>
   /** Page cursor for an in-progress backfill; does not replace sync_cursor. */
   sync_backfill_cursor: string | null
+  /**
+   * JSON string array of lowercase domain/sender patterns covered by a
+   * completed backfill. Null/empty = none covered yet.
+   */
+  synced_domain_filters_json: string | null
+  /**
+   * JSON string array of patterns to fetch for the in-progress backfill
+   * (allowlist expansion). Null = use full current allowlist + gap mode.
+   */
+  sync_fetch_patterns_json: string | null
   /** JSON: { accessToken, refreshToken?, expiresAtMs? } for gmail. */
   oauth_tokens_json: string | null
   last_synced_at: ColumnType<Date | null, string | null | undefined, string | null>

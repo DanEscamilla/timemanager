@@ -1,5 +1,6 @@
 import type { MailboxProvider } from '../provider.ts'
 import type { EmailMessage, ListMessagesResult, SyncCursor } from '../types.ts'
+import { filterMessagesByDomain } from '../domain_filter.ts'
 
 const FIXTURES: EmailMessage[] = [
   {
@@ -47,14 +48,18 @@ export class FixtureMailboxProvider implements MailboxProvider {
     limit?: number
     since?: Date
     until?: Date
+    fromPatterns?: string[]
   }): Promise<ListMessagesResult> {
     const limit = options.limit ?? 50
     const rangeMode = options.since != null || options.until != null
-    const filtered = this.messages.filter((m) => {
+    let filtered = this.messages.filter((m) => {
       if (options.since && m.receivedAt < options.since) return false
       if (options.until && m.receivedAt > options.until) return false
       return true
     })
+    if (options.fromPatterns != null && options.fromPatterns.length > 0) {
+      filtered = filterMessagesByDomain(filtered, options.fromPatterns)
+    }
     const start = parseCursor(options.cursor)
     const slice = filtered.slice(start, start + limit)
     const nextIndex = start + slice.length

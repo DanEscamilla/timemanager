@@ -1,8 +1,14 @@
-import { createAiProvider, type AiProvider, type CompletionRequest } from 'ai_kit/mod.ts'
+import {
+  createAiProvider,
+  type AiProvider,
+  type CompletionRequest,
+  type ModelInfo,
+} from 'ai_kit/mod.ts'
 
 /**
- * Defers provider construction until the first completion so /health and
- * use-case listing work before GEMINI_API_KEY / AI_BASE_URL are configured.
+ * Defers provider construction until the first completion / listModels so
+ * /health and use-case listing work before GEMINI_API_KEY / AI_BASE_URL are
+ * configured.
  */
 export class LazyAiProvider implements AiProvider {
   #inner: AiProvider | null = null
@@ -18,6 +24,10 @@ export class LazyAiProvider implements AiProvider {
 
   complete(request: CompletionRequest) {
     return this.#ensure().complete(request)
+  }
+
+  listModels(): Promise<ModelInfo[]> {
+    return this.#ensure().listModels()
   }
 
   #ensure(): AiProvider {

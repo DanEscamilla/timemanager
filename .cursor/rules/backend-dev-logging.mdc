@@ -1,0 +1,28 @@
+---
+description: Minimal development request logging for backend endpoints (route + status) and error logging on unexpected failures.
+globs: apps/timemanager-api/**,apps/spendmanager-api/**,apps/mailbox-api/**,apps/mailbox-worker/**,apps/ai-api/**,apps/user-manager-api/**,libs/deno_api_kit/**
+alwaysApply: false
+---
+
+# Backend development logging
+
+Every backend HTTP/GraphQL surface should have **minimal logging in development**:
+
+1. **Request access** — method + route/path when a request is handled
+2. **Response status** — at least the status code when the request finishes (duration is fine but optional)
+3. **Errors** — `console.error` (or equivalent) when something unexpected fails (thrown errors, handler failures)
+
+Keep it quiet outside development. Do not dump full request bodies or secrets by default.
+
+Reference pattern: `apps/ai-api/src/request_log.ts` (`withDevRequestLogging`).
+
+```typescript
+// ✅ GOOD — minimal access + finish + unexpected throw
+console.log(`[api] request received ${method} ${path}`)
+// … handle …
+console.log(`[api] request finished ${method} ${path} → ${status}`)
+// on unexpected failure:
+console.error(`[api] request threw ${method} ${path}`, err)
+```
+
+When adding a new API or middleware entrypoint, wire this (or reuse shared kit helpers) rather than shipping silent handlers. Colocate GraphQL/resolver unexpected failures with an error log before rethrowing or mapping to a client error.

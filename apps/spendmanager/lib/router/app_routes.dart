@@ -8,4 +8,7 @@ abstract final class AppRoutes {
   static const budgets = '/budgets';
   static const settings = '/settings';
   static const emailImport = '/settings/email-import';
+
+  /// Expenses shell route with nested Review tab selected.
+  static const expensesReview = '$expenses?tab=review';
 }
